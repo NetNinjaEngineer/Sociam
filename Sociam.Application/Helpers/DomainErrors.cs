@@ -48,10 +48,14 @@ public static class DomainErrors
         public const string InvalidTokenProvider = "Invalid 2FA Token Provider.";
 
         public const string TwoFactorRequired =
-            "Two Factor Authentication Required To Complete Login, check your inbox and verify your 2fa code.";
+            "Two Factor Authentication Required To Complete Login.";
 
         public const string TwoFactorAlreadyDisabled = "Two-factor authentication is already disabled for this user.";
         public const string Disable2FaFailed = "Failed to disable two-factor authentication.";
+
+        public const string NoAccessTokenExists = "No access token exists.";
+
+        public const string InvalidVerificationCode = "Invalid verification code.";
     }
 
     public static class Roles

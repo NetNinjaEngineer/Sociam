@@ -752,7 +752,7 @@ public sealed class AuthService(
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
-            //Secure = true,
+            Secure = true,
             Expires = DateTimeOffset.Now.AddDays(_jwtSettings.ExpirationInDays).UtcDateTime
         };
 
@@ -760,7 +760,7 @@ public sealed class AuthService(
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
-            //Secure = true,
+            Secure = true,
             Expires = response.RefreshTokenExpiration.UtcDateTime,
         };
 
@@ -866,7 +866,7 @@ public sealed class AuthService(
             command.Code);
 
         if (!isValid)
-            return Result<bool>.Failure(HttpStatusCode.BadRequest, "Invalid verification code.");
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.InvalidVerificationCode);
 
         user.TwoFactorEnabled = true;
         await userManager.UpdateAsync(user);
@@ -887,7 +887,7 @@ public sealed class AuthService(
         var isValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, command.Code);
 
         if (!isValid)
-            return Result<SignInResponseDto>.Failure(HttpStatusCode.Unauthorized, "Invalid verification code.");
+            return Result<SignInResponseDto>.Failure(HttpStatusCode.Unauthorized, DomainErrors.Users.InvalidVerificationCode);
 
         var response = await CreateLoginResponseAsync(userManager, user);
 
@@ -896,5 +896,14 @@ public sealed class AuthService(
     }
 
     public Task<Result<string>> GetAccessTokenAsync(GetAccessTokenQuery query)
-        => Task.FromResult(Result<string>.Success(Encoding.UTF8.GetString(Convert.FromBase64String(contextAccessor.HttpContext?.Request.Cookies["access_token"]!))));
+    {
+        if (!contextAccessor.HttpContext!.Request.Cookies.ContainsKey("access_token"))
+            return Task.FromResult(Result<string>.Failure(HttpStatusCode.Unauthorized, DomainErrors.Users.NoAccessTokenExists));
+
+        if (!contextAccessor.HttpContext.Request.Cookies.TryGetValue("access_token", out var accessToken))
+            return Task.FromResult(Result<string>.Failure(HttpStatusCode.Unauthorized, DomainErrors.Users.NoAccessTokenExists));
+
+        var decodedAccessToken = Encoding.UTF8.GetString(Convert.FromBase64String(accessToken));
+        return Task.FromResult(Result<string>.Success(decodedAccessToken));
+    }
 }
