@@ -8,7 +8,7 @@ public sealed class MessageReply : BaseEntity
     public Guid OriginalMessageId { get; set; }
     public Message OriginalMessage { get; set; } = null!;
     public bool IsEdited { get; set; }
-    public DateTimeOffset EditedAt { get; set; }
+    public DateTimeOffset? EditedAt { get; set; }
     public string Content { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
     public string RepliedById { get; set; } = null!;

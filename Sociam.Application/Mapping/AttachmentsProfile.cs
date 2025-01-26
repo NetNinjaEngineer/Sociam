@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Sociam.Application.DTOs.Messages;
+using Sociam.Application.DTOs.Attachments;
 using Sociam.Domain.Entities;
 
 namespace Sociam.Application.Mapping;

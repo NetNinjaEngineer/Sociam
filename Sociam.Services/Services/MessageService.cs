@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
+using Sociam.Application.DTOs.Attachments;
 using Sociam.Application.DTOs.Conversation;
 using Sociam.Application.DTOs.Messages;
 using Sociam.Application.Features.Conversations.Queries.GetPagedConversationMessages;
