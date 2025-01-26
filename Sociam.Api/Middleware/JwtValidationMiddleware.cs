@@ -38,7 +38,7 @@ public sealed class JwtValidationMiddleware(RequestDelegate next)
                         {
                             Type = "Forbidden",
                             Status = StatusCodes.Status403Forbidden,
-                            Message = "Unauthorized activity detected. Your session has been terminated and logged for review. Access is permanently restricted until reauthentication."
+                            Message = "Unauthorized activity detected."
                         });
 
                     return;
@@ -56,7 +56,7 @@ public sealed class JwtValidationMiddleware(RequestDelegate next)
                 {
                     Type = "Unauthorized",
                     Status = StatusCodes.Status401Unauthorized,
-                    Message = "Your session verification failed due to unexpected behavior. Further attempts without reauthentication may trigger additional security measures."
+                    Message = "Unexpected behavior.",
                 });
 
             return;

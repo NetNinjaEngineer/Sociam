@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Sociam.Services\Sociam.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Uploads\Images\" />
+  </ItemGroup>
+
 </Project>
