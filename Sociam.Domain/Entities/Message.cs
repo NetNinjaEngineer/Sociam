@@ -18,4 +18,5 @@ public sealed class Message : BaseEntity
     public ICollection<Attachment> Attachments { get; set; } = [];
     public ICollection<MessageReaction> Reactions { get; set; } = [];
     public ICollection<MessageMention> Mentions { get; set; } = [];
+    public ICollection<MessageReply> Replies { get; set; } = [];
 }

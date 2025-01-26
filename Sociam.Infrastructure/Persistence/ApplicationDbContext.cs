@@ -20,6 +20,7 @@ public sealed class ApplicationDbContext(
     public DbSet<UserFollower> UserFollowers { get; set; }
     public DbSet<MessageReaction> MessageReactions { get; set; }
     public DbSet<MessageMention> MessageMentions { get; set; }
+    public DbSet<MessageReply> MessageReplies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
