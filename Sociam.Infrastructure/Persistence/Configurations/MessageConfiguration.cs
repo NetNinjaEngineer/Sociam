@@ -15,5 +15,15 @@ internal sealed class MessageConfiguration : IEntityTypeConfiguration<Message>
             .HasConversion(
                 m => m.ToString(),
                 m => Enum.Parse<MessageStatus>(m.ToString()));
+
+        builder.HasOne(m => m.Sender)
+            .WithMany(u => u.MessagesSent)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.Receiver)
+            .WithMany(u => u.MessagesReceived)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

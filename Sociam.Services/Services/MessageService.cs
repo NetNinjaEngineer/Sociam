@@ -6,10 +6,12 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Attachments;
 using Sociam.Application.DTOs.Conversation;
 using Sociam.Application.DTOs.Messages;
+using Sociam.Application.DTOs.Replies;
 using Sociam.Application.Features.Conversations.Queries.GetPagedConversationMessages;
 using Sociam.Application.Features.Conversations.Queries.GetUserConversation;
 using Sociam.Application.Features.Messages.Commands.DeleteMessageInConversation;
 using Sociam.Application.Features.Messages.Commands.MarkMessageAsRead;
+using Sociam.Application.Features.Messages.Commands.ReplyToMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentUser;
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
@@ -175,6 +177,38 @@ public sealed class MessageService(
         }
 
         return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Messages.MessageNotFound);
+    }
+
+    public async Task<Result<MessageReplyDto>> ReplyToPrivateMessageAsync(ReplyToMessageCommand command)
+    {
+        var replyToMessageValidator = new ReplyToMessageCommandValidator();
+        await replyToMessageValidator.ValidateAndThrowAsync(command);
+
+        var existedMessage = await unitOfWork.MessageRepository.GetByIdAsync(command.MessageId);
+
+        if (existedMessage == null)
+            return Result<MessageReplyDto>.Failure(HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Messages.MessageNotFoundById, command.MessageId));
+
+        var reply = new MessageReply
+        {
+            Id = Guid.NewGuid(),
+            Content = command.Content,
+            OriginalMessageId = command.MessageId,
+            ReplyStatus = ReplyStatus.Active,
+            RepliedById = currentUser.Id
+        };
+
+        unitOfWork.Repository<MessageReply>()?.Create(reply);
+
+        await unitOfWork.SaveChangesAsync();
+
+        await hubContext.Clients.User(existedMessage.PrivateConversation!.ReceiverUserId)
+                .ReceiveReplyToMessage(existedMessage.PrivateConversationId!.Value, existedMessage.Id, reply.Id);
+
+        var mappedReply = MessageReplyDto.FromEntity(reply);
+
+        return Result<MessageReplyDto>.Success(mappedReply);
     }
 
     public async Task<Result<IEnumerable<MessageDto>>> SearchMessagesAsync(SearchMessagesQuery searchMessagesQuery)

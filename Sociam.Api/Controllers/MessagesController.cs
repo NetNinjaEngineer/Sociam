@@ -1,13 +1,16 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Messages;
+using Sociam.Application.DTOs.Replies;
 using Sociam.Application.Features.Messages.Commands.DeleteMessage;
 using Sociam.Application.Features.Messages.Commands.DeleteMessageInConversation;
 using Sociam.Application.Features.Messages.Commands.EditMessage;
 using Sociam.Application.Features.Messages.Commands.MarkMessageAsRead;
+using Sociam.Application.Features.Messages.Commands.ReplyToMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentUser;
 using Sociam.Application.Features.Messages.Queries.GetAll;
@@ -19,7 +22,9 @@ using Sociam.Application.Features.Messages.Queries.SearchMessages;
 using Sociam.Application.Helpers;
 
 namespace Sociam.Api.Controllers;
-[Route("api/messages")]
+
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/messages")]
 public class MessagesController(IMediator mediator) : ApiBaseController(mediator)
 {
     [HttpPost("private/send")]
@@ -100,4 +105,15 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
     [HttpGet("getAll")]
     public async Task<IActionResult> GetAllMessagesAsync([FromQuery] GetAllQuery query)
         => CustomResult(await Mediator.Send(query));
+
+    [HttpPost("private/{messageId}/reply")]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToPrivateMessageAsync(
+        [FromRoute] Guid messageId,
+        [FromQuery] string content)
+    {
+        var command = new ReplyToMessageCommand { MessageId = messageId, Content = content };
+        return CustomResult(await Mediator.Send(command));
+    }
 }

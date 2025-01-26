@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Base;
 using Sociam.Api.Utils;
@@ -26,7 +27,8 @@ using Sociam.Application.Features.Auth.Queries.GetAccessToken;
 using System.Text;
 
 namespace Sociam.Api.Controllers;
-[Route("api/auth")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/auth")]
 public class AuthController(IMediator mediator) : ApiBaseController(mediator)
 {
     [HttpPost("register")]

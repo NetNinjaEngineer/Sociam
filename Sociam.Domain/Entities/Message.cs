@@ -1,4 +1,5 @@
-﻿using Sociam.Domain.Enums;
+﻿using Sociam.Domain.Entities.Identity;
+using Sociam.Domain.Enums;
 
 namespace Sociam.Domain.Entities;
 
@@ -19,4 +20,8 @@ public sealed class Message : BaseEntity
     public ICollection<MessageReaction> Reactions { get; set; } = [];
     public ICollection<MessageMention> Mentions { get; set; } = [];
     public ICollection<MessageReply> Replies { get; set; } = [];
+    public string SenderId { get; set; } = null!;
+    public ApplicationUser Sender { get; set; } = null!;
+    public string ReceiverId { get; set; } = null!;
+    public ApplicationUser Receiver { get; set; } = null!;
 }

@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Sociam.Api.Utils;
 
@@ -14,21 +13,15 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
         {
             await next(httpContext);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            await HandleExceptionAsync(
-                httpContext,
-                httpContext.Features.Get<IExceptionHandlerFeature>()?.Error,
-                httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>(),
-                CancellationToken.None);
+            await HandleExceptionAsync(httpContext, ex);
         }
     }
 
     private static async Task HandleExceptionAsync(
         HttpContext httpContext,
-        Exception? error,
-        IWebHostEnvironment environment,
-        CancellationToken cancellationToken)
+        Exception? error)
     {
         var errorResponse = new GlobalErrorResponse();
 
@@ -64,9 +57,8 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
                 httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
                 errorResponse.Type = "Database_Error";
                 errorResponse.Message = "A database error occurred while processing your request.";
-                errorResponse.Detail = environment.IsDevelopment()
-                ? dbUpdateException.InnerException?.Message
-                    : null;
+                errorResponse.Detail = dbUpdateException.InnerException?.Message;
+
                 break;
 
             case InvalidJwtException invalidJwtException:
@@ -85,6 +77,6 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
         }
         httpContext.Response.ContentType = "application/json";
 
-        await httpContext.Response.WriteAsJsonAsync(errorResponse, cancellationToken);
+        await httpContext.Response.WriteAsJsonAsync(errorResponse, CancellationToken.None);
     }
 }

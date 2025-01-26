@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using Sociam.Application.Interfaces.Services;
 
 namespace Sociam.Api.Controllers;
-[Route("api/files")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/files")]
 [ApiController]
 public class FilesController(IFileService fileService) : ControllerBase
 {

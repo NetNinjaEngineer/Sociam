@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
@@ -15,7 +16,8 @@ using Sociam.Application.Features.FriendRequests.Queries.GetLoggedInUserRequeste
 using Sociam.Application.Helpers;
 
 namespace Sociam.Api.Controllers;
-[Route("api/friendships")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/friendships")]
 public class FriendshipsController(IMediator mediator) : ApiBaseController(mediator)
 {
     [Guard(roles: [AppConstants.Roles.User])]

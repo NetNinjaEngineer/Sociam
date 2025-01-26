@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
@@ -14,8 +15,9 @@ using Sociam.Application.Features.Conversations.Queries.GetUserConversation;
 using Sociam.Application.Helpers;
 
 namespace Sociam.Api.Controllers;
+[ApiVersion(1.0)]
 [Guard(roles: [AppConstants.Roles.User])]
-[Route("api/conversations")]
+[Route("api/v{version:apiVersion}/conversations")]
 public class ConversationsController(IMediator mediator) : ApiBaseController(mediator)
 {
     [HttpPost("private/start")]

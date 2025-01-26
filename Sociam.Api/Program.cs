@@ -23,11 +23,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseStaticFiles();
+
+app.UseMiddleware<JwtValidationMiddleware>();
 
 app.UseMiddleware<MigrateDatabaseMiddleware>();
 
-app.UseMiddleware<JwtValidationMiddleware>();
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseCors("CorsPolicy");
 

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
@@ -7,8 +8,9 @@ using Sociam.Application.Features.Followings.Commands.FollowUser;
 using Sociam.Application.Features.Followings.Commands.UnFollowUser;
 
 namespace Sociam.Api.Controllers;
+[ApiVersion(1.0)]
 [Guard]
-[Route("api/followings")]
+[Route("api/v{version:apiVersion}/followings")]
 [ApiController]
 public class FollowingsController(IMediator mediator) : ApiBaseController(mediator)
 {

@@ -82,5 +82,6 @@ public static class DomainErrors
     {
         public const string CanNotSendMessagesToSelf = "You can not send messages to yourself.";
         public const string MessageNotFound = "Message not found.";
+        public const string MessageNotFoundById = "Message with id '{0}' not found.";
     }
 }

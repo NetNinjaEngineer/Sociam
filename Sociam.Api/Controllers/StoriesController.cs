@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
@@ -8,7 +9,8 @@ using Sociam.Application.Features.Stories.Commands.CreateStory;
 using Sociam.Application.Helpers;
 
 namespace Sociam.Api.Controllers;
-[Route("api/stories")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/stories")]
 [ApiController]
 public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
 {

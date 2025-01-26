@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
@@ -14,7 +15,8 @@ using Sociam.Application.Features.Roles.Queries.GetUserClaims;
 using Sociam.Application.Features.Roles.Queries.GetUserRoles;
 
 namespace Sociam.Api.Controllers;
-[Route("api/roles")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/roles")]
 [ApiController]
 public class RolesController(IMediator mediator) : ApiBaseController(mediator)
 {

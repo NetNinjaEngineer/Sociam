@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Api.Base;
@@ -8,8 +9,9 @@ using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Helpers;
 
 namespace Sociam.Api.Controllers;
+[ApiVersion(1.0)]
 [Guard(roles: [AppConstants.Roles.User])]
-[Route("api/groups")]
+[Route("api/v{version:apiVersion}/groups")]
 public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
 {
     [HttpPost("new")]

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
@@ -8,7 +9,8 @@ using Sociam.Application.Features.Emails.Commands.SendEmailWithAttachments;
 using Sociam.Application.Features.Emails.Commands.SendlBulkEmailsWithAttachments;
 
 namespace Sociam.Api.Controllers;
-[Route("api/emails")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/emails")]
 public class EmailsController(IMediator mediator) : ApiBaseController(mediator)
 {
     [HttpPost("send")]
