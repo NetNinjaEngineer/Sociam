@@ -11,6 +11,11 @@ public sealed class Message : BaseEntity
     public string? Content { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset? UpdatedAt { get; set; }
+    public DateTimeOffset? ReadedAt { get; set; }
     public MessageStatus MessageStatus { get; set; }
+    public bool IsEdited { get; set; }
+    public bool IsPinned { get; set; }
     public ICollection<Attachment> Attachments { get; set; } = [];
+    public ICollection<MessageReaction> Reactions { get; set; } = [];
+    public ICollection<MessageMention> Mentions { get; set; } = [];
 }

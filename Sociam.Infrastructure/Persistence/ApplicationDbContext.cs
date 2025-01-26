@@ -18,6 +18,8 @@ public sealed class ApplicationDbContext(
     public DbSet<StoryView> StoryViews { get; set; }
     public DbSet<LiveStream> LiveStreams { get; set; }
     public DbSet<UserFollower> UserFollowers { get; set; }
+    public DbSet<MessageReaction> MessageReactions { get; set; }
+    public DbSet<MessageMention> MessageMentions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
