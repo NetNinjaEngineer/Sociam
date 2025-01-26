@@ -265,6 +265,9 @@ public sealed class AuthService(
 
     public async Task<Result<string>> ForgotPasswordAsync(ForgetPasswordCommand command)
     {
+        var validator = new ForgetPasswordCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var user = await userManager.FindByEmailAsync(command.Email);
         if (user == null)
             return Result<string>.Failure(
@@ -311,6 +314,9 @@ public sealed class AuthService(
 
     public async Task<Result<string>> ConfirmForgotPasswordCodeAsync(ConfirmForgotPasswordCodeCommand command)
     {
+        var validator = new ConfirmForgotPasswordCodeCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var user = await userManager.FindByEmailAsync(command.Email);
         if (user == null)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.UserNotFound);
@@ -337,6 +343,9 @@ public sealed class AuthService(
 
     public async Task<Result<string>> Enable2FaAsync(Enable2FaCommand command)
     {
+        var validator = new Enable2FaCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var user = await userManager.FindByEmailAsync(command.Email);
 
         if (user == null)
@@ -381,6 +390,9 @@ public sealed class AuthService(
 
     public async Task<Result<string>> ConfirmEnable2FaAsync(ConfirmEnable2FaCommand command)
     {
+        var validator = new ConfirmEnable2FaCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var user = await userManager.FindByEmailAsync(command.Email);
         if (user == null)
             return Result<string>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UnkownUser);
@@ -426,6 +438,9 @@ public sealed class AuthService(
 
     public async Task<Result<SignInResponseDto>> Verify2FaCodeAsync(Verify2FaCodeCommand command)
     {
+        var validator = new Verify2FaCodeCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var userEmail =
             Encoding.UTF8.GetString(
                 Convert.FromBase64String(contextAccessor.HttpContext!.Request.Cookies["userEmail"]!));
@@ -448,6 +463,9 @@ public sealed class AuthService(
 
     public async Task<Result<string>> Disable2FaAsync(Disable2FaCommand command)
     {
+        var validator = new Disable2FaCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
         var user = await userManager.FindByEmailAsync(command.Email);
 
         if (user == null)
@@ -558,8 +576,8 @@ public sealed class AuthService(
 
     public async Task<Result<ValidateTokenResponseDto>> ValidateTokenAsync(ValidateTokenCommand command)
     {
-        if (string.IsNullOrWhiteSpace(command.JwtToken))
-            return Result<ValidateTokenResponseDto>.Failure(HttpStatusCode.BadRequest, "Token cannot be null or empty.");
+        var validator = new ValidateTokenCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
 
         var claimsPrincipal = await tokenService.ValidateToken(command.JwtToken);
 
