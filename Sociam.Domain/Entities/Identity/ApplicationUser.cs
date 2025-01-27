@@ -27,4 +27,5 @@ public sealed class ApplicationUser : IdentityUser
     public ICollection<PrivateConversation> PrivateConversationsReceived { get; set; } = [];
     public ICollection<Message> MessagesSent { get; set; } = [];
     public ICollection<Message> MessagesReceived { get; set; } = [];
+    public ICollection<JoinGroupRequest> JoinGroupRequests { get; set; } = [];
 }

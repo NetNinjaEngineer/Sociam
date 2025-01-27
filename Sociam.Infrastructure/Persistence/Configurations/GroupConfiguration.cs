@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sociam.Domain.Entities;
+using Sociam.Domain.Enums;
 
 namespace Sociam.Infrastructure.Persistence.Configurations;
 internal sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
@@ -17,6 +18,13 @@ internal sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
            .WithOne(gm => gm.Group)
            .HasForeignKey(gm => gm.GroupId)
            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(g => g.GroupPrivacy)
+            .HasConversion(
+                builder => builder.ToString(),
+                builder => (GroupPrivacy)Enum.Parse(typeof(GroupPrivacy), builder)
+            );
+
 
         builder.HasOne(g => g.CreatedByUser)
             .WithOne().HasForeignKey<Group>(g => g.CreatedByUserId).IsRequired();
