@@ -1,7 +1,9 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
+using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Helpers;
@@ -20,12 +22,16 @@ public sealed class GroupService(
     IFileService fileService,
     IValidator<AddUserToGroupCommand> userAddToGroupValidator,
     UserManager<ApplicationUser> userManager,
-    IHubContext<GroupsHub> hubContext) : IGroupService
+    IHubContext<GroupsHub> hubContext,
+    IMapper mapper) : IGroupService
 {
     public async Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command)
     {
         await userAddToGroupValidator.ValidateAndThrowAsync(command);
         var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+
+        // Todo: check the member is already added in the group
+
         existedGroup!.Members.Add(new GroupMember { AddedById = currentUser.Id, GroupId = command.GroupId, UserId = command.UserId.ToString(), Role = GroupMemberRole.Member });
         var affectedRows = await unitOfWork.SaveChangesAsync();
         var addedUser = await userManager.FindByIdAsync(command.UserId.ToString());
@@ -48,9 +54,16 @@ public sealed class GroupService(
 
         await validator.ValidateAndThrowAsync(command);
 
-        var group = new Group { Id = Guid.NewGuid(), Name = command.Name, Description = command.Description, CreatedByUserId = currentUser.Id };
+        var group = new Group
+        {
+            Id = Guid.NewGuid(),
+            Name = command.Name,
+            Description = command.Description,
+            CreatedByUserId = currentUser.Id,
+            GroupPrivacy = command.GroupPrivacy
+        };
 
-        var (upload, groupPictureName) = await fileService.UploadFileAsync(command.GroupPictureUrl, "Images");
+        var (upload, groupPictureName) = await fileService.UploadFileAsync(command.GroupPictureUrl, "Groups");
 
         if (upload) group.PictureName = groupPictureName;
 
@@ -69,5 +82,19 @@ public sealed class GroupService(
         await unitOfWork.SaveChangesAsync();
 
         return Result<Guid>.Success(group.Id);
+    }
+
+    public async Task<Result<IReadOnlyList<GroupListDto>>> GetAllGroupsAsync()
+    {
+        var allGroups = await unitOfWork.Repository<Group>()!.GetAllAsync();
+        var mappedGroups = mapper.Map<IReadOnlyList<GroupListDto>>(allGroups);
+        return Result<IReadOnlyList<GroupListDto>>.Success(mappedGroups);
+    }
+
+    public async Task<Result<GroupListDto>> GetGroupByIdAsync(Guid groupId)
+    {
+        var existedGroup = await unitOfWork.Repository<Group>()!.GetByIdAsync(groupId);
+        var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
+        return Result<GroupListDto>.Success(mappedGroup);
     }
 }

@@ -12,8 +12,8 @@ using Sociam.Infrastructure.Persistence;
 namespace Sociam.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250126183933_EditMessagesTableToIncludeBothSenderAndReceiverIdsMigration")]
-    partial class EditMessagesTableToIncludeBothSenderAndReceiverIdsMigration
+    [Migration("20250127134122_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -268,6 +268,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("GroupPrivacy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -419,6 +423,34 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Sociam.Domain.Entities.JoinGroupRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RequestorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("RequestorId");
+
+                    b.ToTable("JoinGroupRequests", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.LiveStream", b =>
@@ -886,6 +918,25 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("Sociam.Domain.Entities.JoinGroupRequest", b =>
+                {
+                    b.HasOne("Sociam.Domain.Entities.Group", "Group")
+                        .WithMany("JoinGroupRequests")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sociam.Domain.Entities.Identity.ApplicationUser", "Requestor")
+                        .WithMany("JoinGroupRequests")
+                        .HasForeignKey("RequestorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Requestor");
+                });
+
             modelBuilder.Entity("Sociam.Domain.Entities.LiveStream", b =>
                 {
                     b.HasOne("Sociam.Domain.Entities.Identity.ApplicationUser", "User")
@@ -1077,6 +1128,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Navigation("GroupConversations");
 
+                    b.Navigation("JoinGroupRequests");
+
                     b.Navigation("Members");
                 });
 
@@ -1089,6 +1142,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.Navigation("FriendshipsReceived");
 
                     b.Navigation("FriendshipsRequested");
+
+                    b.Navigation("JoinGroupRequests");
 
                     b.Navigation("LiveStreams");
 

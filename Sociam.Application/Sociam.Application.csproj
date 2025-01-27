@@ -22,5 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Sociam.Domain\Sociam.Domain.csproj" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="Features\Groups\Queries\SearchGroups\" />
+  </ItemGroup>
 
 </Project>

@@ -21,6 +21,7 @@ public sealed class ApplicationDbContext(
     public DbSet<MessageReaction> MessageReactions { get; set; }
     public DbSet<MessageMention> MessageMentions { get; set; }
     public DbSet<MessageReply> MessageReplies { get; set; }
+    public DbSet<JoinGroupRequest> JoinGroupRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

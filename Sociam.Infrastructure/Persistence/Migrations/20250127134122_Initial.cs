@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sociam.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -205,6 +205,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    GroupPrivacy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PictureName = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -397,6 +398,33 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "JoinGroupRequests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    RequestorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JoinGroupRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JoinGroupRequests_AspNetUsers_RequestorId",
+                        column: x => x.RequestorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JoinGroupRequests_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StoryViews",
                 columns: table => new
                 {
@@ -432,11 +460,28 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    MessageStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ReadedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    MessageStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsEdited = table.Column<bool>(type: "bit", nullable: false),
+                    IsPinned = table.Column<bool>(type: "bit", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_AspNetUsers_ReceiverId",
+                        column: x => x.ReceiverId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_AspNetUsers_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_GroupConversations_GroupConversationId",
                         column: x => x.GroupConversationId,
@@ -468,6 +513,95 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "FK_Attachments_Messages_MessageId",
                         column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageMentions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MentionedUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MentionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageMentions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageMentions_AspNetUsers_MentionedUserId",
+                        column: x => x.MentionedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MessageMentions_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageReactions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReactionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageReactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageReactions_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MessageReactions_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageReplies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OriginalMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsEdited = table.Column<bool>(type: "bit", nullable: false),
+                    EditedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    RepliedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReplyStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParentReplyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageReplies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageReplies_AspNetUsers_RepliedById",
+                        column: x => x.RepliedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MessageReplies_MessageReplies_ParentReplyId",
+                        column: x => x.ParentReplyId,
+                        principalTable: "MessageReplies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MessageReplies_Messages_OriginalMessageId",
+                        column: x => x.OriginalMessageId,
                         principalTable: "Messages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -562,9 +696,59 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_JoinGroupRequests_GroupId",
+                table: "JoinGroupRequests",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JoinGroupRequests_RequestorId",
+                table: "JoinGroupRequests",
+                column: "RequestorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LiveStreams_UserId",
                 table: "LiveStreams",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageMentions_MentionedUserId",
+                table: "MessageMentions",
+                column: "MentionedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageMentions_MessageId",
+                table: "MessageMentions",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReactions_MessageId",
+                table: "MessageReactions",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReactions_UserId",
+                table: "MessageReactions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReplies_CreatedAt",
+                table: "MessageReplies",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReplies_OriginalMessageId",
+                table: "MessageReplies",
+                column: "OriginalMessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReplies_ParentReplyId",
+                table: "MessageReplies",
+                column: "ParentReplyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageReplies_RepliedById",
+                table: "MessageReplies",
+                column: "RepliedById");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_GroupConversationId",
@@ -575,6 +759,16 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "IX_Messages_PrivateConversationId",
                 table: "Messages",
                 column: "PrivateConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ReceiverId",
+                table: "Messages",
+                column: "ReceiverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_SenderId",
+                table: "Messages",
+                column: "SenderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PrivateConversations_ReceiverUserId",
@@ -643,7 +837,19 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "GroupMembers");
 
             migrationBuilder.DropTable(
+                name: "JoinGroupRequests");
+
+            migrationBuilder.DropTable(
                 name: "LiveStreams");
+
+            migrationBuilder.DropTable(
+                name: "MessageMentions");
+
+            migrationBuilder.DropTable(
+                name: "MessageReactions");
+
+            migrationBuilder.DropTable(
+                name: "MessageReplies");
 
             migrationBuilder.DropTable(
                 name: "RefreshToken");

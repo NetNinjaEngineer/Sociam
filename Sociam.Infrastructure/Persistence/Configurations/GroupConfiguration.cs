@@ -21,8 +21,8 @@ internal sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
 
         builder.Property(g => g.GroupPrivacy)
             .HasConversion(
-                builder => builder.ToString(),
-                builder => (GroupPrivacy)Enum.Parse(typeof(GroupPrivacy), builder)
+                g => g.ToString(),
+                g => Enum.Parse<GroupPrivacy>(g)
             );
 
 
