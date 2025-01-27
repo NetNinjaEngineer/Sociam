@@ -18,7 +18,7 @@ public sealed class FileService(
 
         var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", folderName);
 
-        if (!File.Exists(directoryPath))
+        if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
 
         var filePathToCreate = Path.Combine(directoryPath, uniqueFileName);
