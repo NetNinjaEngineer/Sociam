@@ -27,7 +27,7 @@ public sealed class MessageReplyDto
             CreatedAt = messageReply.CreatedAt,
             RepliedById = messageReply.RepliedById,
             RepliedBy = string.Concat(
-                messageReply.RepliedBy.FirstName, " ", messageReply.RepliedBy.LastName),
+                messageReply.RepliedBy?.FirstName, " ", messageReply.RepliedBy?.LastName),
             ReplyStatus = messageReply.ReplyStatus,
             ParentReplyId = messageReply.ParentReplyId
         };

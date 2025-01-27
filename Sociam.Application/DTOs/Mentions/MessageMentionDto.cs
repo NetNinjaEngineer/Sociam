@@ -17,7 +17,7 @@ namespace Sociam.Application.DTOs.Mentions
                 MessageId = messageMention.MessageId,
                 MentionedUserId = messageMention.MentionedUserId,
                 MentionedUser = string.Concat(
-                    messageMention.MentionedUser.FirstName, " ", messageMention.MentionedUser.LastName),
+                    messageMention.MentionedUser?.FirstName, " ", messageMention.MentionedUser?.LastName),
                 MentionType = messageMention.MentionType.ToString()
             };
     }

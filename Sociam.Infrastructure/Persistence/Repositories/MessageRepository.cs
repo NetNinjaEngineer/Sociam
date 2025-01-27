@@ -10,8 +10,10 @@ public sealed class MessageRepository(ApplicationDbContext context) :
     public async Task<Conversation?> GetConversationMessagesAsync(Guid conversationId)
     {
         var conversation = await context.PrivateConversations
-            .Include(c => c.Messages)
-            .ThenInclude(m => m.Attachments)
+            .Include(conversation => conversation.SenderUser)
+            .Include(conversation => conversation.ReceiverUser)
+            .Include(conversation => conversation.Messages)
+            .ThenInclude(message => message.Attachments)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
 
         return conversation;

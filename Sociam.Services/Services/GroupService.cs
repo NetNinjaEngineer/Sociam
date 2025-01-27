@@ -60,7 +60,8 @@ public sealed class GroupService(
                 Id = Guid.NewGuid(),
                 UserId = currentUser.Id,
                 Role = GroupMemberRole.Admin,
-                GroupId = group.Id
+                GroupId = group.Id,
+                AddedById = currentUser.Id
             });
 
         unitOfWork.Repository<Group>()?.Create(group);

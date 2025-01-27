@@ -17,7 +17,7 @@ public sealed class MessageReactionDto
             MessageId = messageReaction.MessageId,
             ReactedById = messageReaction.UserId,
             ReactedBy = string.Concat(
-                messageReaction.User.FirstName, " ", messageReaction.User.LastName),
+                messageReaction.User?.FirstName, " ", messageReaction.User?.LastName),
             Reaction = messageReaction.ReactionType.ToString()
         };
 }

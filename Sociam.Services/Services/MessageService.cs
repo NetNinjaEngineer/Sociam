@@ -73,6 +73,7 @@ public sealed class MessageService(
             return Result<bool>.Failure(HttpStatusCode.NotFound);
         existedMessage.Content = newContent;
         existedMessage.UpdatedAt = DateTimeOffset.Now;
+        existedMessage.IsEdited = true;
         unitOfWork.MessageRepository.Update(existedMessage);
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true, AppConstants.Messages.MessageUpdated);
@@ -109,12 +110,11 @@ public sealed class MessageService(
 
         if (existedMessage.PrivateConversation is not null)
         {
-            var sender = await userManager.FindByIdAsync(existedMessage.PrivateConversation.SenderUserId);
-            var receiver = await userManager.FindByIdAsync(existedMessage.PrivateConversation.ReceiverUserId);
+            //var mappedMessage = mapper.Map<MessageDto>(existedMessage);
+            //mappedMessage.SenderName = $"{sender!.FirstName} {sender.LastName}";
+            //mappedMessage.ReceiverName = $"{receiver!.FirstName} {receiver.LastName}";
 
-            var mappedMessage = mapper.Map<MessageDto>(existedMessage);
-            mappedMessage.SenderName = $"{sender!.FirstName} {sender.LastName}";
-            mappedMessage.ReceiverName = $"{receiver!.FirstName} {receiver.LastName}";
+            var mappedMessage = MessageDto.FromEntity(existedMessage);
 
             return Result<MessageDto>.Success(mappedMessage);
 
@@ -170,7 +170,7 @@ public sealed class MessageService(
         if (existedMessage is not null)
         {
             existedMessage.MessageStatus = MessageStatus.Read;
-            existedMessage.UpdatedAt = DateTimeOffset.Now;
+            existedMessage.ReadedAt = DateTimeOffset.Now;
             unitOfWork.MessageRepository.Update(existedMessage);
             await unitOfWork.SaveChangesAsync();
             return Result<bool>.Success(true, successMessage: AppConstants.Messages.MessageStatusUpdated);
@@ -182,9 +182,12 @@ public sealed class MessageService(
     public async Task<Result<MessageReplyDto>> ReplyToPrivateMessageAsync(ReplyToMessageCommand command)
     {
         var replyToMessageValidator = new ReplyToMessageCommandValidator();
+
         await replyToMessageValidator.ValidateAndThrowAsync(command);
 
-        var existedMessage = await unitOfWork.MessageRepository.GetByIdAsync(command.MessageId);
+        var spec = new GetExistedMessageSpecification(command.MessageId);
+
+        var existedMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(spec);
 
         if (existedMessage == null)
             return Result<MessageReplyDto>.Failure(HttpStatusCode.NotFound,
@@ -206,7 +209,10 @@ public sealed class MessageService(
         await hubContext.Clients.User(existedMessage.PrivateConversation!.ReceiverUserId)
                 .ReceiveReplyToMessage(existedMessage.PrivateConversationId!.Value, existedMessage.Id, reply.Id);
 
-        var mappedReply = MessageReplyDto.FromEntity(reply);
+        var specification = new GetSpecificReplyWithRelatedEntitiesSpecification(reply.Id);
+        var replyWithRelatedEntities = await unitOfWork.Repository<MessageReply>()!.GetBySpecificationAsync(specification);
+
+        var mappedReply = MessageReplyDto.FromEntity(replyWithRelatedEntities!);
 
         return Result<MessageReplyDto>.Success(mappedReply);
     }
@@ -248,6 +254,8 @@ public sealed class MessageService(
             Content = command.Content,
             MessageStatus = MessageStatus.Sent,
             PrivateConversationId = conversation.Id,
+            SenderId = command.SenderId,
+            ReceiverId = command.ReceiverId
         };
 
 
@@ -318,6 +326,8 @@ public sealed class MessageService(
             Content = command.Content,
             MessageStatus = MessageStatus.Sent,
             PrivateConversationId = conversation.Id,
+            SenderId = currentUser.Id,
+            ReceiverId = command.ReceiverId
         };
 
         if (command.Attachments?.Count() > 0)
@@ -356,6 +366,8 @@ public sealed class MessageService(
 
         await hubContext.Clients.User(command.ReceiverId).ReceivePrivateMessage(messageResult);
 
-        return Result<MessageDto>.Success(messageResult);
+        var mappedMessage = MessageDto.FromEntity(message);
+
+        return Result<MessageDto>.Success(mappedMessage);
     }
 }

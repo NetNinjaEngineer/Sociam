@@ -48,8 +48,8 @@ public sealed class MessageDto
     {
         return new()
         {
-            SenderName = string.Concat(message.Sender.FirstName, " ", message.Sender.LastName),
-            ReceiverName = string.Concat(message.Receiver.FirstName, " ", message.Receiver.LastName),
+            SenderName = string.Concat(message.Sender?.FirstName, " ", message.Sender?.LastName),
+            ReceiverName = string.Concat(message.Receiver?.FirstName, " ", message.Receiver?.LastName),
             PrivateConversationId = message.PrivateConversationId,
             GroupConversationId = message.GroupConversationId,
             MessageStatus = message.MessageStatus,
