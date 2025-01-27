@@ -3,6 +3,7 @@
 namespace Sociam.Domain.Interfaces;
 public interface IUnitOfWork : IAsyncDisposable
 {
+    IGroupMemberRepository GroupMemberRepository { get; }
     IFriendshipRepository FriendshipRepository { get; }
     IMessageRepository MessageRepository { get; }
     IPrivateConversationRepository ConversationRepository { get; }

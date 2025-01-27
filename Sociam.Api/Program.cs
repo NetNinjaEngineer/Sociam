@@ -1,6 +1,5 @@
 using Sociam.Api;
 using Sociam.Api.Extensions;
-using Sociam.Api.Middleware;
 using Sociam.Application;
 using Sociam.Infrastructure;
 using Sociam.Services;
@@ -23,11 +22,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseMiddleware<JwtValidationMiddleware>();
-
-app.UseMiddleware<MigrateDatabaseMiddleware>();
-
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseApiMiddlewares();
 
 app.UseCors("CorsPolicy");
 

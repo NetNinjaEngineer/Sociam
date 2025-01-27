@@ -17,6 +17,8 @@ public sealed class UnitOfWork(
 
     public IPrivateConversationRepository ConversationRepository => new PrivateConversationRepository(context);
 
+    public IGroupMemberRepository GroupMemberRepository => new GroupMemberRepository(context);
+
     public async Task<int> SaveChangesAsync() => await context.SaveChangesAsync();
 
     public IGenericRepository<TEntity>? Repository<TEntity>() where TEntity : BaseEntity

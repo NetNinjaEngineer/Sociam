@@ -30,6 +30,7 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
     [Guard(roles: [AppConstants.Roles.User, AppConstants.Roles.Admin])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<bool>>> AddUserToGroupAsync([FromRoute] Guid groupId, [FromRoute] Guid userId)
     {
         var command = new AddUserToGroupCommand { GroupId = groupId, UserId = userId };

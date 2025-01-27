@@ -30,9 +30,25 @@ public sealed class GroupService(
         await userAddToGroupValidator.ValidateAndThrowAsync(command);
         var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
 
-        // Todo: check the member is already added in the group
+        // check the member is already added in the group
+        bool isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
+            groupId: command.GroupId,
+            memberId: command.UserId.ToString());
 
-        existedGroup!.Members.Add(new GroupMember { AddedById = currentUser.Id, GroupId = command.GroupId, UserId = command.UserId.ToString(), Role = GroupMemberRole.Member });
+        if (isMember)
+            return Result<bool>.Failure(
+                HttpStatusCode.Conflict,
+                string.Format(DomainErrors.Group.ItsMemberYet, command.UserId));
+
+        existedGroup!.Members.Add(
+            new GroupMember
+            {
+                Id = Guid.NewGuid(),
+                AddedById = currentUser.Id,
+                GroupId = command.GroupId,
+                UserId = command.UserId.ToString(),
+                Role = GroupMemberRole.Member
+            });
         var affectedRows = await unitOfWork.SaveChangesAsync();
         var addedUser = await userManager.FindByIdAsync(command.UserId.ToString());
         var addedByUser = await userManager.FindByIdAsync(currentUser.Id);
@@ -95,6 +111,10 @@ public sealed class GroupService(
     {
         var existedGroup = await unitOfWork.Repository<Group>()!.GetByIdAsync(groupId);
         var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
+
+        if (mappedGroup is null)
+            return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, groupId));
+
         return Result<GroupListDto>.Success(mappedGroup);
     }
 }

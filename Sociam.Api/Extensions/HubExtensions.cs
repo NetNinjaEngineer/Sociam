@@ -2,7 +2,7 @@
 
 namespace Sociam.Api.Extensions;
 
-public static class SignalRHubExtensions
+public static class HubExtensions
 {
     public static IApplicationBuilder UseHubs(this WebApplication app)
     {
