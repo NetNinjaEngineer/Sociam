@@ -8,6 +8,7 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
+using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Helpers;
@@ -162,6 +163,41 @@ public sealed class GroupService(
         await unitOfWork.SaveChangesAsync();
 
         return Result<string>.Success(AppConstants.JoinRequest.JoinedGroupSuccessfully);
+    }
+
+    // Todo: Returns 403 response from Guard filter
+    public async Task<Result<string>> ManageJoinGroupRequestAsync(HandleJoinRequestCommand command)
+    {
+        var existedRequest = await unitOfWork.Repository<JoinGroupRequest>()?.GetByIdAsync(command.RequestId)!;
+        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(existedRequest!.GroupId)!;
+
+        if (existedRequest is null || existedGroup is null)
+            return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.JoinRequest.JoinRequestOrGroupNotFound);
+
+        bool isAdmin = await unitOfWork.GroupMemberRepository.IsAdminInGroupAsync(command.GroupId, currentUser.Id);
+
+        if (!isAdmin)
+            return Result<string>.Failure(HttpStatusCode.Forbidden, DomainErrors.JoinRequest.NotAllowed);
+
+        existedRequest.Status = command.JoinStatus;
+
+        if (command.JoinStatus == JoinRequestStatus.Approved)
+        {
+            var groupMember = new GroupMember
+            {
+                Id = Guid.NewGuid(),
+                GroupId = command.GroupId,
+                UserId = existedRequest.RequestorId,
+                Role = GroupMemberRole.Member,
+                AddedById = currentUser.Id
+            };
+            unitOfWork.Repository<GroupMember>()!.Create(groupMember);
+        }
+
+        await unitOfWork.SaveChangesAsync();
+
+        return Result<string>.Success(AppConstants.JoinRequest.JoinRequestHandled);
+
     }
 
     public async Task<Result<GroupListDto>> MeGetGroupAsync(GetGroupQuery query)

@@ -89,4 +89,10 @@ public static class DomainErrors
         public const string MessageNotFound = "Message not found.";
         public const string MessageNotFoundById = "Message with id '{0}' not found.";
     }
+
+    public static class JoinRequest
+    {
+        public const string JoinRequestOrGroupNotFound = "Maybe Join request or group not found.";
+        public const string NotAllowed = "Not allowed to manage join group requests !!!";
+    }
 }

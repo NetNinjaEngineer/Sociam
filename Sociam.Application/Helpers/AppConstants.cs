@@ -54,5 +54,6 @@ public sealed class AppConstants
         public const string JoinedGroupSuccessfully = "Joined group successfully.";
         public const string JoinRequestAccepted = "Join request accepted successfully.";
         public const string JoinRequestRejected = "Join request rejected successfully.";
+        public const string JoinRequestHandled = "Join request handled successfully.";
     }
 }

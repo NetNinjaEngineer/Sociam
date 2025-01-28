@@ -8,11 +8,13 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
+using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
 using Sociam.Application.Helpers;
+using Sociam.Domain.Enums;
 
 namespace Sociam.Api.Controllers;
 [ApiVersion(1.0)]
@@ -67,5 +69,16 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<string>>> JoinGroupAsync([FromRoute] Guid id)
        => CustomResult(await Mediator.Send(new JoinGroupCommand { GroupId = id }));
+
+    [Guard(roles: [AppConstants.Roles.Admin])]
+    [HttpPost("{id}/requests/{requestId}")]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<string>>> HandleJoinGroupAsync(
+        [FromRoute] Guid id,
+        [FromRoute] Guid requestId,
+        [FromForm] JoinRequestStatus joinRequestStatus)
+        => CustomResult(await Mediator.Send(new HandleJoinRequestCommand { GroupId = id, RequestId = requestId, JoinStatus = joinRequestStatus }));
 
 }

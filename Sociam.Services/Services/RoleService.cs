@@ -129,7 +129,7 @@ public sealed class RoleService(
 
     public async Task<Result<string>> AddRoleToUser(AssignRoleToUserCommand request)
     {
-        var user = await userManager.FindByEmailAsync(request.UserId);
+        var user = await userManager.FindByIdAsync(request.UserId);
         if (user == null)
         {
             return Result<string>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Users.UserNotFound, request.UserId));
