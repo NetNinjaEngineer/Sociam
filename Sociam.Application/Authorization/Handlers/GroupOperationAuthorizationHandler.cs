@@ -46,7 +46,7 @@ namespace Sociam.Application.Authorization.Handlers
                     break;
 
                 case GroupOperation.ManageMembers:
-                    if (isAdmin)
+                    if (isAdmin || isCreator)
                         context.Succeed(requirement);
                     break;
 

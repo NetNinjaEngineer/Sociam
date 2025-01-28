@@ -46,6 +46,8 @@ public sealed class AppConstants
     public static class Group
     {
         public const string UserAddedToGroup = "{0} has been successfully added to '{1}' Group by {2}";
+        public const string RemovedFromGroup = "{0} removed you from {1} group";
+        public const string MemberRemovedSuccessfully = "Member removed successfully";
     }
 
     public static class JoinRequest

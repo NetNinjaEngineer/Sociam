@@ -10,6 +10,7 @@ using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
+using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
@@ -71,7 +72,7 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
        => CustomResult(await Mediator.Send(new JoinGroupCommand { GroupId = id }));
 
     [Guard(roles: [AppConstants.Roles.Admin])]
-    [HttpPost("{groupId}/requests/{requestId}")]
+    [HttpPut("{groupId}/requests/{requestId}")]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
@@ -81,5 +82,17 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
         [FromRoute] Guid requestId,
         [FromForm] JoinRequestStatus joinRequestStatus)
         => CustomResult(await Mediator.Send(new HandleJoinRequestCommand { GroupId = groupId, RequestId = requestId, JoinStatus = joinRequestStatus }));
+
+
+    // DELETE api/v1/groups/{groupId}/members/{memberId}
+    [Guard]
+    [HttpDelete("{groupId}/members/{memberId}")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<bool>>> RemoveMemberAsync(
+       [FromRoute] Guid groupId,
+       [FromRoute] Guid memberId)
+       => CustomResult(await Mediator.Send(new RemoveMemberCommand { GroupId = groupId, MemberId = memberId }));
 
 }

@@ -10,6 +10,7 @@ using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
+using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -18,6 +19,7 @@ using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Specifications;
 using System.Net;
 
 namespace Sociam.Services.Services;
@@ -27,6 +29,7 @@ public sealed class GroupService(
     ICurrentUser currentUser,
     IFileService fileService,
     IValidator<AddUserToGroupCommand> userAddToGroupValidator,
+    IValidator<RemoveMemberCommand> removeMemberValidator,
     UserManager<ApplicationUser> userManager,
     IHubContext<GroupsHub> hubContext,
     IMapper mapper,
@@ -229,12 +232,7 @@ public sealed class GroupService(
         if (existedGroup is null)
             return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, query.GroupId));
 
-        var user = currentUser.GetUser();
-
-        if (user is null)
-            return Result<GroupListDto>.Failure(HttpStatusCode.Unauthorized);
-
-        var authResult = await authorizationService.AuthorizeAsync(user, existedGroup, GroupPolicies.ViewGroup);
+        var authResult = await authorizationService.AuthorizeAsync(currentUser.GetUser()!, existedGroup, GroupPolicies.ViewGroup);
 
         if (!authResult.Succeeded)
             return Result<GroupListDto>.Failure(HttpStatusCode.Forbidden);
@@ -242,5 +240,37 @@ public sealed class GroupService(
         var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
 
         return Result<GroupListDto>.Success(mappedGroup);
+    }
+
+    public async Task<Result<bool>> RemoveMemberFromGroupAsync(RemoveMemberCommand command)
+    {
+        await removeMemberValidator.ValidateAndThrowAsync(command);
+
+        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+        if (existedGroup is null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
+
+        var isExistedMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
+            groupId: command.GroupId,
+            memberId: command.MemberId.ToString());
+
+        if (!isExistedMember)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.NotMember, command.MemberId));
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUser.GetUser()!, existedGroup, GroupPolicies.ManageMembers);
+
+        if (!authResult.Succeeded)
+            return Result<bool>.Failure(HttpStatusCode.Forbidden);
+
+        var specification = new GetGroupMemberSpecification(command.GroupId, command.MemberId);
+        var member = await unitOfWork.Repository<GroupMember>()?.GetBySpecificationAsync(specification)!;
+
+        unitOfWork.Repository<GroupMember>()?.Delete(member!);
+
+        await unitOfWork.SaveChangesAsync();
+
+        await hubContext.Clients.User(command.MemberId.ToString()).SendAsync("ReceiveRemoveFromGroup", string.Format(AppConstants.Group.RemovedFromGroup, currentUser.FullName, existedGroup.Name));
+
+        return Result<bool>.Success(true, AppConstants.Group.MemberRemovedSuccessfully);
     }
 }
