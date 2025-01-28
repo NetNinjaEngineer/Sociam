@@ -14,8 +14,10 @@ using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
+using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Enums;
+using Sociam.Domain.Utils;
 
 namespace Sociam.Api.Controllers;
 [ApiVersion(1.0)]
@@ -47,6 +49,17 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<IReadOnlyList<GroupListDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IReadOnlyList<GroupListDto>>>> GetAllGroupsAsync()
         => CustomResult(await Mediator.Send(new GetAllGroupsQuery()));
+
+    [AllowAnonymous]
+    [HttpGet("by")]
+    public async Task<IActionResult> GetGroupsByParamsAsync([FromQuery] GroupParams @params)
+    {
+        var result = await Mediator.Send(new GetGroupsWithParamsQuery() { GroupParams = @params });
+        if (result.IsLeft)
+            return Ok(result.Left);
+
+        return Ok(result.Right);
+    }
 
     [AllowAnonymous]
     [HttpGet("{groupId}")]

@@ -12,6 +12,7 @@ using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
+using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -272,5 +273,29 @@ public sealed class GroupService(
         await hubContext.Clients.User(command.MemberId.ToString()).SendAsync("ReceiveRemoveFromGroup", string.Format(AppConstants.Group.RemovedFromGroup, currentUser.FullName, existedGroup.Name));
 
         return Result<bool>.Success(true, AppConstants.Group.MemberRemovedSuccessfully);
+    }
+
+    public async Task<Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>> GetAllGroupsWithParamsAsync(GetGroupsWithParamsQuery query)
+    {
+        var specification = new GetAllGroupsByParamsSpecification(query.GroupParams);
+        var groups = await unitOfWork.Repository<Group>()?.GetAllWithSpecificationAsync(specification)!;
+        var mappedGroups = mapper.Map<IEnumerable<GroupDto>>(groups);
+
+        if (query.GroupParams.EnablePaging)
+        {
+            var filterationCountSpec = new GroupsWithFilterationCountSpecification(query.GroupParams);
+            var count = await unitOfWork.Repository<Group>()?.GetCountWithSpecificationAsync(filterationCountSpec)!;
+            return Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>.FromLeft(
+                Result<PagedResult<GroupDto>>.Success(
+                new PagedResult<GroupDto>
+                {
+                    Page = query.GroupParams.Page,
+                    PageSize = query.GroupParams.PageSize,
+                    Items = [.. mappedGroups],
+                    TotalCount = count
+                }));
+        }
+
+        return Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>.FromRight(Result<IEnumerable<GroupDto>>.Success(mappedGroups));
     }
 }

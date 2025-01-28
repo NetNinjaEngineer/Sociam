@@ -6,6 +6,8 @@ using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
+using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
+using Sociam.Application.Helpers;
 
 namespace Sociam.Application.Interfaces.Services;
 public interface IGroupService
@@ -13,6 +15,7 @@ public interface IGroupService
     Task<Result<Guid>> CreateNewGroupAsync(CreateNewGroupCommand command);
     Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command);
     Task<Result<IReadOnlyList<GroupListDto>>> GetAllGroupsAsync();
+    Task<Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>> GetAllGroupsWithParamsAsync(GetGroupsWithParamsQuery query);
     Task<Result<GroupListDto>> GetGroupByIdAsync(Guid groupId);
     Task<Result<string>> JoinGroupAsync(JoinGroupCommand command);
     Task<Result<GroupListDto>> MeGetGroupAsync(GetGroupQuery query);

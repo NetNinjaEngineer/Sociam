@@ -25,4 +25,11 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public void Update(T entity) => context.Set<T>().Update(entity);
 
     public void Delete(T entity) => context.Set<T>().Remove(entity);
+
+    public async Task<IEnumerable<T>> GetAllWithSpecificationAsync(IBaseSpecification<T> specification)
+        => await SpecificationQueryEvaluator.BuildQuery(context.Set<T>(), specification).ToListAsync();
+
+
+    public async Task<int> GetCountWithSpecificationAsync(IBaseSpecification<T> specification)
+        => await SpecificationQueryEvaluator.BuildQuery(context.Set<T>(), specification).CountAsync();
 }

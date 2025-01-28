@@ -29,5 +29,12 @@ public abstract class BaseSpecification<TEntity> : IBaseSpecification<TEntity> w
 
     protected void DisableTracking() => IsTracking = false;
 
+    protected void ApplyPaging(int skip, int take)
+    {
+        IsPagingEnabled = true;
+        Skip = skip;
+        Take = take;
+    }
+
 
 }

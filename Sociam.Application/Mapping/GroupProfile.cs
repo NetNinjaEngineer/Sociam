@@ -11,5 +11,9 @@ public sealed class GroupProfile : Profile
     {
         CreateMap<Group, GroupListDto>()
             .ForMember(destination => destination.CoverUrl, options => options.MapFrom<GroupCoverUrlValueResolver>());
+
+        CreateMap<Group, GroupDto>()
+           .ForMember(destination => destination.CoverUrl, options => options.MapFrom<GroupCoverUrlValueResolver>())
+           .ForMember(destination => destination.Privacy, options => options.MapFrom(src => src.GroupPrivacy));
     }
 }
