@@ -11,6 +11,7 @@ using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
+using Sociam.Application.Features.Groups.Commands.SendGroupMessage;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
 using Sociam.Application.Helpers;
@@ -26,14 +27,14 @@ using System.Net;
 namespace Sociam.Services.Services;
 // Todo: Add Realtime Notification
 public sealed class GroupService(
+    IMapper mapper,
     IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
     IFileService fileService,
+    IHubContext<GroupsHub> hubContext,
+    UserManager<ApplicationUser> userManager,
     IValidator<AddUserToGroupCommand> userAddToGroupValidator,
     IValidator<RemoveMemberCommand> removeMemberValidator,
-    UserManager<ApplicationUser> userManager,
-    IHubContext<GroupsHub> hubContext,
-    IMapper mapper,
     IAuthorizationService authorizationService) : IGroupService
 {
     public async Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command)
@@ -275,7 +276,8 @@ public sealed class GroupService(
         return Result<bool>.Success(true, AppConstants.Group.MemberRemovedSuccessfully);
     }
 
-    public async Task<Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>> GetAllGroupsWithParamsAsync(GetGroupsWithParamsQuery query)
+    public async Task<Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>>
+        GetAllGroupsWithParamsAsync(GetGroupsWithParamsQuery query)
     {
         var specification = new GetAllGroupsByParamsSpecification(query.GroupParams);
         var groups = await unitOfWork.Repository<Group>()?.GetAllWithSpecificationAsync(specification)!;
@@ -297,5 +299,69 @@ public sealed class GroupService(
         }
 
         return Either<Result<PagedResult<GroupDto>>, Result<IEnumerable<GroupDto>>>.FromRight(Result<IEnumerable<GroupDto>>.Success(mappedGroups));
+    }
+
+    // TODO: Notify the group users with the message that sending in that group
+    public async Task<Result<Guid>> SendGroupMessageAsync(SendGroupMessageCommand command)
+    {
+        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+
+        if (existedGroup is null)
+            return Result<Guid>.Failure(
+                HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
+
+        var existedGroupConversation = new ExistedGroupConversationSpecification(
+            groupId: command.GroupId,
+            groupConversationId: command.GroupConversationId);
+
+        var existedConversation = await unitOfWork.Repository<GroupConversation>()?
+            .GetBySpecificationAsync(existedGroupConversation)!;
+
+        if (existedConversation is null)
+            return Result<Guid>.Failure(HttpStatusCode.BadRequest, DomainErrors.Group.InitGroupConversationFirst);
+
+        // check is iam member in the group to send the message
+        var isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
+            groupId: command.GroupId,
+            memberId: currentUser.Id);
+
+        if (!isMember)
+            return Result<Guid>.Failure(HttpStatusCode.Forbidden);
+
+        var message = new Message
+        {
+            Id = Guid.NewGuid(),
+            GroupConversationId = command.GroupConversationId,
+            Content = command.Content,
+            SenderId = currentUser.Id,
+            ReceiverId = existedGroup.CreatedByUserId,
+            MessageStatus = MessageStatus.Sent
+        };
+
+        if (command.Attachments != null && command.Attachments.Count != 0)
+        {
+            var uploadResults = await fileService.UploadFilesParallelAsync(command.Attachments);
+
+            foreach (var result in uploadResults)
+            {
+                message.Attachments.Add(new Attachment
+                {
+                    Id = Guid.NewGuid(),
+                    AttachmentSize = result.Size,
+                    MessageId = message.Id,
+                    Name = result.SavedFileName,
+                    AttachmentType = Enum.Parse<AttachmentType>(result.Type.ToString()),
+                    Url = result.Url
+                });
+            }
+        }
+
+
+        existedConversation.Messages.Add(message);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return Result<Guid>.Success(message.Id);
     }
 }

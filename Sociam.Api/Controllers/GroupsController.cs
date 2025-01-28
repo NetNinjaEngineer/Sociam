@@ -6,11 +6,13 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
+using Sociam.Application.DTOs.Messages;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
 using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
+using Sociam.Application.Features.Groups.Commands.SendGroupMessage;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
@@ -108,4 +110,24 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
        [FromRoute] Guid memberId)
        => CustomResult(await Mediator.Send(new RemoveMemberCommand { GroupId = groupId, MemberId = memberId }));
 
+    [Guard]
+    [HttpPost("{groupId:guid}/conversations/{conversationId:guid}/messages")]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Result<Guid>>> SendMessage(
+        [FromRoute] Guid groupId,
+        [FromRoute] Guid conversationId,
+        [FromForm] SendGroupMessageDto dto)
+    {
+        SendGroupMessageCommand command = new()
+        {
+            GroupId = groupId,
+            GroupConversationId = conversationId,
+            Content = dto.Content,
+            Attachments = dto.Attachments
+        };
+
+        return CustomResult(await Mediator.Send(command));
+    }
 }

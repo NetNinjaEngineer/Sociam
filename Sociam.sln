@@ -4,8 +4,6 @@ VisualStudioVersion = 17.13.35716.79
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{946EC659-43CD-4051-B12A-3901E0449961}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sociam.Api", "Sociam.Api\Sociam.Api.csproj", "{86FF0541-82DE-45D9-9239-16CE1EB8F93A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sociam.Domain", "Sociam.Domain\Sociam.Domain.csproj", "{8BCF2766-6D0A-4AD5-B828-C21660C3D1FB}"
@@ -17,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sociam.Infrastructure", "Sociam.Infrastructure\Sociam.Infrastructure.csproj", "{515D68AB-7312-448C-AC99-6DB3910255B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sociam.Services", "Sociam.Services\Sociam.Services.csproj", "{F94D1FF7-F49E-4276-8FD5-BCB157E93ED7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{68EFF4CE-AF34-4A8D-8596-7EC89688C894}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
