@@ -71,14 +71,15 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
        => CustomResult(await Mediator.Send(new JoinGroupCommand { GroupId = id }));
 
     [Guard(roles: [AppConstants.Roles.Admin])]
-    [HttpPost("{id}/requests/{requestId}")]
+    [HttpPost("{groupId}/requests/{requestId}")]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<string>>> HandleJoinGroupAsync(
-        [FromRoute] Guid id,
+        [FromRoute] Guid groupId,
         [FromRoute] Guid requestId,
         [FromForm] JoinRequestStatus joinRequestStatus)
-        => CustomResult(await Mediator.Send(new HandleJoinRequestCommand { GroupId = id, RequestId = requestId, JoinStatus = joinRequestStatus }));
+        => CustomResult(await Mediator.Send(new HandleJoinRequestCommand { GroupId = groupId, RequestId = requestId, JoinStatus = joinRequestStatus }));
 
 }

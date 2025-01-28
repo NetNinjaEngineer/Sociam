@@ -165,7 +165,6 @@ public sealed class GroupService(
         return Result<string>.Success(AppConstants.JoinRequest.JoinedGroupSuccessfully);
     }
 
-    // Todo: Returns 403 response from Guard filter
     public async Task<Result<string>> ManageJoinGroupRequestAsync(HandleJoinRequestCommand command)
     {
         var existedRequest = await unitOfWork.Repository<JoinGroupRequest>()?.GetByIdAsync(command.RequestId)!;
@@ -196,8 +195,28 @@ public sealed class GroupService(
 
         await unitOfWork.SaveChangesAsync();
 
+        await NotifyRequestorWithJoinRequestStatusAsync(existedRequest.RequestorId, existedRequest.Status);
+
         return Result<string>.Success(AppConstants.JoinRequest.JoinRequestHandled);
 
+    }
+
+    private async Task NotifyRequestorWithJoinRequestStatusAsync(string requestorId, JoinRequestStatus status)
+    {
+        if (status == JoinRequestStatus.Pending)
+            return;
+
+        switch (status)
+        {
+            case JoinRequestStatus.Approved:
+                await hubContext.Clients.User(requestorId).SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestAccepted);
+                break;
+            case JoinRequestStatus.Rejected:
+                await hubContext.Clients.User(requestorId).SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestRejected);
+                break;
+            default:
+                break;
+        }
     }
 
     public async Task<Result<GroupListDto>> MeGetGroupAsync(GetGroupQuery query)

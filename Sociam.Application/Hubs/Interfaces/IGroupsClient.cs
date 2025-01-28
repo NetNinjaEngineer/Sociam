@@ -2,4 +2,5 @@
 public interface IGroupsClient
 {
     Task ReceiveAddedToGroup(string message);
+    Task ReceiveJoinRequestStatus(string message);
 }

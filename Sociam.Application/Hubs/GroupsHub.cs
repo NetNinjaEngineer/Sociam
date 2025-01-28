@@ -9,4 +9,5 @@ public sealed class GroupsHub : Hub<IGroupsClient>
 {
     public async Task SendAddUserToGroupAsync(string userId, string message)
         => await Clients.User(userId).ReceiveAddedToGroup(message);
+
 }
