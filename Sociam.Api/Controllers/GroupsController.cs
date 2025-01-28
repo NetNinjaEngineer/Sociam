@@ -8,7 +8,9 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
+using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
+using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
 using Sociam.Application.Helpers;
 
@@ -49,5 +51,21 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<GroupListDto>>> GetGroupByIdAsync([FromRoute] Guid groupId)
         => CustomResult(await Mediator.Send(new GetGroupByIdQuery { GroupId = groupId }));
+
+    [Guard]
+    [HttpGet("view")]
+    [ProducesResponseType(typeof(Result<GroupListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(Result<GroupListDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<GroupListDto>>> GetGroupAsync([FromQuery] Guid id)
+        => CustomResult(await Mediator.Send(new GetGroupQuery { GroupId = id }));
+
+    [HttpPost("{id}/members/join")]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<string>>> JoinGroupAsync([FromRoute] Guid id)
+       => CustomResult(await Mediator.Send(new JoinGroupCommand { GroupId = id }));
 
 }

@@ -110,6 +110,7 @@ public static class DependencyInjection
         services.AddScoped<IMessageService, MessageService>();
 
         services.AddScoped<IConversationService, ConversationService>();
+
         services.AddScoped<IGroupService, GroupService>();
 
         return services;

@@ -47,4 +47,12 @@ public sealed class AppConstants
     {
         public const string UserAddedToGroup = "{0} has been successfully added to '{1}' Group by {2}";
     }
+
+    public static class JoinRequest
+    {
+        public const string JoinRequestSent = "Join request sent successfully.";
+        public const string JoinedGroupSuccessfully = "Joined group successfully.";
+        public const string JoinRequestAccepted = "Join request accepted successfully.";
+        public const string JoinRequestRejected = "Join request rejected successfully.";
+    }
 }

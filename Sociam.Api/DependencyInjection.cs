@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Features;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
+using Sociam.Application.Authorization;
 using System.Text.Json.Serialization;
 
 namespace Sociam.Api;
@@ -34,9 +35,9 @@ public static class DependencyInjection
             options.MemoryBufferThreshold = int.MaxValue;
         });
 
-        services.AddSingleton<ApiKeyFilter>();
+        services.AddScoped<ApiKeyFilter>();
 
-        services.AddSingleton<GuardFilter>();
+        services.AddScoped<GuardFilter>();
 
         services.AddApiVersioning(options =>
         {
@@ -66,6 +67,8 @@ public static class DependencyInjection
         });
 
         services.AddOpenApi();
+
+        services.AddAuthorization(options => options.AddGroupPolicies());
 
         return services;
     }

@@ -38,7 +38,7 @@ public sealed class JwtValidationMiddleware(RequestDelegate next)
                         {
                             Type = "Forbidden",
                             Status = StatusCodes.Status403Forbidden,
-                            Message = "Unauthorized activity detected."
+                            Message = "Invalid Token."
                         });
 
                     return;

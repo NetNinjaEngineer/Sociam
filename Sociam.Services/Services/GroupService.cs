@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Sociam.Application.Authorization;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
+using Sociam.Application.Features.Groups.Commands.JoinGroup;
+using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -16,6 +20,7 @@ using Sociam.Domain.Interfaces;
 using System.Net;
 
 namespace Sociam.Services.Services;
+// Todo: Add Realtime Notification
 public sealed class GroupService(
     IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
@@ -23,7 +28,8 @@ public sealed class GroupService(
     IValidator<AddUserToGroupCommand> userAddToGroupValidator,
     UserManager<ApplicationUser> userManager,
     IHubContext<GroupsHub> hubContext,
-    IMapper mapper) : IGroupService
+    IMapper mapper,
+    IAuthorizationService authorizationService) : IGroupService
 {
     public async Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command)
     {
@@ -114,6 +120,71 @@ public sealed class GroupService(
 
         if (mappedGroup is null)
             return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, groupId));
+
+        return Result<GroupListDto>.Success(mappedGroup);
+    }
+
+    public async Task<Result<string>> JoinGroupAsync(JoinGroupCommand command)
+    {
+        var existedGroup = await unitOfWork.Repository<Group>()!.GetByIdAsync(command.GroupId);
+        if (existedGroup is null)
+            return Result<string>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
+
+        var isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(existedGroup.Id, currentUser.Id);
+        if (isMember)
+            return Result<string>.Failure(HttpStatusCode.Conflict, string.Format(DomainErrors.Group.ItsMemberYet, currentUser.Id));
+
+        if (existedGroup.GroupPrivacy == GroupPrivacy.Private)
+        {
+            var joinRequest = new JoinGroupRequest
+            {
+                Id = Guid.NewGuid(),
+                GroupId = command.GroupId,
+                RequestorId = currentUser.Id,
+                Status = JoinRequestStatus.Pending
+            };
+            unitOfWork.Repository<JoinGroupRequest>()!.Create(joinRequest);
+            await unitOfWork.SaveChangesAsync();
+            return Result<string>.Success(AppConstants.JoinRequest.JoinRequestSent);
+        }
+
+        var groupMember = new GroupMember
+        {
+            Id = Guid.NewGuid(),
+            GroupId = command.GroupId,
+            UserId = currentUser.Id,
+            Role = GroupMemberRole.Member,
+            AddedById = currentUser.Id
+        };
+
+        unitOfWork.Repository<GroupMember>()!.Create(groupMember);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return Result<string>.Success(AppConstants.JoinRequest.JoinedGroupSuccessfully);
+    }
+
+    public async Task<Result<GroupListDto>> MeGetGroupAsync(GetGroupQuery query)
+    {
+        var validator = new GetGroupQueryValidator();
+        await validator.ValidateAndThrowAsync(query);
+
+        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(query.GroupId)!;
+
+        if (existedGroup is null)
+            return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, query.GroupId));
+
+        var user = currentUser.GetUser();
+
+        if (user is null)
+            return Result<GroupListDto>.Failure(HttpStatusCode.Unauthorized);
+
+        var authResult = await authorizationService.AuthorizeAsync(user, existedGroup, GroupPolicies.ViewGroup);
+
+        if (!authResult.Succeeded)
+            return Result<GroupListDto>.Failure(HttpStatusCode.Forbidden);
+
+        var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
 
         return Result<GroupListDto>.Success(mappedGroup);
     }

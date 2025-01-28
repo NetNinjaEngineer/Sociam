@@ -24,7 +24,6 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="Features\Groups\Commands\NewFolder\" />
     <Folder Include="Features\Groups\Queries\SearchGroups\" />
   </ItemGroup>
 

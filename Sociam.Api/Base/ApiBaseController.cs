@@ -27,6 +27,7 @@ public class ApiBaseController(IMediator mediator) : ControllerBase
             HttpStatusCode.NoContent => new NoContentResult(),
             HttpStatusCode.Created => new ObjectResult(result),
             HttpStatusCode.UnprocessableEntity => new UnprocessableEntityObjectResult(result),
+            HttpStatusCode.Forbidden => new ForbidResult(),
             _ => throw new InvalidOperationException()
         };
 }

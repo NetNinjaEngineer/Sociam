@@ -2,6 +2,8 @@
 using Sociam.Application.DTOs.Groups;
 using Sociam.Application.Features.Groups.Commands.AddUserToGroup;
 using Sociam.Application.Features.Groups.Commands.CreateNewGroup;
+using Sociam.Application.Features.Groups.Commands.JoinGroup;
+using Sociam.Application.Features.Groups.Queries.GetGroup;
 
 namespace Sociam.Application.Interfaces.Services;
 public interface IGroupService
@@ -10,6 +12,8 @@ public interface IGroupService
     Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command);
     Task<Result<IReadOnlyList<GroupListDto>>> GetAllGroupsAsync();
     Task<Result<GroupListDto>> GetGroupByIdAsync(Guid groupId);
+    Task<Result<string>> JoinGroupAsync(JoinGroupCommand command);
+    Task<Result<GroupListDto>> MeGetGroupAsync(GetGroupQuery query);
 
     //Task<Result<bool>> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command);
     //Task<Result<MessageDto>> SendGroupMessageAsync(SendGroupMessageCommand command);

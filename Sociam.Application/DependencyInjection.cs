@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sociam.Application.Authorization.Handlers;
 using Sociam.Application.Helpers;
 using System.Reflection;
 
@@ -28,6 +30,8 @@ public static class DependencyInjection
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddScoped(typeof(DataShaper<>));
+
+        services.AddScoped<IAuthorizationHandler, GroupOperationAuthorizationHandler>();
 
         return services;
     }
