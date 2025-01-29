@@ -80,6 +80,7 @@ public static class DomainErrors
     public static class Group
     {
         public const string GroupNotExisted = "Group with id '{0}' was not existed";
+        public const string CannotRemoveLastAdmin = "Can not remove last admin";
         public const string ItsMemberYet = "User with id: '{0}' its a member in the group !!!";
         public const string InitGroupConversationFirst = "Start the group conversation first";
         public const string CanNotRemoveYourself = "Can not remove yourself";

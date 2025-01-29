@@ -13,6 +13,7 @@ using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Commands.SendGroupMessage;
+using Sociam.Application.Features.Groups.Commands.UpdateMemberRole;
 using Sociam.Application.Features.Groups.Queries.GetAllGroups;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupById;
@@ -130,4 +131,15 @@ public class GroupsController(IMediator mediator) : ApiBaseController(mediator)
 
         return CustomResult(await Mediator.Send(command));
     }
+
+    [Guard]
+    [HttpPut("{groupId:guid}/members/{memberId:guid}/role")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<bool>>> UpdateMemberRoleAsync(
+       [FromRoute] Guid groupId,
+       [FromRoute] Guid memberId,
+       [FromForm] GroupMemberRole memberRole)
+       => CustomResult(await Mediator.Send(new UpdateMemberRoleCommand { GroupId = groupId, MemberId = memberId, Role = memberRole }));
 }

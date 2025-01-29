@@ -6,6 +6,7 @@ using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Commands.SendGroupMessage;
+using Sociam.Application.Features.Groups.Commands.UpdateMemberRole;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
 using Sociam.Application.Helpers;
@@ -23,4 +24,5 @@ public interface IGroupService
     Task<Result<string>> ManageJoinGroupRequestAsync(HandleJoinRequestCommand command);
     Task<Result<bool>> RemoveMemberFromGroupAsync(RemoveMemberCommand command);
     Task<Result<Guid>> SendGroupMessageAsync(SendGroupMessageCommand command);
+    Task<Result<bool>> UpdateMemberRoleAsync(UpdateMemberRoleCommand command);
 }

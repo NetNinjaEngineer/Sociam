@@ -12,6 +12,7 @@ using Sociam.Application.Features.Groups.Commands.HandleJoinRequest;
 using Sociam.Application.Features.Groups.Commands.JoinGroup;
 using Sociam.Application.Features.Groups.Commands.RemoveMember;
 using Sociam.Application.Features.Groups.Commands.SendGroupMessage;
+using Sociam.Application.Features.Groups.Commands.UpdateMemberRole;
 using Sociam.Application.Features.Groups.Queries.GetGroup;
 using Sociam.Application.Features.Groups.Queries.GetGroupsWithParams;
 using Sociam.Application.Helpers;
@@ -40,10 +41,10 @@ public sealed class GroupService(
     public async Task<Result<bool>> AddUserToGroupAsync(AddUserToGroupCommand command)
     {
         await userAddToGroupValidator.ValidateAndThrowAsync(command);
-        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+        var existedGroup = await GetGroupAsync(command.GroupId);
 
         // check the member is already added in the group
-        bool isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
+        bool isMember = await IsMemberInGroupAsync(
             groupId: command.GroupId,
             memberId: command.UserId.ToString());
 
@@ -121,7 +122,7 @@ public sealed class GroupService(
 
     public async Task<Result<GroupListDto>> GetGroupByIdAsync(Guid groupId)
     {
-        var existedGroup = await unitOfWork.Repository<Group>()!.GetByIdAsync(groupId);
+        var existedGroup = await GetGroupAsync(groupId);
         var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
 
         if (mappedGroup is null)
@@ -132,11 +133,11 @@ public sealed class GroupService(
 
     public async Task<Result<string>> JoinGroupAsync(JoinGroupCommand command)
     {
-        var existedGroup = await unitOfWork.Repository<Group>()!.GetByIdAsync(command.GroupId);
+        var existedGroup = await GetGroupAsync(command.GroupId);
         if (existedGroup is null)
             return Result<string>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
 
-        var isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(existedGroup.Id, currentUser.Id);
+        var isMember = await IsMemberInGroupAsync(existedGroup.Id, currentUser.Id);
         if (isMember)
             return Result<string>.Failure(HttpStatusCode.Conflict, string.Format(DomainErrors.Group.ItsMemberYet, currentUser.Id));
 
@@ -173,7 +174,7 @@ public sealed class GroupService(
     public async Task<Result<string>> ManageJoinGroupRequestAsync(HandleJoinRequestCommand command)
     {
         var existedRequest = await unitOfWork.Repository<JoinGroupRequest>()?.GetByIdAsync(command.RequestId)!;
-        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(existedRequest!.GroupId)!;
+        var existedGroup = await GetGroupAsync(existedRequest!.GroupId);
 
         if (existedRequest is null || existedGroup is null)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.JoinRequest.JoinRequestOrGroupNotFound);
@@ -229,7 +230,7 @@ public sealed class GroupService(
         var validator = new GetGroupQueryValidator();
         await validator.ValidateAndThrowAsync(query);
 
-        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(query.GroupId)!;
+        var existedGroup = await GetGroupAsync(query.GroupId);
 
         if (existedGroup is null)
             return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, query.GroupId));
@@ -248,13 +249,11 @@ public sealed class GroupService(
     {
         await removeMemberValidator.ValidateAndThrowAsync(command);
 
-        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+        var existedGroup = await GetGroupAsync(command.GroupId);
         if (existedGroup is null)
             return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
 
-        var isExistedMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
-            groupId: command.GroupId,
-            memberId: command.MemberId.ToString());
+        var isExistedMember = await IsMemberInGroupAsync(command.GroupId, command.MemberId.ToString());
 
         if (!isExistedMember)
             return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.NotMember, command.MemberId));
@@ -304,7 +303,7 @@ public sealed class GroupService(
     // TODO: Notify the group users with the message that sending in that group
     public async Task<Result<Guid>> SendGroupMessageAsync(SendGroupMessageCommand command)
     {
-        var existedGroup = await unitOfWork.Repository<Group>()?.GetByIdAsync(command.GroupId)!;
+        var existedGroup = await GetGroupAsync(command.GroupId);
 
         if (existedGroup is null)
             return Result<Guid>.Failure(
@@ -322,9 +321,7 @@ public sealed class GroupService(
             return Result<Guid>.Failure(HttpStatusCode.BadRequest, DomainErrors.Group.InitGroupConversationFirst);
 
         // check is iam member in the group to send the message
-        var isMember = await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(
-            groupId: command.GroupId,
-            memberId: currentUser.Id);
+        var isMember = await IsMemberInGroupAsync(command.GroupId, currentUser.Id.ToString());
 
         if (!isMember)
             return Result<Guid>.Failure(HttpStatusCode.Forbidden);
@@ -364,4 +361,51 @@ public sealed class GroupService(
 
         return Result<Guid>.Success(message.Id);
     }
+
+    public async Task<Result<bool>> UpdateMemberRoleAsync(UpdateMemberRoleCommand command)
+    {
+        var existedGroup = await GetGroupAsync(command.GroupId);
+        if (existedGroup is null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
+
+        var isMember = await IsMemberInGroupAsync(command.GroupId, command.MemberId.ToString());
+
+        if (!isMember)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.NotMember, command.MemberId));
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUser.GetUser()!, existedGroup, GroupPolicies.ManageMembers);
+
+        if (!authResult.Succeeded)
+            return Result<bool>.Failure(HttpStatusCode.Forbidden);
+
+        var specification = new GetGroupMemberSpecification(command.GroupId, command.MemberId);
+
+        var member = await unitOfWork.Repository<GroupMember>()?.GetBySpecificationAsync(specification)!;
+
+        if (member!.Role == GroupMemberRole.Admin && command.Role != GroupMemberRole.Admin)
+        {
+            var adminsCount = await unitOfWork.GroupMemberRepository
+                .GetAdminCountInGroupAsync(command.GroupId);
+
+            if (adminsCount == 1)
+                return Result<bool>.Failure(
+                    HttpStatusCode.BadRequest, DomainErrors.Group.CannotRemoveLastAdmin);
+        }
+
+        member.Role = command.Role;
+
+        await unitOfWork.SaveChangesAsync();
+
+        var currentUserName = currentUser.FullName ?? "Unknown";
+        var message = $"You have been assigned the role of {member.Role} by {currentUserName}.";
+        await hubContext.Clients.User(command.MemberId.ToString()).SendAsync("ReceiveRoleUpdate", message);
+
+        return Result<bool>.Success(true);
+    }
+
+    private async Task<Group?> GetGroupAsync(Guid groupId)
+        => await unitOfWork.Repository<Group>()?.GetByIdAsync(groupId)!;
+
+    private async Task<bool> IsMemberInGroupAsync(Guid groupId, string memberId)
+        => await unitOfWork.GroupMemberRepository.IsMemberInGroupAsync(groupId, memberId);
 }

@@ -1,6 +1,10 @@
-@Sociam.Api_HostAddress = http://localhost:5237
+@Sociam.Api_HostAddress = https://localhost:7042
 
 GET {{Sociam.Api_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+DELETE {{Sociam.Api_HostAddress}}/api/v1/conversations
 
 ###
