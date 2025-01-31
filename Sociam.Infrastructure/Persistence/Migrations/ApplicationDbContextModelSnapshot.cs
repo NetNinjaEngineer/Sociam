@@ -197,7 +197,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("Attachments", (string)null);
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Conversation", b =>
@@ -420,6 +420,250 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "e9750c0e-7d5a-4f44-b2dc-7a02812c7b77",
+                            AccessFailedCount = 0,
+                            Bio = "Software Developer and Tech Enthusiast.",
+                            ConcurrencyStamp = "fe568c75-cd58-44ad-aace-72e0c0b62766",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 4, DateTimeKind.Unspecified).AddTicks(315), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(2002, 1, 1),
+                            Email = "me5260287@gmail.com",
+                            EmailConfirmed = true,
+                            FirstName = "Mohamed",
+                            Gender = "Male",
+                            LastName = "Ehab",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ME5260287@GMAIL.COM",
+                            NormalizedUserName = "MOEHAB@2002",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPbf/UYXAni8QZlN8b9nPI1hTP/Hc67i+3/0fcx+9m0qFiYrNQoNK/XyxVDUAObK6A==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "d4c3550a-e9ef-45b2-8021-32e44c3e692f",
+                            TwoFactorEnabled = false,
+                            UserName = "Moehab@2002"
+                        },
+                        new
+                        {
+                            Id = "4e76d2e6-ab6a-4828-ab52-7d0d2ac9f4a7",
+                            AccessFailedCount = 0,
+                            Bio = "Loves hiking and photography.",
+                            ConcurrencyStamp = "2f9e8116-ae08-4ddf-b2b4-56b816133b56",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 102, DateTimeKind.Unspecified).AddTicks(1491), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1990, 5, 15),
+                            Email = "johndoe@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "John",
+                            Gender = "Male",
+                            LastName = "Doe",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "JOHNDOE@EXAMPLE.COM",
+                            NormalizedUserName = "JOHNDOE@123",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHNIHJFaPUf++djjYA7UEyhgGUBbYKioTA8ui/JuMV6AZIdA7pB6+tNx3xPYzi2Ivg==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "cc6181d9-4055-4232-b24d-ecf76a7972a9",
+                            TwoFactorEnabled = false,
+                            UserName = "JohnDoe@123"
+                        },
+                        new
+                        {
+                            Id = "1bf7f965-6b2c-483c-a0a4-212f3e9d06a3",
+                            AccessFailedCount = 0,
+                            Bio = "Passionate about art and design.",
+                            ConcurrencyStamp = "f6774769-b69a-4e26-819a-cff7f721f019",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 219, DateTimeKind.Unspecified).AddTicks(1047), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1985, 8, 22),
+                            Email = "janesmith@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Jane",
+                            Gender = "Female",
+                            LastName = "Smith",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "JANESMITH@EXAMPLE.COM",
+                            NormalizedUserName = "JANESMITH@456",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKxI8gwFVGl7QO5rgHMMiwSxbuLATD4oHvSUa8uOd4o5Y/iRjhAGN5PBuGrTCCp9uA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "29ee61cf-5e0f-4086-8b50-1c3f81178971",
+                            TwoFactorEnabled = false,
+                            UserName = "JaneSmith@456"
+                        },
+                        new
+                        {
+                            Id = "fabc49db-fbd1-453c-9143-72a43d1e5a9f",
+                            AccessFailedCount = 0,
+                            Bio = "Travel enthusiast and foodie.",
+                            ConcurrencyStamp = "8a9fe04a-e179-4292-885a-949dfa5d3ce7",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 356, DateTimeKind.Unspecified).AddTicks(5093), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1995, 3, 10),
+                            Email = "alicej@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Alice",
+                            Gender = "Female",
+                            LastName = "Johnson",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ALICEJ@EXAMPLE.COM",
+                            NormalizedUserName = "ALICEJ@789",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE9BSsvRGmUkvddVchLppzddQDPWKOs6nrm4jMZl7xl8lNoLnqrPqKm7UIp061hsQw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "140b640e-4e5c-44ab-9250-9dd283f61af8",
+                            TwoFactorEnabled = false,
+                            UserName = "AliceJ@789"
+                        },
+                        new
+                        {
+                            Id = "69d29003-d129-4824-856c-687a7aaa53fd",
+                            AccessFailedCount = 0,
+                            Bio = "Tech entrepreneur and mentor.",
+                            ConcurrencyStamp = "e15c979e-8f89-4d1f-81f9-5a5b0ec4a6be",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 468, DateTimeKind.Unspecified).AddTicks(5495), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1980, 12, 5),
+                            Email = "bobbrown@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Bob",
+                            Gender = "Male",
+                            LastName = "Brown",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "BOBBROWN@EXAMPLE.COM",
+                            NormalizedUserName = "BOBBROWN@101",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGd8lU4Q+Vy5iAnrnRlNNBz3GWbNiHRCJQKrxDvmYk/su4J9UQZMdTtMbGx3FdrIfA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "3bcc5e6f-1b41-4981-854f-a61a8f2c1b61",
+                            TwoFactorEnabled = false,
+                            UserName = "BobBrown@101"
+                        },
+                        new
+                        {
+                            Id = "a1bfd91b-a7c2-491b-9aa1-4168deeebe75",
+                            AccessFailedCount = 0,
+                            Bio = "Fitness trainer and health coach.",
+                            ConcurrencyStamp = "3b3fe763-864e-4ba6-b5a3-7688d7134e16",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 592, DateTimeKind.Unspecified).AddTicks(2612), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1992, 7, 18),
+                            Email = "emilyd@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Emily",
+                            Gender = "Female",
+                            LastName = "Davis",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "EMILYD@EXAMPLE.COM",
+                            NormalizedUserName = "EMILYD@202",
+                            PasswordHash = "AQAAAAIAAYagAAAAEF+MxPV/Noduwce9YMj4ot0lvG1bat926e4GAookHhZYrCQWyxkLsUM75CLzQjadXg==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "2b709507-c7a9-483f-b1d0-f89b4748351a",
+                            TwoFactorEnabled = false,
+                            UserName = "EmilyD@202"
+                        },
+                        new
+                        {
+                            Id = "73369360-9b83-402d-881a-08fd0a6e070b",
+                            AccessFailedCount = 0,
+                            Bio = "Musician and songwriter.",
+                            ConcurrencyStamp = "ef1c40fc-1b19-4b67-a154-d0acf005d2ff",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 692, DateTimeKind.Unspecified).AddTicks(386), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1988, 9, 25),
+                            Email = "michaelw@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Michael",
+                            Gender = "Male",
+                            LastName = "Wilson",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "MICHAELW@EXAMPLE.COM",
+                            NormalizedUserName = "MICHAELW@303",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHS2H5GNhd7f+AVJdrohCIAM3IGNwbEeess1QP2QzTwMa3gbOoHaNZfr7NIar4h2hw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "6d778c64-c736-486a-9dc0-c698b72ff289",
+                            TwoFactorEnabled = false,
+                            UserName = "MichaelW@303"
+                        },
+                        new
+                        {
+                            Id = "2d656d10-0aa6-4eab-a421-fa7575f06169",
+                            AccessFailedCount = 0,
+                            Bio = "Book lover and aspiring writer.",
+                            ConcurrencyStamp = "404f8357-53e4-4080-b9f8-59133b3f518b",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 810, DateTimeKind.Unspecified).AddTicks(7948), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1998, 4, 30),
+                            Email = "sarahm@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Sarah",
+                            Gender = "Female",
+                            LastName = "Miller",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "SARAHM@EXAMPLE.COM",
+                            NormalizedUserName = "SARAHM@404",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDG/qHeqtAd/yCVrKhwld303ZciiJD1GbrWdXaIGxW1IOoMLlBbJWr9GjewNrh5WoA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "552f287e-e289-4206-8504-ea4682f496ea",
+                            TwoFactorEnabled = false,
+                            UserName = "SarahM@404"
+                        },
+                        new
+                        {
+                            Id = "60d9c6e1-d1a2-4720-8cca-29b89095c34f",
+                            AccessFailedCount = 0,
+                            Bio = "History buff and teacher.",
+                            ConcurrencyStamp = "7a710517-bd40-4b59-bf06-cf0514336768",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 1, 920, DateTimeKind.Unspecified).AddTicks(9281), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1975, 11, 12),
+                            Email = "davidm@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "David",
+                            Gender = "Male",
+                            LastName = "Moore",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "DAVIDM@EXAMPLE.COM",
+                            NormalizedUserName = "DAVIDM@505",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE/FEvtnmYeOG1JvtBJHDPLuTYuhXqJ83SHDztdDlQ1/a0OXaa7EK21iUrSmYoKStQ==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "1d822032-0ec2-4b75-9307-ebc65674fb07",
+                            TwoFactorEnabled = false,
+                            UserName = "DavidM@505"
+                        },
+                        new
+                        {
+                            Id = "848572a1-f172-4722-ad52-d74aef02b6d2",
+                            AccessFailedCount = 0,
+                            Bio = "Nature lover and environmentalist.",
+                            ConcurrencyStamp = "79ae8671-8115-4ce6-b093-f1900db53d14",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 2, 39, DateTimeKind.Unspecified).AddTicks(6441), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1990, 6, 20),
+                            Email = "laurat@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Laura",
+                            Gender = "Female",
+                            LastName = "Taylor",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "LAURAT@EXAMPLE.COM",
+                            NormalizedUserName = "LAURAT@606",
+                            PasswordHash = "AQAAAAIAAYagAAAAEED3899HBqPS9mnywVcjzVu6druDiZm3LsGkm0Op1sa+6XByl9NgW5xzJgnoaLCFJw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "3a5a9476-0e16-4d39-8c0d-6df5a0f4cfd6",
+                            TwoFactorEnabled = false,
+                            UserName = "LauraT@606"
+                        },
+                        new
+                        {
+                            Id = "b2927082-1725-43db-a426-615cee8d23b9",
+                            AccessFailedCount = 0,
+                            Bio = "Gamer and tech enthusiast.",
+                            ConcurrencyStamp = "4036051c-5ac4-4230-a16d-0cab6f4c72e2",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 31, 19, 7, 2, 138, DateTimeKind.Unspecified).AddTicks(3523), new TimeSpan(0, 2, 0, 0, 0)),
+                            DateOfBirth = new DateOnly(1985, 2, 14),
+                            Email = "chrisa@example.com",
+                            EmailConfirmed = true,
+                            FirstName = "Chris",
+                            Gender = "Male",
+                            LastName = "Anderson",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "CHRISA@EXAMPLE.COM",
+                            NormalizedUserName = "CHRISA@707",
+                            PasswordHash = "AQAAAAIAAYagAAAAED+HUpJjd7ilTwDSGFE9gblOYIFli/vCzhUDS2m92G8ZWKe189UN43wi+GnUk7JIvw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "7711dbf0-73b1-4b38-aa3a-8acb00d44851",
+                            TwoFactorEnabled = false,
+                            UserName = "ChrisA@707"
+                        });
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.JoinGroupRequest", b =>
@@ -484,7 +728,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LiveStreams", (string)null);
+                    b.ToTable("LiveStreams");
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Message", b =>
@@ -538,7 +782,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages", (string)null);
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.MessageMention", b =>
@@ -723,7 +967,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FollowerUserId");
 
-                    b.ToTable("UserFollowers", (string)null);
+                    b.ToTable("UserFollowers");
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.GroupConversation", b =>
@@ -735,7 +979,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupConversations", (string)null);
+                    b.ToTable("GroupConversations");
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.PrivateConversation", b =>
@@ -756,7 +1000,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[SenderUserId] IS NOT NULL AND [ReceiverUserId] IS NOT NULL");
 
-                    b.ToTable("PrivateConversations", (string)null);
+                    b.ToTable("PrivateConversations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -906,7 +1150,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
