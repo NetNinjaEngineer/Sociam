@@ -8,7 +8,7 @@ public sealed class Friendship : BaseEntity
 
     public ApplicationUser Requester { get; set; } = null!;
 
-    public required string ReceiverId { get; set; }
+    public string ReceiverId { get; set; }
 
     public ApplicationUser Receiver { get; set; } = null!;
 

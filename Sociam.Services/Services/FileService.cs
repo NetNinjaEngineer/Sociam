@@ -9,14 +9,14 @@ public sealed class FileService(
     IConfiguration configuration,
     IHttpContextAccessor contextAccessor) : IFileService
 {
-    public async Task<(bool uploaded, string fileName)> UploadFileAsync(IFormFile? file, string folderName)
+    public async Task<(bool uploaded, string fileName)> UploadFileAsync(IFormFile? file, string folderPath)
     {
         if (file is null || file.Length == 0)
             return (false, string.Empty);
 
         var uniqueFileName = $"{DateTimeOffset.Now:yyyyMMdd_HHmmssfff}_{file.FileName}"; // 20241127_153025123_example.jpg
 
-        var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", folderName);
+        var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", folderPath);
 
         if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);

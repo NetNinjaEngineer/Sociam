@@ -197,7 +197,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Conversation", b =>
@@ -484,7 +484,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LiveStreams");
+                    b.ToTable("LiveStreams", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Message", b =>
@@ -538,7 +538,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.MessageMention", b =>
@@ -723,7 +723,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FollowerUserId");
 
-                    b.ToTable("UserFollowers");
+                    b.ToTable("UserFollowers", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.GroupConversation", b =>
@@ -735,7 +735,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupConversations");
+                    b.ToTable("GroupConversations", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.PrivateConversation", b =>
@@ -756,7 +756,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[SenderUserId] IS NOT NULL AND [ReceiverUserId] IS NOT NULL");
 
-                    b.ToTable("PrivateConversations");
+                    b.ToTable("PrivateConversations", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -906,7 +906,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("RefreshToken", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");

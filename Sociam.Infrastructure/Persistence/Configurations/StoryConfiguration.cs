@@ -17,7 +17,7 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
         builder.Property(s => s.MediaType)
             .HasConversion(
                 m => m.ToString(),
-                m => (MediaType)Enum.Parse(typeof(MediaType), m));
+                m => Enum.Parse<MediaType>(m));
 
         builder.Property(s => s.Caption)
             .HasMaxLength(500);

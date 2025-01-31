@@ -14,7 +14,7 @@ public sealed class Story : BaseEntity
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
-    public DateTimeOffset ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.Now.AddHours(24);
 
     public string UserId { get; set; } = null!;
 

@@ -1,6 +1,8 @@
 ﻿namespace Sociam.Application.Helpers;
 public static class DomainErrors
 {
+    public const string FileUploadFailed = "Unable to upload the media.";
+
     public static class Following
     {
         public const string CanNotFollowYourself = "You can not follow yourself";

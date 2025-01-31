@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Sociam.Application.Helpers;
 using Sociam.Domain.Enums;
 
 namespace Sociam.Application.Features.Stories.Commands.CreateStory;
@@ -18,15 +19,12 @@ public sealed class CreateStoryCommandValidator : AbstractValidator<CreateStoryC
 
     private static bool IsValidMediaType(IFormFile media, MediaType mediaType)
     {
-        var allowedImageFormats = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-        var allowedVideoFormats = new[] { ".mp4", ".avi", ".mov", ".mkv" };
-
         var fileExtension = Path.GetExtension(media.FileName)?.ToLower();
 
         return mediaType switch
         {
-            MediaType.Image => allowedImageFormats.Contains(fileExtension),
-            MediaType.Video => allowedVideoFormats.Contains(fileExtension),
+            MediaType.Image => FileFormats.AllowedImageFormats.Contains(fileExtension!),
+            MediaType.Video => FileFormats.AllowedVideoFormats.Contains(fileExtension!),
             _ => false
         };
     }

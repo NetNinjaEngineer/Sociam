@@ -8,7 +8,8 @@ using Sociam.Domain.Interfaces;
 namespace Sociam.Infrastructure.Persistence.Repositories;
 public sealed class FriendshipRepository(
     ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager) : GenericRepository<Friendship>(context), IFriendshipRepository
+    UserManager<ApplicationUser> userManager) :
+    GenericRepository<Friendship>(context), IFriendshipRepository
 {
     public async Task<Friendship?> GetFriendshipAsync(string user1Id, string user2Id)
         => await context.Friendships
@@ -75,5 +76,28 @@ public sealed class FriendshipRepository(
         return receivedFriendrequests;
     }
 
+    public async Task<List<ApplicationUser>> GetFriendsOfUserAsync(string userId)
+    {
+        var friendships = await context.Friendships
+            .AsNoTracking()
+            .Include(friendship => friendship.Requester)
+            .Include(friendship => friendship.Receiver)
+            .Where(f =>
+                (f.RequesterId == userId || f.ReceiverId == userId) &&
+                f.FriendshipStatus == FriendshipStatus.Accepted)
+            .ToListAsync();
 
+        var friends = new List<ApplicationUser>();
+
+        foreach (var friendship in friendships)
+        {
+            if (friendship.RequesterId == userId)
+                friends.Add(friendship.Receiver);
+            else if (friendship.ReceiverId == userId)
+                friends.Add(friendship.Requester);
+        }
+
+        return friends;
+
+    }
 }

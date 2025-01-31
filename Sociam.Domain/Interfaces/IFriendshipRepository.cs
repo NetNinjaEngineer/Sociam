@@ -1,4 +1,5 @@
 ﻿using Sociam.Domain.Entities;
+using Sociam.Domain.Entities.Identity;
 
 namespace Sociam.Domain.Interfaces;
 public interface IFriendshipRepository : IGenericRepository<Friendship>
@@ -16,4 +17,7 @@ public interface IFriendshipRepository : IGenericRepository<Friendship>
     Task<int> GetFriendsCountAsync(string userId);
 
     Task<List<Friendship>> GetAcceptedFriendshipsForReceiverAsync(string receiverId);
+
+    Task<List<ApplicationUser>> GetFriendsOfUserAsync(string userId);
+
 }
