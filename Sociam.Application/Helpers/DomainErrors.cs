@@ -17,10 +17,12 @@ public static class DomainErrors
         public const string BlockedFriendRequest = "Unable to send friend request";
         public const string RejectedFriendRequest = "Your friendship request rejected";
         public const string AlreadyAcceptedFriendRequest = "Users are already friends";
+        public const string CanNotRejectFriendRequest = "Can not reject the request, friendship is {0}";
         public const string UndefindFriendRequestStatus = "Invalid friend request status";
         public const string UnableToCreateFriendRequest = "Unable to create friend Request.";
         public const string NotFoundFriendRequest = "Friend request not found";
         public const string UnauthorizedToAcceptFriendRequest = "Not authorized to accept this friend request";
+        public const string UnauthorizedToRejectFriendRequest = "You are not authorized to reject this friend request";
         public const string FriendRequestMustBePending = "Friend request must be pending to accept";
         public const string CanNotBeFriendOfYourself = "Can not be a friend of yourself";
     }

@@ -1,7 +1,9 @@
 ﻿using Sociam.Application.Bases;
 using Sociam.Application.DTOs.FriendshipRequests;
+using Sociam.Application.DTOs.Users;
 using Sociam.Application.Features.FriendRequests.Commands.CurrentUserAcceptFriendRequest;
 using Sociam.Application.Features.FriendRequests.Commands.CurrentUserSendFriendRequest;
+using Sociam.Application.Features.FriendRequests.Commands.RejectFriendRequest;
 using Sociam.Application.Features.FriendRequests.Queries.AreFriendsForCurrentUser;
 using Sociam.Application.Features.FriendRequests.Queries.CheckIfAreFriends;
 
@@ -24,5 +26,9 @@ public interface IFriendshipService
     Task<Result<FriendshipResponseDto>> SendFriendRequestCurrentUserAsync(CurrentUserSendFriendRequestCommand command);
 
     Task<Result<FriendshipResponseDto>> CurrentUserAcceptFriendRequestAsync(CurrentUserAcceptFriendRequestCommand command);
+
+    Task<Result<bool>> RejectFriendRequestAsync(RejectFriendRequestCommand command);
+
+    Task<Result<List<UserProfileDto>>> GetFriendsAsync();
 
 }

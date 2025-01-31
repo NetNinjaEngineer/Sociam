@@ -65,17 +65,6 @@ public sealed class FriendshipRepository(
 
     public async Task<List<Friendship>> GetAcceptedFriendshipsForUserAsync(string userId)
     {
-        //var receivedFriendrequests = await userManager.Users
-        //    .AsNoTracking()
-        //    .Where(user => user.Id == receiverId)
-        //    .SelectMany(user => user.FriendshipsReceived)
-        //    .Include(f => f.Receiver)
-        //    .Include(f => f.Requester)
-        //    .Where(f => f.FriendshipStatus == FriendshipStatus.Accepted)
-        //    .ToListAsync();
-
-        //return receivedFriendrequests;
-
         var acceptedFriendShips = await context.Friendships
             .AsNoTracking()
             .Include(f => f.Receiver)

@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.FriendshipRequests;
+using Sociam.Application.DTOs.Users;
 using Sociam.Application.Features.FriendRequests.Commands.CurrentUserAcceptFriendRequest;
 using Sociam.Application.Features.FriendRequests.Commands.CurrentUserSendFriendRequest;
+using Sociam.Application.Features.FriendRequests.Commands.RejectFriendRequest;
 using Sociam.Application.Features.FriendRequests.Queries.AreFriendsForCurrentUser;
 using Sociam.Application.Features.FriendRequests.Queries.CheckIfAreFriends;
 using Sociam.Application.Helpers;
@@ -105,6 +107,9 @@ public sealed class FriendshipService(
             return Result<FriendshipResponseDto>.Failure(
                 HttpStatusCode.NotFound,
                 DomainErrors.Friendship.NotFoundFriendRequest);
+
+        if (string.IsNullOrEmpty(acceptFriendRequest.UserId))
+            return Result<FriendshipResponseDto>.Failure(HttpStatusCode.BadRequest, "UserId Can Not Be Empty !!!");
 
         if (friendship.ReceiverId != acceptFriendRequest.UserId)
             return Result<FriendshipResponseDto>.Failure(
@@ -299,6 +304,50 @@ public sealed class FriendshipService(
                 fShip.CreatedAt,
                 fShip.UpdatedAt));
 
+    }
+
+    public async Task<Result<bool>> RejectFriendRequestAsync(RejectFriendRequestCommand command)
+    {
+        // Check is There exists a friend request with this id
+        var friendship = await unitOfWork.FriendshipRepository.GetByIdAsync(command.FriendRequestId);
+
+        if (friendship is null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Friendship.NotFoundFriendRequest);
+
+        // The FriendRequest is rejected by the receiver that received the request
+        // We need to authorize that the receiver is the only that can reject not anyone else
+
+        if (friendship.ReceiverId != currentUser.Id)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.Unauthorized,
+                error: DomainErrors.Friendship.UnauthorizedToRejectFriendRequest
+                );
+
+        if (friendship.FriendshipStatus != FriendshipStatus.Pending)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.BadRequest,
+                error: string.Format(DomainErrors.Friendship.CanNotRejectFriendRequest, friendship.FriendshipStatus.ToString())
+                );
+
+        friendship.FriendshipStatus = FriendshipStatus.Rejected;
+        friendship.UpdatedAt = DateTimeOffset.Now;
+
+        await unitOfWork.SaveChangesAsync();
+
+        // send a realtime notification to the requestor that the receiver rejected his request
+        await hubContext.Clients.User(friendship.RequesterId)
+            .SendAsync("FriendRequestRejected",
+                $"{currentUser.FullName} rejected your friend request");
+
+        return Result<bool>.Success(true);
+
+    }
+
+    public async Task<Result<List<UserProfileDto>>> GetFriendsAsync()
+    {
+        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+        var mappedResults = mapper.Map<List<UserProfileDto>>(friends);
+        return Result<List<UserProfileDto>>.Success(mappedResults);
     }
 
     private async Task SendAcceptFriendRequestNotificationAsync(string fShipRequesterId, string notificationMessage)
