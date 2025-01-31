@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.FriendshipRequests;
 using Sociam.Application.Features.FriendRequests.Commands.CurrentUserAcceptFriendRequest;
@@ -7,6 +8,7 @@ using Sociam.Application.Features.FriendRequests.Commands.CurrentUserSendFriendR
 using Sociam.Application.Features.FriendRequests.Queries.AreFriendsForCurrentUser;
 using Sociam.Application.Features.FriendRequests.Queries.CheckIfAreFriends;
 using Sociam.Application.Helpers;
+using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
@@ -20,7 +22,8 @@ public sealed class FriendshipService(
     UserManager<ApplicationUser> userManager,
     IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
-    IMapper mapper) : IFriendshipService
+    IMapper mapper,
+    IHubContext<FriendRequestHub> hubContext) : IFriendshipService
 {
     public async Task<Result<FriendshipResponseDto>> SendFriendRequestAsync(
         SendFriendshipRequestDto sendFriendshipRequest)
@@ -79,9 +82,13 @@ public sealed class FriendshipService(
                 HttpStatusCode.BadRequest,
                 DomainErrors.Friendship.UnableToCreateFriendRequest);
 
+        var myFriend = string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName);
+
+        await SendReceiveNewFriendRequestNotificationAsync(fShip.ReceiverId, $"{myFriend} sent you a friend request");
+
         return Result<FriendshipResponseDto>.Success(
             new FriendshipResponseDto(
-                string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
+                myFriend,
                 string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
                 fShip.FriendshipStatus.ToString(),
                 fShip.CreatedAt,
@@ -115,8 +122,6 @@ public sealed class FriendshipService(
 
         await unitOfWork.SaveChangesAsync();
 
-        // Send realtime notification to requester
-
         var fShip = await unitOfWork.FriendshipRepository
             .GetBySpecificationAndIdAsync(
                 new FriendshipRequestWithRequesterAndReceiverSpecification(),
@@ -124,9 +129,13 @@ public sealed class FriendshipService(
 
         if (fShip is not null)
         {
+            var myFriend = string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName);
+            await SendAcceptFriendRequestNotificationAsync(fShip.RequesterId,
+                $"{myFriend} accepted your friend request");
+
             return Result<FriendshipResponseDto>.Success(new FriendshipResponseDto(
                 string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
-                string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
+                myFriend,
                 fShip.FriendshipStatus.ToString(),
                 fShip.CreatedAt,
                 fShip.UpdatedAt
@@ -136,16 +145,23 @@ public sealed class FriendshipService(
         return Result<FriendshipResponseDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.Friendship.NotFoundFriendRequest);
     }
 
-    public async Task<Result<IEnumerable<PendingFriendshipRequest>>> GetLoggedInUserRequestedFriendshipsAsync()
+    public async Task<Result<IEnumerable<PendingFriendshipRequest>>> GetCurrentUserSentFriendRequestsAsync()
     {
-        var pendingRequests = await unitOfWork.FriendshipRepository.GetPendingRequestsForReceiverAsync(currentUser.Id);
+        var pendingRequests = await unitOfWork.FriendshipRepository.GetSentFriendRequestsAsync(currentUser.Id);
+        var mappedPendingRequests = mapper.Map<IEnumerable<PendingFriendshipRequest>>(pendingRequests);
+        return Result<IEnumerable<PendingFriendshipRequest>>.Success(mappedPendingRequests);
+    }
+
+    public async Task<Result<IEnumerable<PendingFriendshipRequest>>> GetCurrentUserReceivedFriendRequestsAsync()
+    {
+        var pendingRequests = await unitOfWork.FriendshipRepository.GetReceivedFriendRequestsAsync(currentUser.Id);
         var mappedPendingRequests = mapper.Map<IEnumerable<PendingFriendshipRequest>>(pendingRequests);
         return Result<IEnumerable<PendingFriendshipRequest>>.Success(mappedPendingRequests);
     }
 
     public async Task<Result<IEnumerable<GetUserAcceptedFriendshipDto>>> GetLoggedInUserAcceptedFriendshipsAsync()
     {
-        var acceptedFriendships = await unitOfWork.FriendshipRepository.GetAcceptedFriendshipsForReceiverAsync(currentUser.Id);
+        var acceptedFriendships = await unitOfWork.FriendshipRepository.GetAcceptedFriendshipsForUserAsync(currentUser.Id);
         var mappedAcceptedFriendships = mapper.Map<IEnumerable<GetUserAcceptedFriendshipDto>>(acceptedFriendships);
         return Result<IEnumerable<GetUserAcceptedFriendshipDto>>.Success(mappedAcceptedFriendships);
     }
@@ -214,17 +230,24 @@ public sealed class FriendshipService(
                 HttpStatusCode.BadRequest,
                 DomainErrors.Friendship.UnableToCreateFriendRequest);
 
-        // send realtime notification
+        var senderRequest = string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName);
+
+        await SendReceiveNewFriendRequestNotificationAsync(fShip.ReceiverId, $"{senderRequest} sent you a friend request");
 
         return Result<FriendshipResponseDto>.Success(
             new FriendshipResponseDto(
-                string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
+                senderRequest,
                 string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
                 fShip.FriendshipStatus.ToString(),
                 fShip.CreatedAt,
                 fShip.UpdatedAt
             ));
 
+    }
+
+    private async Task SendReceiveNewFriendRequestNotificationAsync(string fShipReceiverId, string notificationMessage)
+    {
+        await hubContext.Clients.User(fShipReceiverId).SendAsync("ReceivedNewFriendRequest", notificationMessage);
     }
 
     public async Task<Result<FriendshipResponseDto>> CurrentUserAcceptFriendRequestAsync(
@@ -253,27 +276,33 @@ public sealed class FriendshipService(
 
         await unitOfWork.SaveChangesAsync();
 
-        // Send realtime notification to requester
 
         var fShip = await unitOfWork.FriendshipRepository
             .GetBySpecificationAndIdAsync(
                 new FriendshipRequestWithRequesterAndReceiverSpecification(),
                 friendship.Id);
 
-        if (fShip is not null)
-        {
-            return Result<FriendshipResponseDto>.Success(
-                new FriendshipResponseDto(
+        if (fShip is null)
+            return Result<FriendshipResponseDto>.Failure(
+                HttpStatusCode.BadRequest,
+                DomainErrors.Friendship.NotFoundFriendRequest);
+
+        var myFriend = string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName);
+
+        await SendAcceptFriendRequestNotificationAsync(fShip.RequesterId, $"{myFriend} accepted your friend request");
+
+        return Result<FriendshipResponseDto>.Success(
+            new FriendshipResponseDto(
                 string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
-                string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
+                myFriend,
                 fShip.FriendshipStatus.ToString(),
                 fShip.CreatedAt,
                 fShip.UpdatedAt));
-        }
 
-        return Result<FriendshipResponseDto>.Failure(
-            HttpStatusCode.BadRequest,
-            DomainErrors.Friendship.NotFoundFriendRequest);
+    }
 
+    private async Task SendAcceptFriendRequestNotificationAsync(string fShipRequesterId, string notificationMessage)
+    {
+        await hubContext.Clients.User(fShipRequesterId).SendAsync("FriendRequestAccepted", notificationMessage);
     }
 }

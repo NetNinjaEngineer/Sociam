@@ -1,15 +1,19 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
 using Sociam.Application.Features.Stories.Commands.CreateStory;
+using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
+using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Specifications;
 using System.Net;
 
 namespace Sociam.Services.Services;
@@ -18,7 +22,8 @@ public sealed class StoryService(
     ICurrentUser currentUser,
     IUnitOfWork unitOfWork,
     IFileService fileService,
-    IHubContext<StoryHub> hubContext) : IStoryService
+    IHubContext<StoryHub> hubContext,
+    UserManager<ApplicationUser> userManager) : IStoryService
 {
     public async Task<Result<StoryDto>> CreateStoryAsync(CreateStoryCommand command)
     {
@@ -47,5 +52,23 @@ public sealed class StoryService(
 
         return Result<StoryDto>.Success(mapper.Map<StoryDto>(mappedStory));
 
+    }
+
+    public async Task<Result<IEnumerable<StoryDto>>> GetActiveFriendStoriesAsync(
+        GetActiveFriendStoriesQuery query)
+    {
+        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+
+        if (friends.Count == 0)
+            return Result<IEnumerable<StoryDto>>.Success([]);
+
+        var specification = new GetActiveFriendsStoriesSpecification(friends);
+
+        var activeStories = await unitOfWork.Repository<Story>()?
+            .GetAllWithSpecificationAsync(specification)!;
+
+        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(activeStories);
+
+        return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
 }

@@ -11,5 +11,5 @@ public sealed class GetLoggedInUserRequestedFriendshipsQueryHandler(IFriendshipS
     public async Task<Result<IEnumerable<PendingFriendshipRequest>>> Handle(
         GetLoggedInUserRequestedFriendshipsQuery request,
         CancellationToken cancellationToken)
-        => await friendshipService.GetLoggedInUserRequestedFriendshipsAsync();
+        => await friendshipService.GetCurrentUserSentFriendRequestsAsync();
 }

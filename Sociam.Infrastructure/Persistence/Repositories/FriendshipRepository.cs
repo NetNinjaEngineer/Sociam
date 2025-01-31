@@ -29,7 +29,7 @@ public sealed class FriendshipRepository(
                 && f.FriendshipStatus == FriendshipStatus.Accepted)
             .ToListAsync();
 
-    public async Task<List<Friendship>> GetPendingRequestsForRequesterAsync(string requesterId)
+    public async Task<List<Friendship>> GetSentFriendRequestsAsync(string requesterId)
         => await context.Friendships
             .AsNoTracking()
             .Include(f => f.Requester)
@@ -38,12 +38,13 @@ public sealed class FriendshipRepository(
                         f.FriendshipStatus == FriendshipStatus.Pending)
             .ToListAsync();
 
-    public async Task<List<Friendship>> GetPendingRequestsForReceiverAsync(string receiverId)
+    public async Task<List<Friendship>> GetReceivedFriendRequestsAsync(string receiverId)
         => await context.Friendships
             .AsNoTracking()
             .Include(f => f.Requester)
             .Include(f => f.Receiver)
-            .Where(f => f.ReceiverId == receiverId && f.FriendshipStatus == FriendshipStatus.Pending)
+            .Where(f => f.ReceiverId == receiverId &&
+                        f.FriendshipStatus == FriendshipStatus.Pending)
             .ToListAsync();
 
     public async Task<bool> AreFriendsAsync(string user1Id, string user2Id)
@@ -62,18 +63,29 @@ public sealed class FriendshipRepository(
             .Include(f => f.Requester)
             .CountAsync(f => f.RequesterId == userId || f.ReceiverId == userId);
 
-    public async Task<List<Friendship>> GetAcceptedFriendshipsForReceiverAsync(string receiverId)
+    public async Task<List<Friendship>> GetAcceptedFriendshipsForUserAsync(string userId)
     {
-        var receivedFriendrequests = await userManager.Users
+        //var receivedFriendrequests = await userManager.Users
+        //    .AsNoTracking()
+        //    .Where(user => user.Id == receiverId)
+        //    .SelectMany(user => user.FriendshipsReceived)
+        //    .Include(f => f.Receiver)
+        //    .Include(f => f.Requester)
+        //    .Where(f => f.FriendshipStatus == FriendshipStatus.Accepted)
+        //    .ToListAsync();
+
+        //return receivedFriendrequests;
+
+        var acceptedFriendShips = await context.Friendships
             .AsNoTracking()
-            .Where(user => user.Id == receiverId)
-            .SelectMany(user => user.FriendshipsReceived)
             .Include(f => f.Receiver)
             .Include(f => f.Requester)
-            .Where(f => f.FriendshipStatus == FriendshipStatus.Accepted)
+            .Where(f => (f.ReceiverId == userId || f.RequesterId == userId) &&
+                        f.FriendshipStatus == FriendshipStatus.Accepted)
             .ToListAsync();
 
-        return receivedFriendrequests;
+        return acceptedFriendShips;
+
     }
 
     public async Task<List<ApplicationUser>> GetFriendsOfUserAsync(string userId)

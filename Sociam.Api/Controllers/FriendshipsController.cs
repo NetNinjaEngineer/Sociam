@@ -11,6 +11,7 @@ using Sociam.Application.Features.FriendRequests.Commands.CurrentUserSendFriendR
 using Sociam.Application.Features.FriendRequests.Commands.SendFriendRequest;
 using Sociam.Application.Features.FriendRequests.Queries.AreFriendsForCurrentUser;
 using Sociam.Application.Features.FriendRequests.Queries.CheckIfAreFriends;
+using Sociam.Application.Features.FriendRequests.Queries.GetCurrentUserReceivedFriendRequests;
 using Sociam.Application.Features.FriendRequests.Queries.GetLoggedInUserAcceptedFriendships;
 using Sociam.Application.Features.FriendRequests.Queries.GetLoggedInUserRequestedFriendships;
 using Sociam.Application.Helpers;
@@ -37,9 +38,19 @@ public class FriendshipsController(IMediator mediator) : ApiBaseController(media
 
     [Guard(roles: [AppConstants.Roles.User])]
     [HttpGet("requests/current-user/sent")]
+    [ProducesResponseType(typeof(Result<IEnumerable<PendingFriendshipRequest>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<PendingFriendshipRequest>>>>
-        GetLoggedInUserRequestedFriendshipsAsync()
+        GetLoggedInUserSentFriendshipsAsync()
         => CustomResult(await Mediator.Send(new GetLoggedInUserRequestedFriendshipsQuery()));
+
+
+    [Guard(roles: [AppConstants.Roles.User])]
+    [HttpGet("requests/current-user/received")]
+    [ProducesResponseType(typeof(Result<IEnumerable<PendingFriendshipRequest>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<IEnumerable<PendingFriendshipRequest>>>>
+        GetLoggedInUserReceivedFriendshipsAsync()
+        => CustomResult(await Mediator.Send(new GetCurrentUserReceivedFriendRequestsQuery()));
+
 
     [Guard(roles: [AppConstants.Roles.User])]
     [HttpGet("current-user/friends")]

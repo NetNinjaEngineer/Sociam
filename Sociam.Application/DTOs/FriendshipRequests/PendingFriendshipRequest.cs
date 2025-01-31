@@ -5,5 +5,6 @@ public sealed class PendingFriendshipRequest
     public string RequesterName { get; set; } = string.Empty;
     public string ReceiverId { get; set; } = string.Empty;
     public string ReceiverName { get; set; } = string.Empty;
+    public string FriendRequestId { get; set; } = string.Empty;
     public DateTimeOffset RequestedAt { get; set; }
 }

@@ -12,7 +12,8 @@ public interface IFriendshipService
 
     Task<Result<FriendshipResponseDto>> AcceptFriendRequestAsync(AcceptFriendRequestDto acceptFriendRequest);
 
-    Task<Result<IEnumerable<PendingFriendshipRequest>>> GetLoggedInUserRequestedFriendshipsAsync();
+    Task<Result<IEnumerable<PendingFriendshipRequest>>> GetCurrentUserSentFriendRequestsAsync();
+    Task<Result<IEnumerable<PendingFriendshipRequest>>> GetCurrentUserReceivedFriendRequestsAsync();
 
     Task<Result<IEnumerable<GetUserAcceptedFriendshipDto>>> GetLoggedInUserAcceptedFriendshipsAsync();
 

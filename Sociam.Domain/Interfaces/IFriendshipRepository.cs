@@ -8,15 +8,15 @@ public interface IFriendshipRepository : IGenericRepository<Friendship>
 
     Task<List<Friendship>> GetUserFriendshipsAsync(string userId);
 
-    Task<List<Friendship>> GetPendingRequestsForRequesterAsync(string requesterId);
+    Task<List<Friendship>> GetSentFriendRequestsAsync(string requesterId);
 
-    Task<List<Friendship>> GetPendingRequestsForReceiverAsync(string receiverId);
+    Task<List<Friendship>> GetReceivedFriendRequestsAsync(string receiverId);
 
     Task<bool> AreFriendsAsync(string user1Id, string user2Id);
 
     Task<int> GetFriendsCountAsync(string userId);
 
-    Task<List<Friendship>> GetAcceptedFriendshipsForReceiverAsync(string receiverId);
+    Task<List<Friendship>> GetAcceptedFriendshipsForUserAsync(string userId);
 
     Task<List<ApplicationUser>> GetFriendsOfUserAsync(string userId);
 
