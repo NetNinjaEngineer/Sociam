@@ -3,9 +3,9 @@
 namespace Sociam.Domain.Entities;
 public sealed class StoryView : BaseEntity
 {
-    public Guid StoryId { get; set; }
+    public Guid? StoryId { get; set; }
 
-    public Story Story { get; set; } = null!;
+    public Story? Story { get; set; }
 
     public string ViewerId { get; set; } = null!;
 

@@ -22,5 +22,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Sociam.Domain\Sociam.Domain.csproj" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="Features\Stories\Commands\MarkAsViewed\" />
+    <Folder Include="Features\Stories\Commands\DeleteStory\" />
+    <Folder Include="Features\Stories\Queries\GetStoryViewers\" />
+  </ItemGroup>
 
 </Project>

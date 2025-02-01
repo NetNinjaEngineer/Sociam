@@ -11,6 +11,12 @@ internal sealed class StoryViewConfiguration : IEntityTypeConfiguration<StoryVie
 
         builder.HasIndex(sv => new { sv.StoryId, sv.ViewerId }).IsUnique();
 
+        builder.HasOne(sv => sv.Story)
+            .WithMany(s => s.StoryViewers)
+            .HasForeignKey(sv => sv.StoryId)
+            .OnDelete(deleteBehavior: DeleteBehavior.SetNull)
+            .IsRequired(false);
+
         builder.ToTable("StoryViews");
     }
 }
