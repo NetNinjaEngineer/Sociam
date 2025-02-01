@@ -68,7 +68,11 @@ public static class DependencyInjection
 
         services.AddOpenApi();
 
-        services.AddAuthorization(options => options.AddGroupPolicies());
+        services.AddAuthorization(options =>
+        {
+            options.AddGroupPolicies();
+            options.AddStoryPolicies();
+        });
 
         return services;
     }

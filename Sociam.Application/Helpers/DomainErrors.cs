@@ -108,4 +108,9 @@ public static class DomainErrors
     {
         public const string StoryNotFounded = "Story with id '{0}' was not founded or active !!!";
     }
+
+    public static class StoryView
+    {
+        public const string ViewNotFound = "View is not founded!!";
+    }
 }

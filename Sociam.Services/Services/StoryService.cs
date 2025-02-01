@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Sociam.Application.Authorization;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
 using Sociam.Application.Features.Stories.Commands.CreateStory;
@@ -12,7 +13,6 @@ using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
-using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Specifications;
@@ -25,7 +25,7 @@ public sealed class StoryService(
     IUnitOfWork unitOfWork,
     IFileService fileService,
     IHubContext<StoryHub> hubContext,
-    UserManager<ApplicationUser> userManager) : IStoryService
+    IAuthorizationService authorizationService) : IStoryService
 {
     public async Task<Result<StoryDto>> CreateStoryAsync(CreateStoryCommand command)
     {
@@ -95,6 +95,72 @@ public sealed class StoryService(
 
     public async Task<Result<bool>> MarkStoryAsViewedAsync(MarkStoryAsViewedCommand command)
     {
-        throw new NotImplementedException();
+        var specification = new GetActiveStorySpecification(command.StoryId);
+
+        var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
+
+        if (activeStory is null)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.NotFound,
+                error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+
+        var authResult =
+            await authorizationService.AuthorizeAsync(
+                user: currentUser.GetUser()!,
+                resource: activeStory,
+                policyName: StoryPolicies.ViewStory);
+
+        if (!authResult.Succeeded)
+            return Result<bool>.Failure(statusCode: HttpStatusCode.Forbidden);
+
+        // Check if the user set as viewer to the story
+
+        if (!await unitOfWork.StoryViewRepository.IsSetAsStoryViewerAsync(activeStory.Id, currentUser.Id))
+        {
+            var storyView = new StoryView()
+            {
+                Id = Guid.NewGuid(),
+                IsViewed = true,
+                StoryId = activeStory.Id,
+                ViewedAt = DateTimeOffset.Now,
+                ViewerId = currentUser.Id
+            };
+
+            unitOfWork.Repository<StoryView>()?.Create(storyView);
+        }
+        else
+        {
+            // The User is set as viewer
+            var storyViewSpecification = new GetStoryViewForViewerSpecification(currentUser.Id);
+            var view = await unitOfWork.StoryViewRepository.GetBySpecificationAsync(storyViewSpecification);
+
+            if (view is null)
+                return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.StoryView.ViewNotFound); // TODO
+
+            view.IsViewed = true;
+            view.ViewedAt = DateTimeOffset.Now;
+
+            unitOfWork.StoryViewRepository.Update(view);
+        }
+
+        await unitOfWork.SaveChangesAsync();
+
+        // Notify The Creator Of The Story With The View
+
+        var totalViewsCount = await unitOfWork.StoryViewRepository.GetTotalViewsForStoryAsync(activeStory.Id);
+        var storyViewers = await unitOfWork.StoryViewRepository.GetStoryViewersAsync(activeStory.Id);
+
+        await hubContext.Clients.User(activeStory.UserId).SendAsync(
+            "NewStoryView",
+            new
+            {
+                StoryId = activeStory.Id,
+                ViewerId = currentUser.Id,
+                TotalViews = totalViewsCount,
+                Viewers = storyViewers
+            });
+
+        return Result<bool>.Success(true);
+
     }
 }
