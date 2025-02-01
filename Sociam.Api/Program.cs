@@ -14,21 +14,21 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseSwaggerDocumentation();
-
-app.MapOpenApi();
-
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-
-app.UseApiMiddlewares();
 
 app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseApiMiddlewares();
+
+app.UseSwaggerDocumentation();
+
+app.MapOpenApi();
 
 app.MapControllers();
 
