@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
 using Sociam.Application.Features.Stories.Commands.CreateStory;
+using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -70,5 +71,15 @@ public sealed class StoryService(
         var mappedResults = mapper.Map<IEnumerable<StoryDto>>(activeStories);
 
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
+    }
+
+    public Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result<bool>> MarkStoryAsViewedAsync(DeleteStoryCommand command)
+    {
+        throw new NotImplementedException();
     }
 }
