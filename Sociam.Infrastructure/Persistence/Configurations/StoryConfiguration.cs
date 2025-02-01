@@ -36,6 +36,12 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
                     )
                 );
 
+        builder.Property(s => s.StoryPrivacy)
+            .HasConversion(
+                sp => sp.ToString(),
+                sp => Enum.Parse<StoryPrivacy>(sp)
+                );
+
         builder.HasIndex(s => s.UserId);
 
         builder.ToTable("Stories");

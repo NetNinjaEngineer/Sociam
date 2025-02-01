@@ -103,4 +103,9 @@ public static class DomainErrors
         public const string JoinRequestOrGroupNotFound = "Maybe Join request or group not found.";
         public const string NotAllowed = "Not allowed to manage join group requests !!!";
     }
+
+    public static class Story
+    {
+        public const string StoryNotFounded = "Story with id '{0}' was not founded or active !!!";
+    }
 }

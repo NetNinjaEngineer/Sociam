@@ -12,6 +12,7 @@ public sealed class CreateStoryCommand : IRequest<Result<StoryDto>>
     public MediaType MediaType { get; set; }
 
     public string? Caption { get; set; }
+    public StoryPrivacy StoryPrivacy { get; set; }
 
     public List<string> HashTags { get; set; } = [];
 }

@@ -7,5 +7,6 @@ public sealed class StoryView : BaseEntity
     public Story? Story { get; set; }
     public string ViewerId { get; set; } = null!;
     public ApplicationUser Viewer { get; set; } = null!;
-    public DateTimeOffset ViewedAt { get; set; } = DateTimeOffset.Now;
+    public bool IsViewed { get; set; }
+    public DateTimeOffset? ViewedAt { get; set; }
 }

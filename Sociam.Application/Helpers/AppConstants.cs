@@ -58,4 +58,9 @@ public sealed class AppConstants
         public const string JoinRequestRejected = "Join request rejected successfully.";
         public const string JoinRequestHandled = "Join request handled successfully.";
     }
+
+    public static class Story
+    {
+        public const string StoryDeleteCompleted = "Story '{0}' delete completed";
+    }
 }

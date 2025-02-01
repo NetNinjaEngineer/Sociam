@@ -6,6 +6,7 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
 using Sociam.Application.Features.Stories.Commands.CreateStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
+using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -73,12 +74,26 @@ public sealed class StoryService(
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
 
-    public Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
+    public async Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
     {
-        throw new NotImplementedException();
+        var specification = new GetActiveStorySpecification(command.StoryId, currentUser.Id);
+
+        var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
+
+        if (activeStory is null)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.NotFound,
+                error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+
+        unitOfWork.Repository<Story>()?.Delete(activeStory);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return Result<bool>.Success(true,
+            string.Format(AppConstants.Story.StoryDeleteCompleted, command.StoryId));
     }
 
-    public Task<Result<bool>> MarkStoryAsViewedAsync(DeleteStoryCommand command)
+    public async Task<Result<bool>> MarkStoryAsViewedAsync(MarkStoryAsViewedCommand command)
     {
         throw new NotImplementedException();
     }

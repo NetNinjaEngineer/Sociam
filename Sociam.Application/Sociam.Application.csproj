@@ -26,6 +26,7 @@
   <ItemGroup>
     <Folder Include="Features\Stories\Commands\AddStoryReaction\" />
     <Folder Include="Features\Stories\Commands\AddStoryComment\" />
+    <Folder Include="Features\Stories\Commands\SetStoryViewers\" />
     <Folder Include="Features\Stories\Commands\UpdateStory\" />
     <Folder Include="Features\Stories\Queries\GetStoryComments\" />
     <Folder Include="Features\Stories\Queries\GetStoryReactions\" />
