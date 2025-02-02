@@ -8,6 +8,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IMessageRepository MessageRepository { get; }
     IPrivateConversationRepository ConversationRepository { get; }
     IStoryViewRepository StoryViewRepository { get; }
+    IStoryRepository StoryRepository { get; }
     IGenericRepository<TEntity>? Repository<TEntity>() where TEntity : BaseEntity;
     Task<int> SaveChangesAsync();
 }

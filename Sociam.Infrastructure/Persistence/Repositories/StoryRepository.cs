@@ -28,4 +28,23 @@ public sealed class StoryRepository(ApplicationDbContext context) : GenericRepos
             }).ToList();
     }
 
+    public async Task<bool> HasUnseenStoriesAsync(string currentUserId, string friendId)
+    {
+        // Get active stories for the friend
+        var activeFriendStories = await context.Stories
+            .AsNoTracking()
+            .Where(story => story.UserId == friendId && story.ExpiresAt > DateTimeOffset.Now)
+            .ToListAsync();
+
+        if (activeFriendStories.Count == 0) return false;
+
+        // Get the stories already viewed by me
+        var viewedStoriesIds = await context.StoryViews
+            .AsNoTracking()
+            .Where(storyView => storyView.IsViewed && storyView.ViewerId == currentUserId)
+            .Select(storyView => storyView.StoryId)
+            .ToListAsync();
+
+        return activeFriendStories.Any(activeStory => !viewedStoriesIds.Contains(activeStory.Id));
+    }
 }

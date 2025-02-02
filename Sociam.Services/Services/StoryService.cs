@@ -11,6 +11,7 @@ using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -85,8 +86,22 @@ public sealed class StoryService(
 
             if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
 
-            foreach (var friend in friends)
-                await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+            switch (mediaStory.StoryPrivacy)
+            {
+                case StoryPrivacy.Public or StoryPrivacy.Friends:
+                    {
+                        foreach (var friend in friends)
+                            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+                        break;
+                    }
+                case StoryPrivacy.Custom:
+                    var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(mediaStory.Id);
+                    foreach (var allowedUserId in allowedUsersIds)
+                        await hubContext.Clients.User(allowedUserId)
+                            .SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+
+                    break;
+            }
 
             await transaction.CommitAsync();
 
@@ -148,8 +163,22 @@ public sealed class StoryService(
 
             if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
 
-            foreach (var friend in friends)
-                await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+            switch (textStory.StoryPrivacy)
+            {
+                case StoryPrivacy.Public or StoryPrivacy.Friends:
+                    {
+                        foreach (var friend in friends)
+                            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+                        break;
+                    }
+                case StoryPrivacy.Custom:
+                    var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(textStory.Id);
+                    foreach (var allowedUserId in allowedUsersIds)
+                        await hubContext.Clients.User(allowedUserId)
+                            .SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+
+                    break;
+            }
 
             await transaction.CommitAsync();
 
@@ -325,5 +354,25 @@ public sealed class StoryService(
         var mappedResult = mapper.Map<StoryDto>(activeStory);
 
         return Result<StoryDto>.Success(mappedResult);
+    }
+
+    public async Task<Result<bool>> HasUnseenStoriesAsync(HasUnseenStoriesQuery query)
+    {
+        var validator = new HasUnseenStoriesQueryValidator();
+        await validator.ValidateAndThrowAsync(query);
+
+        var isFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(query.FriendId, currentUser.Id);
+
+        if (!isFriend)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.BadRequest,
+                error: string.Format(DomainErrors.Friendship.NotFriend, query.FriendId)
+                );
+
+        var hasUnseenStories = await unitOfWork.StoryRepository.HasUnseenStoriesAsync(
+            currentUserId: currentUser.Id,
+            friendId: query.FriendId);
+
+        return Result<bool>.Success(hasUnseenStories);
     }
 }

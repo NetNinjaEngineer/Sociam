@@ -33,6 +33,10 @@
     <Folder Include="Features\Stories\Queries\GetStoryReactions\" />
     <Folder Include="Features\Stories\Queries\GetStoryStatistics\" />
     <Folder Include="Features\Stories\Queries\GetExpiredStories\" />
+    <Folder Include="Features\Stories\Queries\IsStoryViewed\" />
+    <Folder Include="Features\Stories\Queries\GetUserStories\" />
+    <Folder Include="Features\Stories\Queries\GetMostReactedStories\" />
+    <Folder Include="Features\Stories\Queries\GetStoriesWithComments\" />
     <Folder Include="Features\Stories\Queries\ViewedStoriesByMe\" />
   </ItemGroup>
 

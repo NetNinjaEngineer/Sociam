@@ -12,6 +12,7 @@ using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 
@@ -73,4 +74,11 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StoryDto>>> GetStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new GetStoryByIdQuery { StoryId = id }));
+
+
+    [Guard(roles: [AppConstants.Roles.User])]
+    [HttpGet("me/friends/{friendId:guid}/has-unseen-stories")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<bool>>> GetFriendStoryStatusAsync([FromRoute] Guid friendId)
+        => CustomResult(await Mediator.Send(new HasUnseenStoriesQuery() { FriendId = friendId.ToString() }));
 }

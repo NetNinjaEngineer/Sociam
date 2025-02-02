@@ -6,6 +6,7 @@ using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 
 namespace Sociam.Application.Interfaces.Services;
@@ -18,4 +19,5 @@ public interface IStoryService
     Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command);
     Task<Result<bool>> MarkStoryAsViewedAsync(MarkStoryAsViewedCommand command);
     Task<Result<StoryDto>> GetStoryAsync(GetStoryByIdQuery query);
+    Task<Result<bool>> HasUnseenStoriesAsync(HasUnseenStoriesQuery query);
 }
