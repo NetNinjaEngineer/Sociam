@@ -11,6 +11,7 @@ using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
+using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 
@@ -43,26 +44,33 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetActiveStoriesAsync()
         => CustomResult(await Mediator.Send(new GetActiveFriendStoriesQuery()));
 
-    [HttpPut("{storyId:guid}/me/view")]
+    [HttpPut("{id:guid}/me/view")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<bool>>> ViewStoryAsync([FromRoute] Guid storyId)
-        => CustomResult(await Mediator.Send(new MarkStoryAsViewedCommand { StoryId = storyId }));
+    public async Task<ActionResult<Result<bool>>> ViewStoryAsync([FromRoute] Guid id)
+        => CustomResult(await Mediator.Send(new MarkStoryAsViewedCommand { StoryId = id }));
 
-    [HttpDelete("{storyId:guid}/me")]
+    [HttpDelete("{id:guid}/me")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<bool>>> DeleteStoryAsync([FromRoute] Guid storyId)
-        => CustomResult(await Mediator.Send(new DeleteStoryCommand { StoryId = storyId }));
+    public async Task<ActionResult<Result<bool>>> DeleteStoryAsync([FromRoute] Guid id)
+        => CustomResult(await Mediator.Send(new DeleteStoryCommand { StoryId = id }));
 
     [HttpGet("me")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<IEnumerable<StoryDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetMyStoriesAsync()
         => CustomResult(await Mediator.Send(new GetMyStoriesQuery()));
+
+    [HttpGet("{id:guid}/me")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<StoryDto>>> GetStoryAsync([FromRoute] Guid id)
+        => CustomResult(await Mediator.Send(new GetStoryByIdQuery { StoryId = id }));
 }

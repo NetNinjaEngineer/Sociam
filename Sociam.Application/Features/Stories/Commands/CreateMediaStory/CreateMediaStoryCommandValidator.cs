@@ -18,9 +18,14 @@ public sealed class CreateMediaStoryCommandValidator : AbstractValidator<CreateM
 
 
         RuleFor(x => x.StoryPrivacy)
-            .IsInEnum().WithMessage("Invalid Privacy Type.");
+            .IsInEnum().WithMessage("Invalid Privacy Type.")
+            .Must((command, privacy) => IsStoryViewersRequired(privacy, command.AllowedViewerIds))
+            .WithMessage("You must assign the viewers of the story as you selected the custom story privacy option !!!");
 
     }
+
+    private static bool IsStoryViewersRequired(StoryPrivacy privacy, List<string>? commandAllowedViewerIds)
+        => privacy == StoryPrivacy.Custom && commandAllowedViewerIds?.Count > 0;
 
     private static bool IsValidMediaType(IFormFile media, MediaType mediaType)
     {

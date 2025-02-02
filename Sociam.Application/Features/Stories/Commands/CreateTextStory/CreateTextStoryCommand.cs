@@ -9,4 +9,5 @@ public sealed class CreateTextStoryCommand : IRequest<Result<TextStoryDto>>
     public string Content { get; set; } = null!;
     public List<string>? HashTags { get; set; } = null!;
     public StoryPrivacy StoryPrivacy { get; set; }
+    public List<string>? AllowedViewerIds { get; set; }
 }

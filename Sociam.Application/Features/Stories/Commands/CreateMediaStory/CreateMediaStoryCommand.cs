@@ -11,4 +11,5 @@ public sealed class CreateMediaStoryCommand : IRequest<Result<MediaStoryDto>>
     public MediaType MediaType { get; set; }
     public string? Caption { get; set; }
     public StoryPrivacy StoryPrivacy { get; set; }
+    public List<string>? AllowedViewerIds { get; set; }
 }

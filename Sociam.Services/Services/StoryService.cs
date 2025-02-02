@@ -10,6 +10,7 @@ using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
+using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -18,6 +19,7 @@ using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
+using Sociam.Infrastructure.Persistence;
 using System.Net;
 
 namespace Sociam.Services.Services;
@@ -27,40 +29,74 @@ public sealed class StoryService(
     IUnitOfWork unitOfWork,
     IFileService fileService,
     IHubContext<StoryHub> hubContext,
-    IAuthorizationService authorizationService) : IStoryService
+    IAuthorizationService authorizationService,
+    ApplicationDbContext context) : IStoryService
 {
     public async Task<Result<MediaStoryDto>> CreateMediaStoryAsync(CreateMediaStoryCommand command)
     {
         var validator = new CreateMediaStoryCommandValidator();
         await validator.ValidateAndThrowAsync(command);
 
-        var subFolder = command.MediaType == MediaType.Image ? "Images" : "Videos";
+        var transaction = await context.Database.BeginTransactionAsync();
 
-        var (uploaded, fileName) = await fileService.UploadFileAsync(command.Media, $"Stories//{subFolder}");
-
-        if (!uploaded) return Result<MediaStoryDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.FileUploadFailed);
-
-        var mediaStory = new MediaStory()
+        try
         {
-            Id = Guid.NewGuid(),
-            MediaType = command.MediaType,
-            UserId = currentUser.Id,
-            Caption = command.Caption,
-            StoryPrivacy = command.StoryPrivacy,
-            MediaUrl = fileName
-        };
+            var subFolder = command.MediaType == MediaType.Image ? "Images" : "Videos";
 
-        unitOfWork.Repository<Story>()?.Create(mediaStory);
-        await unitOfWork.SaveChangesAsync();
+            var (uploaded, fileName) = await fileService.UploadFileAsync(command.Media, $"Stories//{subFolder}");
 
-        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+            if (!uploaded) return Result<MediaStoryDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.FileUploadFailed);
 
-        if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+            var mediaStory = new MediaStory()
+            {
+                Id = Guid.NewGuid(),
+                MediaType = command.MediaType,
+                UserId = currentUser.Id,
+                Caption = command.Caption,
+                StoryPrivacy = command.StoryPrivacy,
+                MediaUrl = fileName
+            };
 
-        foreach (var friend in friends)
-            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+            if (command is { StoryPrivacy: StoryPrivacy.Custom, AllowedViewerIds.Count: > 0 })
+            {
+                foreach (var viewerId in command.AllowedViewerIds.Distinct())
+                {
+                    var isFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(viewerId, currentUser.Id);
 
-        return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+                    if (!isFriend)
+                        return Result<MediaStoryDto>.Failure(
+                            HttpStatusCode.BadRequest,
+                            string.Format(DomainErrors.Friendship.NotFriend, viewerId));
+                    unitOfWork.StoryViewRepository.Create(
+                        new StoryView()
+                        {
+                            Id = Guid.NewGuid(),
+                            IsViewed = false,
+                            StoryId = mediaStory.Id,
+                            ViewerId = viewerId
+                        });
+                }
+            }
+
+            unitOfWork.Repository<Story>()?.Create(mediaStory);
+            await unitOfWork.SaveChangesAsync();
+
+            var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+
+            if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+
+            foreach (var friend in friends)
+                await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+
+            await transaction.CommitAsync();
+
+            return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            return Result<MediaStoryDto>.Failure(HttpStatusCode.BadRequest, e.Message);
+        }
 
     }
 
@@ -69,28 +105,63 @@ public sealed class StoryService(
         var validator = new CreateTextStoryCommandValidator();
         await validator.ValidateAndThrowAsync(command);
 
-        var textStory = new TextStory
+        var transaction = await context.Database.BeginTransactionAsync();
+
+        try
         {
-            Id = Guid.NewGuid(),
-            Content = command.Content,
-            StoryPrivacy = command.StoryPrivacy,
-            UserId = currentUser.Id,
-            HashTags = command.HashTags
-        };
+            var textStory = new TextStory
+            {
+                Id = Guid.NewGuid(),
+                Content = command.Content,
+                StoryPrivacy = command.StoryPrivacy,
+                UserId = currentUser.Id,
+                HashTags = command.HashTags
+            };
 
-        unitOfWork.Repository<Story>()?.Create(textStory);
-        await unitOfWork.SaveChangesAsync();
+            if (command is { StoryPrivacy: StoryPrivacy.Custom, AllowedViewerIds.Count: > 0 })
+            {
+                foreach (var viewerId in command.AllowedViewerIds.Distinct())
+                {
+                    var isFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(viewerId, currentUser.Id);
 
-        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+                    if (!isFriend)
+                        return Result<TextStoryDto>.Failure(
+                            HttpStatusCode.BadRequest,
+                            string.Format(DomainErrors.Friendship.NotFriend, viewerId));
+                    unitOfWork.StoryViewRepository.Create(
+                        new StoryView()
+                        {
+                            Id = Guid.NewGuid(),
+                            IsViewed = false,
+                            StoryId = textStory.Id,
+                            ViewerId = viewerId
+                        });
+                }
+            }
 
-        var mappedResult = mapper.Map<TextStoryDto>(textStory);
+            unitOfWork.Repository<Story>()?.Create(textStory);
+            await unitOfWork.SaveChangesAsync();
 
-        if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
+            var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
-        foreach (var friend in friends)
-            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+            var mappedResult = mapper.Map<TextStoryDto>(textStory);
 
-        return Result<TextStoryDto>.Success(mappedResult);
+            if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
+
+            foreach (var friend in friends)
+                await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+
+            await transaction.CommitAsync();
+
+            return Result<TextStoryDto>.Success(mappedResult);
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            return Result<TextStoryDto>.Failure(HttpStatusCode.BadRequest, e.Message);
+        }
+
+
     }
 
     public async Task<Result<IEnumerable<StoryDto>>> GetActiveFriendStoriesAsync(
@@ -238,5 +309,21 @@ public sealed class StoryService(
 
         return Result<bool>.Success(true);
 
+    }
+
+    public async Task<Result<StoryDto>> GetStoryAsync(GetStoryByIdQuery query)
+    {
+        var specification = new GetActiveStorySpecification(query.StoryId, currentUser.Id);
+
+        var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
+
+        if (activeStory is null)
+            return Result<StoryDto>.Failure(
+            statusCode: HttpStatusCode.NotFound,
+                error: string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
+
+        var mappedResult = mapper.Map<StoryDto>(activeStory);
+
+        return Result<StoryDto>.Success(mappedResult);
     }
 }

@@ -26,6 +26,7 @@ public static class DomainErrors
         public const string UnauthorizedToRejectFriendRequest = "You are not authorized to reject this friend request";
         public const string FriendRequestMustBePending = "Friend request must be pending to accept";
         public const string CanNotBeFriendOfYourself = "Can not be a friend of yourself";
+        public const string NotFriend = "Viewer with id '{0}' is not a friend with you!";
     }
 
     public static class Users
