@@ -1,0 +1,8 @@
+﻿using Sociam.Domain.Entities;
+using Sociam.Domain.Interfaces.DataTransferObjects;
+
+namespace Sociam.Domain.Interfaces;
+public interface IStoryRepository : IGenericRepository<Story>
+{
+    Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId);
+}

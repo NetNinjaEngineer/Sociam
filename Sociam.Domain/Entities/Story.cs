@@ -3,7 +3,7 @@ using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 
 namespace Sociam.Domain.Entities;
-public abstract class Story : BaseEntity
+public class Story : BaseEntity
 {
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.Now.AddHours(24);

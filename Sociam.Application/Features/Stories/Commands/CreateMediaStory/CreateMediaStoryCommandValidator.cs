@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Enums;
 
-namespace Sociam.Application.Features.Stories.Commands.CreateStory;
-public sealed class CreateStoryCommandValidator : AbstractValidator<CreateStoryCommand>
+namespace Sociam.Application.Features.Stories.Commands.CreateMediaStory;
+public sealed class CreateMediaStoryCommandValidator : AbstractValidator<CreateMediaStoryCommand>
 {
-    public CreateStoryCommandValidator()
+    public CreateMediaStoryCommandValidator()
     {
         RuleFor(x => x.Media)
             .NotNull().WithMessage("Media is required.")
@@ -15,6 +15,11 @@ public sealed class CreateStoryCommandValidator : AbstractValidator<CreateStoryC
 
         RuleFor(x => x.MediaType)
             .IsInEnum().WithMessage("Invalid Media Type.");
+
+
+        RuleFor(x => x.StoryPrivacy)
+            .IsInEnum().WithMessage("Invalid Privacy Type.");
+
     }
 
     private static bool IsValidMediaType(IFormFile media, MediaType mediaType)

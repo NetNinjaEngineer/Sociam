@@ -1,16 +1,22 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Authorization;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
+using Sociam.Application.Features.Stories.Commands.CreateMediaStory;
+using Sociam.Application.Features.Stories.Commands.CreateTextStory;
+using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
+using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
 using System.Net;
 
@@ -23,34 +29,69 @@ public sealed class StoryService(
     IHubContext<StoryHub> hubContext,
     IAuthorizationService authorizationService) : IStoryService
 {
-    //public async Task<Result<StoryDto>> CreateStoryAsync(CreateStoryCommand command)
-    //{
-    //    var validator = new CreateStoryCommandValidator();
-    //    await validator.ValidateAndThrowAsync(command);
+    public async Task<Result<MediaStoryDto>> CreateMediaStoryAsync(CreateMediaStoryCommand command)
+    {
+        var validator = new CreateMediaStoryCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
 
-    //    var subFolder = command.MediaType == MediaType.Image ? "Images" : "Videos";
+        var subFolder = command.MediaType == MediaType.Image ? "Images" : "Videos";
 
-    //    var (uploaded, fileName) = await fileService.UploadFileAsync(command.Media, $"Stories//{subFolder}");
+        var (uploaded, fileName) = await fileService.UploadFileAsync(command.Media, $"Stories//{subFolder}");
 
-    //    if (!uploaded) return Result<StoryDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.FileUploadFailed);
+        if (!uploaded) return Result<MediaStoryDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.FileUploadFailed);
 
-    //    var mappedStory = mapper.Map<Story>(command);
-    //    mappedStory.MediaUrl = fileName;
-    //    mappedStory.UserId = currentUser.Id;
+        var mediaStory = new MediaStory()
+        {
+            Id = Guid.NewGuid(),
+            MediaType = command.MediaType,
+            UserId = currentUser.Id,
+            Caption = command.Caption,
+            StoryPrivacy = command.StoryPrivacy,
+            MediaUrl = fileName
+        };
 
-    //    unitOfWork.Repository<Story>()?.Create(mappedStory);
-    //    await unitOfWork.SaveChangesAsync();
+        unitOfWork.Repository<Story>()?.Create(mediaStory);
+        await unitOfWork.SaveChangesAsync();
 
-    //    var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
-    //    if (friends.Count <= 0) return Result<StoryDto>.Success(mapper.Map<StoryDto>(mappedStory));
+        if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
 
-    //    foreach (var friend in friends)
-    //        await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mappedStory.Id, UserId = currentUser.Id });
+        foreach (var friend in friends)
+            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
 
-    //    return Result<StoryDto>.Success(mapper.Map<StoryDto>(mappedStory));
+        return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
 
-    //}
+    }
+
+    public async Task<Result<TextStoryDto>> CreateTextStoryAsync(CreateTextStoryCommand command)
+    {
+        var validator = new CreateTextStoryCommandValidator();
+        await validator.ValidateAndThrowAsync(command);
+
+        var textStory = new TextStory
+        {
+            Id = Guid.NewGuid(),
+            Content = command.Content,
+            StoryPrivacy = command.StoryPrivacy,
+            UserId = currentUser.Id,
+            HashTags = command.HashTags
+        };
+
+        unitOfWork.Repository<Story>()?.Create(textStory);
+        await unitOfWork.SaveChangesAsync();
+
+        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+
+        var mappedResult = mapper.Map<TextStoryDto>(textStory);
+
+        if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
+
+        foreach (var friend in friends)
+            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+
+        return Result<TextStoryDto>.Success(mappedResult);
+    }
 
     public async Task<Result<IEnumerable<StoryDto>>> GetActiveFriendStoriesAsync(
         GetActiveFriendStoriesQuery query)
@@ -78,39 +119,47 @@ public sealed class StoryService(
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
 
-    //public async Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
-    //{
-    //    var specification = new GetActiveStorySpecification(command.StoryId, currentUser.Id);
+    public async Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
+    {
+        var specification = new GetActiveStorySpecification(command.StoryId, currentUser.Id);
 
-    //    var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
+        var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
 
-    //    var authResult = await authorizationService.AuthorizeAsync(
-    //        user: currentUser.GetUser()!,
-    //        resource: activeStory,
-    //        policyName: StoryPolicies.DeleteStory);
+        var authResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: activeStory,
+            policyName: StoryPolicies.DeleteStory);
 
-    //    if (!authResult.Succeeded)
-    //        return Result<bool>.Failure(HttpStatusCode.Forbidden);
+        if (!authResult.Succeeded)
+            return Result<bool>.Failure(HttpStatusCode.Forbidden);
 
-    //    if (activeStory is null)
-    //        return Result<bool>.Failure(
-    //            statusCode: HttpStatusCode.NotFound,
-    //            error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+        switch (activeStory)
+        {
+            case null:
+                return Result<bool>.Failure(
+                    statusCode: HttpStatusCode.NotFound,
+                    error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+            case MediaStory mediaStory:
+                {
+                    var subFolder = mediaStory.MediaType == MediaType.Image ? "Images" : "Videos";
+                    var isDeleted = fileService.DeleteFileFromPath(mediaStory.MediaUrl!, $"Stories\\{subFolder}");
 
-    //    var subFolder = activeStory.MediaType == MediaType.Image ? "Images" : "Videos";
+                    if (!isDeleted)
+                    {
+                        return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.FailedToDeleteMedia);
+                    }
 
-    //    var isDeleted = fileService.DeleteFileFromPath(activeStory.MediaUrl, $"Stories\\{subFolder}");
+                    break;
+                }
+        }
 
-    //    if (!isDeleted)
-    //        return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.FailedToDeleteMedia);
+        unitOfWork.Repository<Story>()?.Delete(activeStory);
 
-    //    unitOfWork.Repository<Story>()?.Delete(activeStory);
+        await unitOfWork.SaveChangesAsync();
 
-    //    await unitOfWork.SaveChangesAsync();
-
-    //    return Result<bool>.Success(true,
-    //        string.Format(AppConstants.Story.StoryDeleteCompleted, command.StoryId));
-    //}
+        return Result<bool>.Success(true,
+            string.Format(AppConstants.Story.StoryDeleteCompleted, command.StoryId));
+    }
 
     public async Task<Result<bool>> MarkStoryAsViewedAsync(MarkStoryAsViewedCommand command)
     {

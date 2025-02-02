@@ -11,7 +11,6 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
         builder.HasKey(s => s.Id);
 
         builder.Property(s => s.StoryPrivacy)
-            .HasColumnType("VARCHAR")
             .HasConversion(
                 sp => sp.ToString(),
                 sp => Enum.Parse<StoryPrivacy>(sp)
