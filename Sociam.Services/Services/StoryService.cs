@@ -100,7 +100,19 @@ public sealed class StoryService(
                     var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(mediaStory.Id);
                     foreach (var allowedUserId in allowedUsersIds)
                         await hubContext.Clients.User(allowedUserId)
-                            .SendAsync("NewStoryCreated", new { StoryId = mediaStory.Id, UserId = currentUser.Id });
+                            .SendAsync("NewStoryCreated", new
+                            {
+                                StoryId = mediaStory.Id,
+                                UserId = currentUser.Id,
+                                currentUser.FullName,
+                                ProfilePicture = currentUser.ProfilePictureUrl,
+                                StoryType = "media",
+                                mediaStory.CreatedAt,
+                                mediaStory.ExpiresAt,
+                                mediaStory.Caption,
+                                mediaStory.MediaUrl,
+                                mediaStory.MediaType,
+                            });
 
                     break;
             }
@@ -170,14 +182,37 @@ public sealed class StoryService(
                 case StoryPrivacy.Public or StoryPrivacy.Friends:
                     {
                         foreach (var friend in friends)
-                            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+                            await hubContext.Clients.User(friend.Id).SendAsync("NewStoryCreated",
+                                new
+                                {
+                                    StoryId = textStory.Id,
+                                    UserId = currentUser.Id,
+                                    currentUser.FullName,
+                                    ProfilePicture = currentUser.ProfilePictureUrl,
+                                    StoryType = "text",
+                                    textStory.CreatedAt,
+                                    textStory.ExpiresAt,
+                                    textStory.Content,
+                                    textStory.HashTags
+                                });
                         break;
                     }
                 case StoryPrivacy.Custom:
                     var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(textStory.Id);
                     foreach (var allowedUserId in allowedUsersIds)
                         await hubContext.Clients.User(allowedUserId)
-                            .SendAsync("NewStoryCreated", new { StoryId = textStory.Id, UserId = currentUser.Id });
+                            .SendAsync("NewStoryCreated", new
+                            {
+                                StoryId = textStory.Id,
+                                UserId = currentUser.Id,
+                                currentUser.FullName,
+                                ProfilePicture = currentUser.ProfilePictureUrl,
+                                StoryType = "text",
+                                textStory.CreatedAt,
+                                textStory.ExpiresAt,
+                                textStory.Content,
+                                textStory.HashTags
+                            });
 
                     break;
             }
