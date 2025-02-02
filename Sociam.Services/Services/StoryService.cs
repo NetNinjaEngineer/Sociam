@@ -74,16 +74,39 @@ public sealed class StoryService(
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
 
+    public async Task<Result<IEnumerable<StoryDto>>> GetMyStoriesAsync()
+    {
+        var specification = new GetUserActiveStoriesSpecification(currentUser.Id);
+        var myActiveStories = await unitOfWork.Repository<Story>()?.GetAllWithSpecificationAsync(specification)!;
+        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(myActiveStories);
+        return Result<IEnumerable<StoryDto>>.Success(mappedResults);
+    }
+
     public async Task<Result<bool>> DeleteStoryAsync(DeleteStoryCommand command)
     {
         var specification = new GetActiveStorySpecification(command.StoryId, currentUser.Id);
 
         var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
 
+        var authResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: activeStory,
+            policyName: StoryPolicies.DeleteStory);
+
+        if (!authResult.Succeeded)
+            return Result<bool>.Failure(HttpStatusCode.Forbidden);
+
         if (activeStory is null)
             return Result<bool>.Failure(
                 statusCode: HttpStatusCode.NotFound,
                 error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+
+        var subFolder = activeStory.MediaType == MediaType.Image ? "Images" : "Videos";
+
+        var isDeleted = fileService.DeleteFileFromPath(activeStory.MediaUrl, $"Stories\\{subFolder}");
+
+        if (!isDeleted)
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.FailedToDeleteMedia);
 
         unitOfWork.Repository<Story>()?.Delete(activeStory);
 
@@ -103,6 +126,14 @@ public sealed class StoryService(
             return Result<bool>.Failure(
                 statusCode: HttpStatusCode.NotFound,
                 error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+
+        // Check is the story viewed already
+        var isViewed = await unitOfWork.StoryViewRepository.IsStoryViewedAsync(activeStory.Id, currentUser.Id);
+
+        if (isViewed)
+            return Result<bool>.Failure(
+                HttpStatusCode.Conflict,
+                string.Format(DomainErrors.Story.StoryViewedYet, activeStory.Id));
 
         var authResult =
             await authorizationService.AuthorizeAsync(

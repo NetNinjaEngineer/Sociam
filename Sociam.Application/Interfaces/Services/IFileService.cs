@@ -8,4 +8,6 @@ public interface IFileService
     Task<IEnumerable<FileUploadResult>> UploadFilesParallelAsync(
         IEnumerable<IFormFile> files,
         string? folderName = null, CancellationToken cancellationToken = default);
+
+    bool DeleteFileFromPath(string filePath, string locationFolder);
 }

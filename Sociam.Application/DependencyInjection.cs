@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(DataShaper<>));
 
         services.AddScoped<IAuthorizationHandler, GroupOperationAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, StoryOperationAuthorizationHandler>();
 
         return services;
     }

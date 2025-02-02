@@ -2,6 +2,7 @@
 public static class DomainErrors
 {
     public const string FileUploadFailed = "Unable to upload the media.";
+    public const string FailedToDeleteMedia = "Failed to delete the media, try again later !!!";
 
     public static class Following
     {
@@ -107,6 +108,7 @@ public static class DomainErrors
     public static class Story
     {
         public const string StoryNotFounded = "Story with id '{0}' was not founded or active !!!";
+        public const string StoryViewedYet = "Story with id '{0}' is already viewed !!!";
     }
 
     public static class StoryView

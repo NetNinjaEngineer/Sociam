@@ -9,7 +9,8 @@ public sealed class FileService(
     IConfiguration configuration,
     IHttpContextAccessor contextAccessor) : IFileService
 {
-    public async Task<(bool uploaded, string fileName)> UploadFileAsync(IFormFile? file, string folderPath)
+    public async Task<(bool uploaded, string fileName)> UploadFileAsync(
+        IFormFile? file, string folderPath)
     {
         if (file is null || file.Length == 0)
             return (false, string.Empty);
@@ -112,6 +113,26 @@ public sealed class FileService(
 
 
         return await Task.WhenAll(uploadResults);
+    }
+
+    public bool DeleteFileFromPath(string filePath, string locationFolder)
+    {
+        if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(locationFolder))
+            return false;
+
+        var resourcePath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "Uploads",
+            locationFolder,
+            filePath);
+
+        if (!File.Exists(resourcePath)) return false;
+
+        File.Delete(resourcePath);
+
+        return true;
+
     }
 
 

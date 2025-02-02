@@ -16,9 +16,12 @@ public sealed class FriendshipsProfile : Profile
             .ForMember(dest => dest.RequestedAt, options => options.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.FriendRequestId, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Status, options => options.MapFrom(src => src.FriendshipStatus))
-            .ForMember(dest => dest.SenderProfilePicture, options => options.MapFrom<SenderProfilePictureUrlValueResolver>())
-            .ForMember(dest => dest.RecipientProfilePicture, options => options.MapFrom<RecipientProfilePictureUrlValueResolver>());
-
+            .ForMember(dest => dest.SenderProfilePicture,
+                options => options.MapFrom<SenderProfilePictureUrlValueResolver>())
+            .ForMember(dest => dest.RecipientProfilePicture,
+                options => options.MapFrom<RecipientProfilePictureUrlValueResolver>())
+            .ForMember(dest => dest.SenderId, options => options.MapFrom(src => src.RequesterId))
+            .ForMember(dest => dest.RecipientId, options => options.MapFrom(src => src.ReceiverId));
 
         CreateMap<Friendship, GetUserAcceptedFriendshipDto>()
             .ForMember(dest => dest.FriendName, options =>

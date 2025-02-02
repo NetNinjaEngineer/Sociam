@@ -42,4 +42,8 @@ public sealed class StoryViewRepository(
 
         return views;
     }
+
+    public async Task<bool> IsStoryViewedAsync(Guid activeStoryId, string currentUserId)
+        => await context.StoryViews.AsNoTracking()
+            .AnyAsync(sv => sv.StoryId == activeStoryId && sv.ViewerId == currentUserId && sv.IsViewed);
 }

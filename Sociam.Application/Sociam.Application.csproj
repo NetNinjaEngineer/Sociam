@@ -31,7 +31,7 @@
     <Folder Include="Features\Stories\Queries\GetStoryComments\" />
     <Folder Include="Features\Stories\Queries\GetStoryReactions\" />
     <Folder Include="Features\Stories\Queries\GetStoryStatistics\" />
-    <Folder Include="Features\Stories\Queries\GetStoryById\" />
+    <Folder Include="Features\Stories\Queries\ViewedStoriesByMe\" />
   </ItemGroup>
 
 </Project>
