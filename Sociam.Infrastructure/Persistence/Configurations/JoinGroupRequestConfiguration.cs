@@ -27,8 +27,8 @@ namespace Sociam.Infrastructure.Persistence.Configurations
 
             builder.Property(request => request.Status)
                 .HasConversion(
-                    builder => builder.ToString(),
-                    builder => (JoinRequestStatus)Enum.Parse(typeof(JoinRequestStatus), builder));
+                    joinRequestStatus => joinRequestStatus.ToString(),
+                    value => (JoinRequestStatus)Enum.Parse(typeof(JoinRequestStatus), value));
 
 
             builder.ToTable("JoinGroupRequests");

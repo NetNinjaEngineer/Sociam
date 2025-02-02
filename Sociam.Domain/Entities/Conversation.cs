@@ -1,4 +1,6 @@
-﻿namespace Sociam.Domain.Entities;
+﻿using Sociam.Domain.Entities.common;
+
+namespace Sociam.Domain.Entities;
 public abstract class Conversation : BaseEntity
 {
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;

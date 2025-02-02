@@ -18,7 +18,6 @@ namespace Sociam.Api.Controllers;
 [ApiController]
 public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
 {
-    [Route("create")]
     [HttpPost]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status200OK)]
@@ -43,7 +42,7 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<bool>>> ViewStoryAsync([FromRoute] Guid storyId)
         => CustomResult(await Mediator.Send(new MarkStoryAsViewedCommand() { StoryId = storyId }));
 
-    [HttpDelete("{storyId:guid}/me/delete")]
+    [HttpDelete("{storyId:guid}/me")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]

@@ -1,4 +1,4 @@
-﻿using Sociam.Domain.Entities;
+﻿using Sociam.Domain.Entities.common;
 using System.Linq.Expressions;
 
 namespace Sociam.Domain.Specifications;

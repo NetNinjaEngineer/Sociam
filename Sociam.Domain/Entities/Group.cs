@@ -1,4 +1,5 @@
-﻿using Sociam.Domain.Entities.Identity;
+﻿using Sociam.Domain.Entities.common;
+using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 
 namespace Sociam.Domain.Entities;

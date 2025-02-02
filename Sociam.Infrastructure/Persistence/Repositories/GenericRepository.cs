@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sociam.Domain.Entities;
+using Sociam.Domain.Entities.common;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Specifications;
 

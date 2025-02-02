@@ -27,6 +27,7 @@
     <Folder Include="wwwroot\Uploads\Groups\" />
     <Folder Include="wwwroot\Uploads\Images\" />
     <Folder Include="wwwroot\Uploads\Stories\Images\" />
+    <Folder Include="wwwroot\Uploads\Stories\Videos\" />
   </ItemGroup>
 
 </Project>

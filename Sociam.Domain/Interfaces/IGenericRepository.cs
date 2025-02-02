@@ -1,4 +1,4 @@
-﻿using Sociam.Domain.Entities;
+﻿using Sociam.Domain.Entities.common;
 using Sociam.Domain.Specifications;
 
 namespace Sociam.Domain.Interfaces;

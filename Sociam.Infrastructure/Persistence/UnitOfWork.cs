@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Sociam.Domain.Entities;
+using Sociam.Domain.Entities.common;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Interfaces;
 using Sociam.Infrastructure.Persistence.Repositories;

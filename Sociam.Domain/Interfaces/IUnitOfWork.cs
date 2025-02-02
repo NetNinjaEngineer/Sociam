@@ -1,4 +1,4 @@
-﻿using Sociam.Domain.Entities;
+﻿using Sociam.Domain.Entities.common;
 
 namespace Sociam.Domain.Interfaces;
 public interface IUnitOfWork : IAsyncDisposable

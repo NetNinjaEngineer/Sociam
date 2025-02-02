@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sociam.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -299,13 +299,15 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MediaUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MediaType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Caption = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    HashTags = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     ExpiresAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    StoryPrivacy = table.Column<string>(type: "VARCHAR", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StoryType = table.Column<string>(type: "VARCHAR(5)", maxLength: 5, nullable: false),
+                    Caption = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    MediaUrl = table.Column<string>(type: "VARCHAR", nullable: true),
+                    MediaType = table.Column<string>(type: "VARCHAR", nullable: true),
+                    HashTags = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -425,13 +427,68 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StoryComment",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    CommentedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CommentedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoryComment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StoryComment_AspNetUsers_CommentedById",
+                        column: x => x.CommentedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StoryComment_Stories_StoryId",
+                        column: x => x.StoryId,
+                        principalTable: "Stories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StoryReaction",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReactedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReactedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ReactionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoryReaction", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StoryReaction_AspNetUsers_ReactedById",
+                        column: x => x.ReactedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StoryReaction_Stories_StoryId",
+                        column: x => x.StoryId,
+                        principalTable: "Stories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StoryViews",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ViewerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ViewedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    IsViewed = table.Column<bool>(type: "bit", nullable: false),
+                    ViewedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -621,17 +678,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Bio", "Code", "CodeExpiration", "ConcurrencyStamp", "CoverPhotoUrl", "CreatedAt", "DateOfBirth", "Email", "EmailConfirmed", "FirstName", "Gender", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePictureUrl", "SecurityStamp", "TwoFactorEnabled", "UpdatedAt", "UserName" },
                 values: new object[,]
                 {
-                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "fc3e9033-c2de-4207-9ffc-e0cf9858e43b", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 22, 427, DateTimeKind.Unspecified).AddTicks(3600), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEORyLaz06rvHXsHbS3x0N2HawKU5tBOwWIsUW4+AUQvJV86VuMzDsSKGdH681mnWcg==", null, false, null, "d5f3a210-0316-4f8f-92f5-f053cafd457f", false, null, "ChrisA@707" },
-                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "99b22141-f7ca-46bf-8da4-ff28d77c42e2", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 719, DateTimeKind.Unspecified).AddTicks(9111), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEH7j4DPBv10RNlTW5mZBoLhxd2QCPkeHWs3v7UOip9TzEfwuyRVVpW9YyBS/dYkdoQ==", null, false, null, "a23402d9-39d1-42da-a364-393cb7f52ae5", false, null, "BobBrown@101" },
-                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "8ea1b65d-d786-4562-a8b0-1c7775536574", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 22, 310, DateTimeKind.Unspecified).AddTicks(9461), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEP+uMo0HTytH2CYWQoGAkq6Evz5f0olq0NsRD7aw+aknO4Z76JP4vbIO5e4loyW6Jw==", null, false, null, "03f07a54-0719-4aa7-8e60-1e5499870332", false, null, "LauraT@606" },
-                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "a1665c6f-1b25-44eb-8106-3e9305398b3b", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 22, 197, DateTimeKind.Unspecified).AddTicks(794), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEMeGyqtxgrUNcg92niQvT3nGseE1MjFCc5b6rxD32aLUPNh1cIcDloREbXAyMEdU0g==", null, false, null, "d3d313b6-7ae3-436f-9060-478882132696", false, null, "DavidM@505" },
-                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "3e446375-73b9-4fdc-9da9-792673248c75", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 393, DateTimeKind.Unspecified).AddTicks(4494), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEGCiemLwGfxXAc4CoznnvRZiBm83oDkn1mMMTpD4S7abxErV/uJOBSjiyHbsvqe+fQ==", null, false, null, "5f7904b5-0d75-4561-a97a-13f9cc6733f4", false, null, "JohnDoe@123" },
-                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "58a569f0-2652-48a4-847b-412127ea7d8f", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 956, DateTimeKind.Unspecified).AddTicks(2103), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEJEi700FStmx9XBIMHe95R1yhTzgci01r5/dJB0mm+iauHLy82U9kyd5WbSy0YLhmg==", null, false, null, "38d5ce88-8821-4473-880b-1646d40b572c", false, null, "MichaelW@303" },
-                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "0451d098-f81c-4f0e-9591-7768a8d8a274", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 818, DateTimeKind.Unspecified).AddTicks(4549), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAELBZ7lprHoqz7Pv7QDLosrnPAkcXU4j56AGSwpXAEFXGoAJmtnr/jQdLSEmSobw/3w==", null, false, null, "2d2e59f7-b014-4c0e-b23d-20eeed82937d", false, null, "EmilyD@202" },
-                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "294a4228-e18e-4f1a-9123-edef73d4e457", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 292, DateTimeKind.Unspecified).AddTicks(6905), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEOQjnVlTazSmcdRiDii8NohmZ4kg2DcwkWaL/HH1IRGgBDp4XAdfbZxO0XTYd//e1Q==", null, false, null, "ac67d65d-80a1-4fdb-87e6-2b0dffa6803e", false, null, "Moehab@2002" },
-                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "8ec342ca-f724-45b6-8b92-758d90afcdbc", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 519, DateTimeKind.Unspecified).AddTicks(656), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAENN+6kynbP10e3N4otlkr4VFaBOQUn6glxmNfiNYXygQNGURGsQIGo6pVCw9EHZQPg==", null, false, null, "3a9981e6-ae59-4fef-852c-c0e80a088835", false, null, "JaneSmith@456" },
-                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "0bcb412d-34e7-4c02-bed9-7825f02287a7", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 22, 85, DateTimeKind.Unspecified).AddTicks(1427), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEMLGVm2rhaqgjge+S6o8Xi2rKtf4QUeGuwP9zUUKEd7D1Z5P70CqhEDQISJno0avBQ==", null, false, null, "ad0be384-8354-43ca-9331-d729862fd8fb", false, null, "SarahM@404" },
-                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "145a25a9-0696-4487-ad7b-e9a2268f21e0", null, new DateTimeOffset(new DateTime(2025, 2, 1, 10, 29, 21, 621, DateTimeKind.Unspecified).AddTicks(4166), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEBb4tG0zI3iY17zNv6OVPRot3f9gGSvQgEvQLVjw/hWCll9oHjxRLWYmuHRalrj+4Q==", null, false, null, "0bbe63eb-9def-4c4b-848b-7adbf2b02be3", false, null, "AliceJ@789" }
+                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "0f1486d7-637c-475d-b44e-ffc7e02c1dde", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 25, 340, DateTimeKind.Unspecified).AddTicks(6051), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEKIAFl4+UIrifNTIoENe1/RHuPBowXNqT8RpQGE2wZrdSB6MRWPaEIAoYLy5tD4M/A==", null, false, null, "fa9d0b33-6bf4-4d07-8ca0-e0bea413a64e", false, null, "ChrisA@707" },
+                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "6345b448-b090-4585-bc01-90d8e3413fed", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 777, DateTimeKind.Unspecified).AddTicks(7754), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEI1//8FDK16ABgVkD/88dWQQvZTSklM30dlDYK5IXz3X8IlBmiX32ykqprSHMbIXYg==", null, false, null, "7e1bf39a-e983-4e8a-9b52-ea5f99c209ea", false, null, "BobBrown@101" },
+                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "78cbe31b-3071-4b24-8fe7-2354a5819c91", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 25, 247, DateTimeKind.Unspecified).AddTicks(4399), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEIraY1B+qGiZrXf7Bp8PLQ3TQwKBCnMc4woZCOQ8SWMWXXZWBgOIQq+2UnvJ4xuY2w==", null, false, null, "c1177f10-d25d-4002-b9c5-c67a6c9d7720", false, null, "LauraT@606" },
+                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "faf62fe9-fd30-4fb4-8b3d-a87a1506dfd7", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 25, 154, DateTimeKind.Unspecified).AddTicks(3725), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEE3SuSqmL0oGcxlXr14Xo7gFKOGHtpnUm902Rdi/TUrCVcIEte8bfaxJHJLBpeOrcQ==", null, false, null, "e98d5ec3-4d63-4242-a401-5794ad64d8c2", false, null, "DavidM@505" },
+                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "227199ab-8032-4a7a-b6b0-e8a5ba5b48ae", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 484, DateTimeKind.Unspecified).AddTicks(7972), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEEYzX/R58Ymp5QVAUxDVcpL8AFZ1PxEnbpali6ZmZy/FEwLTM3G9zHVPJ5Hu8YVuSg==", null, false, null, "de418c1e-9338-4c1d-bd31-b15b885714b4", false, null, "JohnDoe@123" },
+                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "4736a277-e573-4cfe-9fce-505a029affc6", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 967, DateTimeKind.Unspecified).AddTicks(5225), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAELouSw6izYCo1E2tAga1fSfGkqeyzcahsiPs/OGAz7as0sQm4Z1hHm9Vt+fJb2OXHA==", null, false, null, "e5ca97ad-db67-4a88-b28c-d97a4d0fcace", false, null, "MichaelW@303" },
+                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "3983a00f-616c-450e-ab9c-9fd164db7dce", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 875, DateTimeKind.Unspecified).AddTicks(956), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEH6KolFE/y/juXD0JbfZsWGFDPKgYefeREY9C86q6wTD6eC75PbhwcNN+4sO6SVGsg==", null, false, null, "30edc6ef-0b88-453e-b312-93bce0bcff7f", false, null, "EmilyD@202" },
+                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "03680d95-6511-4cf0-8c9b-4cd358e32eb7", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 391, DateTimeKind.Unspecified).AddTicks(8482), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEBMq3CNM3ePQi1tlW/c6u6XkY9CxjcsLzjD17hIDPOsLzkucsQRe1SfuaO8UTfcFeA==", null, false, null, "ef1321b1-3042-4050-ab74-738fa44dcb3e", false, null, "Moehab@2002" },
+                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "e916dc02-846b-4275-af45-e9b6876ed7d6", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 578, DateTimeKind.Unspecified).AddTicks(4870), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAEG8iSlO0VaaIzPstFjKWKawpmR8zOP36sXdymz8bt+2Zxa4WflGWXa8towF1AA3o8A==", null, false, null, "ebbbf72a-3864-4d9d-a36f-17e198b1ab1e", false, null, "JaneSmith@456" },
+                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "f1d4c99a-0cfe-4f55-88ac-b1e504fa743e", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 25, 61, DateTimeKind.Unspecified).AddTicks(5409), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEJK4lnl7WuSb1nNgLud7i2dWjk3AASs2e1VIA2PLQ8yALE00gjzMtrpZ2yC/ZZeLig==", null, false, null, "ef46e8b9-ceea-4000-906d-e20a42279ffe", false, null, "SarahM@404" },
+                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "1ab8ea62-da44-4d06-b7f5-d3e3d41b7e0c", null, new DateTimeOffset(new DateTime(2025, 2, 2, 13, 12, 24, 675, DateTimeKind.Unspecified).AddTicks(3843), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAED1dIZosw4kEx0vsoeJpcW6XxsdgrjMje97Sjm3dT3Il1eflt8oljh9ZwPkMyv24Rg==", null, false, null, "7466532e-da97-43e6-a76a-494d7449cad1", false, null, "AliceJ@789" }
                 });
 
             migrationBuilder.InsertData(
@@ -824,6 +881,26 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StoryComment_CommentedById",
+                table: "StoryComment",
+                column: "CommentedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoryComment_StoryId",
+                table: "StoryComment",
+                column: "StoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoryReaction_ReactedById",
+                table: "StoryReaction",
+                column: "ReactedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoryReaction_StoryId",
+                table: "StoryReaction",
+                column: "StoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StoryViews_StoryId_ViewerId",
                 table: "StoryViews",
                 columns: new[] { "StoryId", "ViewerId" },
@@ -890,6 +967,12 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "RefreshToken");
+
+            migrationBuilder.DropTable(
+                name: "StoryComment");
+
+            migrationBuilder.DropTable(
+                name: "StoryReaction");
 
             migrationBuilder.DropTable(
                 name: "StoryViews");
