@@ -11,6 +11,7 @@ using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -196,15 +197,14 @@ public sealed class StoryService(
     public async Task<Result<IEnumerable<StoryDto>>> GetActiveFriendStoriesAsync(
         GetActiveFriendStoriesQuery query)
     {
-        var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
+        var friendsIds = await unitOfWork.FriendshipRepository.GetFriendIdsForUserAsync(currentUser.Id);
 
-        if (friends.Count == 0)
+        if (friendsIds.Count == 0)
             return Result<IEnumerable<StoryDto>>.Success([]);
 
-        var specification = new GetActiveFriendsStoriesSpecification(friends);
+        var specification = new GetActiveFriendsStoriesSpecification(friendsIds, currentUser.Id);
 
-        var activeStories = await unitOfWork.Repository<Story>()?
-            .GetAllWithSpecificationAsync(specification)!;
+        var activeStories = await unitOfWork.StoryRepository.GetAllWithSpecificationAsync(specification);
 
         var mappedResults = mapper.Map<IEnumerable<StoryDto>>(activeStories);
 
@@ -374,5 +374,20 @@ public sealed class StoryService(
             friendId: query.FriendId);
 
         return Result<bool>.Success(hasUnseenStories);
+    }
+
+    public async Task<Result<UserWithStoriesDto?>> GetActiveUserStoriesAsync(GetUserStoriesQuery query)
+    {
+        var isFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(
+            query.FriendId.ToString(), currentUser.Id);
+
+        if (!isFriend)
+            return Result<UserWithStoriesDto?>.Failure(HttpStatusCode.Forbidden);
+
+        var activeUserStories = await unitOfWork.StoryRepository.GetActiveUserStoriesAsync(
+            currentUserId: currentUser.Id,
+            friendId: query.FriendId);
+
+        return Result<UserWithStoriesDto?>.Success(activeUserStories);
     }
 }

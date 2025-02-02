@@ -61,7 +61,10 @@ public sealed class FriendshipRepository(
             .AsNoTracking()
             .Include(f => f.Receiver)
             .Include(f => f.Requester)
-            .CountAsync(f => f.RequesterId == userId || f.ReceiverId == userId);
+            .Where(x => (x.RequesterId == userId || x.ReceiverId == userId) &&
+                        x.FriendshipStatus == FriendshipStatus.Accepted)
+            .Select(x => x.RequesterId == userId ? x.Receiver : x.Requester)
+            .CountAsync();
 
     public async Task<List<Friendship>> GetAcceptedFriendshipsForUserAsync(string userId)
     {
@@ -109,5 +112,19 @@ public sealed class FriendshipRepository(
 
         return friends;
 
+    }
+
+    public async Task<List<string>> GetFriendIdsForUserAsync(string userId)
+    {
+        var friends = await context.Friendships
+            .AsNoTracking()
+            .Include(x => x.Requester)
+            .Include(x => x.Receiver)
+            .Where(x => (x.RequesterId == userId || x.ReceiverId == userId) &&
+                        x.FriendshipStatus == FriendshipStatus.Accepted)
+            .Select(x => x.RequesterId == userId ? x.Receiver : x.Requester)
+            .ToListAsync();
+
+        return friends.Select(x => x.Id).ToList();
     }
 }

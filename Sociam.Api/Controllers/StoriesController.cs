@@ -12,6 +12,7 @@ using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Interfaces.DataTransferObjects;
@@ -49,7 +50,7 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<bool>>> ViewStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new MarkStoryAsViewedCommand { StoryId = id }));
@@ -58,7 +59,7 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<bool>>> DeleteStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new DeleteStoryCommand { StoryId = id }));
 
@@ -81,4 +82,13 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<bool>>> GetFriendStoryStatusAsync([FromRoute] Guid friendId)
         => CustomResult(await Mediator.Send(new HasUnseenStoriesQuery() { FriendId = friendId.ToString() }));
+
+
+    [Guard(roles: [AppConstants.Roles.User])]
+    [HttpGet("me/friends/{friendId:guid}/active-stories")]
+    [ProducesResponseType(typeof(Result<UserWithStoriesDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<UserWithStoriesDto?>>> GetActiveUserStoriesAsync([FromRoute] Guid friendId)
+        => CustomResult(await Mediator.Send(new GetUserStoriesQuery() { FriendId = friendId.ToString() }));
+
 }

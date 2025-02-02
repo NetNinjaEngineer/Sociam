@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sociam.Domain.Entities;
+using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 
@@ -46,5 +47,52 @@ public sealed class StoryRepository(ApplicationDbContext context) : GenericRepos
             .ToListAsync();
 
         return activeFriendStories.Any(activeStory => !viewedStoriesIds.Contains(activeStory.Id));
+    }
+
+    public async Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId)
+    {
+        var isFriend = await context.Friendships
+            .AsNoTracking()
+            .Include(x => x.Requester)
+            .Include(x => x.Receiver)
+            .AnyAsync(x => (x.RequesterId == currentUserId && x.ReceiverId == friendId) ||
+                           (x.RequesterId == friendId && x.ReceiverId == currentUserId) &&
+                           x.FriendshipStatus == FriendshipStatus.Accepted);
+
+        var isSetAsStoryViewer = await context.StoryViews
+            .AsNoTracking()
+            .AnyAsync(x => !x.IsViewed && x.ViewerId == currentUserId);
+
+        var userWithStories = await context.Users
+            .Where(u => u.Id == friendId && isFriend)
+            .Select(u => new UserWithStoriesDto
+            {
+                UserId = u.Id,
+                FirstName = u.FirstName ?? "",
+                LastName = u.LastName ?? "",
+                FullName = string.Concat(u.FirstName, " ", u.LastName),
+                UserName = u.UserName ?? "",
+                ProfilePicture = u.ProfilePictureUrl,
+                Stories = u.Stories
+                    .Where(s => s.ExpiresAt > DateTimeOffset.Now &&
+                                (s.StoryPrivacy == StoryPrivacy.Public ||
+                                 (s.StoryPrivacy == StoryPrivacy.Friends && isFriend) ||
+                                 (s.StoryPrivacy == StoryPrivacy.Custom && isSetAsStoryViewer)))
+                    .OrderByDescending(s => s.CreatedAt)
+                    .Select(s => new StoryForReturnDto
+                    {
+                        Id = s.Id,
+                        CreatedAt = s.CreatedAt,
+                        ExpiresAt = s.ExpiresAt,
+                        StoryPrivacy = s.StoryPrivacy,
+                        ViewersCount = s.StoryViewers.Count,
+                        ReactionsCount = s.StoryReactions.Count,
+                        CommentsCount = s.StoryComments.Count
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return userWithStories;
     }
 }
