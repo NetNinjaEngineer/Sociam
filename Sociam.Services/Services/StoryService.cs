@@ -13,6 +13,7 @@ using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
+using Sociam.Application.Features.Stories.Queries.IsStoryViewed;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -389,5 +390,18 @@ public sealed class StoryService(
             friendId: query.FriendId);
 
         return Result<UserWithStoriesDto?>.Success(activeUserStories);
+    }
+
+    public async Task<Result<bool>> IsStoryViewedAsync(IsStoryViewedQuery query)
+    {
+        var existedStory = await unitOfWork.StoryRepository.GetByIdAsync(query.StoryId);
+
+        if (existedStory is null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
+
+        var isViewed = await unitOfWork.StoryViewRepository.IsStoryViewedAsync(query.StoryId, currentUser.Id);
+
+        return Result<bool>.Success(isViewed);
     }
 }

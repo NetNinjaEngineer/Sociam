@@ -8,6 +8,7 @@ using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
+using Sociam.Application.Features.Stories.Queries.IsStoryViewed;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 
 namespace Sociam.Application.Interfaces.Services;
@@ -22,4 +23,5 @@ public interface IStoryService
     Task<Result<StoryDto>> GetStoryAsync(GetStoryByIdQuery query);
     Task<Result<bool>> HasUnseenStoriesAsync(HasUnseenStoriesQuery query);
     Task<Result<UserWithStoriesDto?>> GetActiveUserStoriesAsync(GetUserStoriesQuery query);
+    Task<Result<bool>> IsStoryViewedAsync(IsStoryViewedQuery query);
 }

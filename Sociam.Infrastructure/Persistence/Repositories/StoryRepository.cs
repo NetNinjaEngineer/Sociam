@@ -85,6 +85,11 @@ public sealed class StoryRepository(ApplicationDbContext context) : GenericRepos
                         CreatedAt = s.CreatedAt,
                         ExpiresAt = s.ExpiresAt,
                         StoryPrivacy = s.StoryPrivacy,
+                        HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                        Content = s is TextStory ? ((TextStory)s).Content : null,
+                        MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
+                        MediaUrl = s is MediaStory ? ((MediaStory)s).MediaUrl : null,
+                        Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                         ViewersCount = s.StoryViewers.Count,
                         ReactionsCount = s.StoryReactions.Count,
                         CommentsCount = s.StoryComments.Count
