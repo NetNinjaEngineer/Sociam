@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Sociam.Domain.Entities.common;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Interfaces;
@@ -8,7 +9,8 @@ using System.Collections;
 namespace Sociam.Infrastructure.Persistence;
 public sealed class UnitOfWork(
     ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager) : IUnitOfWork
+    UserManager<ApplicationUser> userManager,
+    IConfiguration configuration) : IUnitOfWork
 {
     private readonly Hashtable _repositories = [];
     public IFriendshipRepository FriendshipRepository => new FriendshipRepository(context, userManager);
@@ -17,7 +19,7 @@ public sealed class UnitOfWork(
 
     public IPrivateConversationRepository ConversationRepository => new PrivateConversationRepository(context);
     public IStoryViewRepository StoryViewRepository => new StoryViewRepository(context, userManager);
-    public IStoryRepository StoryRepository => new StoryRepository(context);
+    public IStoryRepository StoryRepository => new StoryRepository(context, configuration);
 
     public IGroupMemberRepository GroupMemberRepository => new GroupMemberRepository(context);
 

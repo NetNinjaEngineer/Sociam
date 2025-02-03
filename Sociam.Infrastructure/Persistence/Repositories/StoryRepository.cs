@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
@@ -6,7 +7,9 @@ using Sociam.Domain.Interfaces.DataTransferObjects;
 
 namespace Sociam.Infrastructure.Persistence.Repositories;
 
-public sealed class StoryRepository(ApplicationDbContext context) : GenericRepository<Story>(context), IStoryRepository
+public sealed class StoryRepository(
+    ApplicationDbContext context,
+    IConfiguration configuration) : GenericRepository<Story>(context), IStoryRepository
 {
     public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId)
     {
@@ -99,5 +102,45 @@ public sealed class StoryRepository(ApplicationDbContext context) : GenericRepos
             .FirstOrDefaultAsync();
 
         return userWithStories;
+    }
+
+    public async Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId)
+    {
+        var apiBaseUrl = configuration["BaseApiUrl"];
+
+        var storyViews = await context.Stories
+            .AsNoTracking()
+            .Where(s => s.Id == existedStoryId && s.UserId == currentUserId)
+            .Select(s => new StoryViewsResponseDto
+            {
+                StoryId = s.Id,
+                CreatorId = s.UserId,
+                CreatorFirstName = s.User.FirstName ?? "",
+                CreatorLastName = s.User.LastName ?? "",
+                CreatorUserName = s.User.UserName ?? "",
+                CreatorProfilePicture = string.IsNullOrEmpty(s.User.ProfilePictureUrl) ? null : $"{apiBaseUrl}/Uploads/Images/{s.User.ProfilePictureUrl}",
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory ? ((MediaStory)s).MediaUrl : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiresAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                ReactionsCount = s.StoryReactions.Count,
+                CommentsCount = s.StoryComments.Count,
+                ViewsCount = s.StoryViewers.Count,
+                Viewers = s.StoryViewers
+                    .Where(v => v.IsViewed)
+                    .Select(view => new StoryViewerDto
+                    {
+                        ViewerId = view.ViewerId,
+                        ViewerName = string.Concat(view.Viewer.FirstName, " ", view.Viewer.LastName),
+                        ViewedAt = view.ViewedAt,
+                        ProfilePictureUrl = string.IsNullOrEmpty(s.User.ProfilePictureUrl) ? null : $"{apiBaseUrl}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
+                    }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return storyViews;
     }
 }
