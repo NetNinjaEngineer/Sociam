@@ -1,4 +1,6 @@
-﻿namespace Sociam.Domain.Interfaces.DataTransferObjects;
+﻿using Sociam.Domain.Enums;
+
+namespace Sociam.Domain.Interfaces.DataTransferObjects;
 
 public sealed class StoryViewsResponseDto
 {
@@ -11,7 +13,7 @@ public sealed class StoryViewsResponseDto
     public string? CreatorProfilePicture { get; set; }
     public string? Content { get; set; }
     public List<string>? HashTags { get; set; }
-    public string? MediaType { get; set; }
+    public MediaType? MediaType { get; set; }
     public string? MediaUrl { get; set; }
     public string? Caption { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }

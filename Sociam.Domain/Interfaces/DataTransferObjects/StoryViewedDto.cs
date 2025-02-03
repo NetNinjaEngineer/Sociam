@@ -1,4 +1,6 @@
-﻿namespace Sociam.Domain.Interfaces.DataTransferObjects;
+﻿using Sociam.Domain.Enums;
+
+namespace Sociam.Domain.Interfaces.DataTransferObjects;
 
 public class StoryViewedDto
 {
@@ -12,7 +14,7 @@ public class StoryViewedDto
     public int ViewsCount { get; set; }
     public string? Content { get; set; }
     public string? MediaUrl { get; set; }
-    public string? MediaType { get; set; }
+    public MediaType? MediaType { get; set; }
     public string? Caption { get; set; }
     public List<string>? HashTags { get; set; }
 }

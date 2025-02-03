@@ -11,6 +11,7 @@ using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
+using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
@@ -19,6 +20,7 @@ using Sociam.Application.Features.Stories.Queries.IsStoryViewed;
 using Sociam.Application.Features.Stories.Queries.ViewedStoriesByMe;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Interfaces.DataTransferObjects;
+using Sociam.Domain.Utils;
 
 namespace Sociam.Api.Controllers;
 
@@ -48,6 +50,13 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<IEnumerable<StoryDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetMyStoriesAsync()
         => CustomResult(await Mediator.Send(new GetMyStoriesQuery()));
+
+    [HttpGet("me/stories-by-params")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<List<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetStoriesByParamsAsync([FromQuery] StoryQueryParameters @params)
+        => CustomResult(await Mediator.Send(new GetStoriesByParamsQuery { StoryQueryParameters = @params }));
+
 
     [HttpGet("me/stories-i-have-viewed")]
     [Guard(roles: [AppConstants.Roles.User])]

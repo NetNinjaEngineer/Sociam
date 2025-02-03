@@ -10,6 +10,7 @@ using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
+using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
@@ -457,4 +458,12 @@ public sealed class StoryService(
 
     public async Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync()
         => Result<List<StoryViewedDto>>.Success(await unitOfWork.StoryRepository.GetStoriesViewedByMeAsync(currentUser.Id));
+
+    public async Task<Result<List<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query)
+    {
+        var stories = await unitOfWork.StoryRepository.GetStoriesWithParamsForMeAsync(
+            currentUser.Id, query.StoryQueryParameters);
+
+        return Result<List<StoryViewsResponseDto>>.Success(stories);
+    }
 }

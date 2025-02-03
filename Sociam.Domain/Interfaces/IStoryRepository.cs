@@ -1,5 +1,6 @@
 ﻿using Sociam.Domain.Entities;
 using Sociam.Domain.Interfaces.DataTransferObjects;
+using Sociam.Domain.Utils;
 
 namespace Sociam.Domain.Interfaces;
 public interface IStoryRepository : IGenericRepository<Story>
@@ -9,4 +10,5 @@ public interface IStoryRepository : IGenericRepository<Story>
     Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId);
     Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId);
     Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId);
+    Task<List<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(string currentUserId, StoryQueryParameters queryStoryQueryParameters);
 }
