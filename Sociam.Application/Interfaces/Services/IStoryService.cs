@@ -26,4 +26,5 @@ public interface IStoryService
     Task<Result<UserWithStoriesDto?>> GetActiveUserStoriesAsync(GetUserStoriesQuery query);
     Task<Result<bool>> IsStoryViewedAsync(IsStoryViewedQuery query);
     Task<Result<StoryViewsResponseDto?>> GetStoryViewsAsync(GetStoryViewersQuery query);
+    Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync();
 }

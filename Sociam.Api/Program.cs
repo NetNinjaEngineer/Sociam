@@ -26,9 +26,9 @@ app.UseAuthorization();
 
 app.UseApiMiddlewares();
 
-app.UseSwaggerDocumentation();
-
 app.MapOpenApi();
+
+app.UseSwaggerDocumentation();
 
 app.MapControllers();
 

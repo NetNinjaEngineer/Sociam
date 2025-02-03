@@ -15,8 +15,11 @@ public static class DependencyInjection
         ConfigureWebHostBuilder webHostBuilder)
     {
         services.AddControllers()
-            .AddJsonOptions(opt => opt.JsonSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter()));
+            .AddJsonOptions(opt =>
+            {
+                opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         services.AddSwaggerDocumentation();
 

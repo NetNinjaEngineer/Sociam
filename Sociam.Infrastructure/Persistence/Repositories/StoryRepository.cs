@@ -12,25 +12,26 @@ public sealed class StoryRepository(
     IConfiguration configuration) : GenericRepository<Story>(context), IStoryRepository
 {
     public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId)
-    {
-        var stories = await context.Stories
+        => await context.Stories
             .AsNoTracking()
             .Where(s => s.UserId == creatorId && s.ExpiresAt > DateTimeOffset.Now)
-            .ToListAsync();
-
-        return stories.Select(
-            s => new StoryDto
+            .Select(s => new StoryDto
             {
                 Id = s.Id,
                 ExpiresAt = s.ExpiresAt,
                 CreatedAt = s.CreatedAt,
                 StoryPrivacy = s.StoryPrivacy,
                 UserId = s.UserId,
-                HashTags = s is TextStory textStory ? textStory.HashTags : null,
-                MediaUrl = s is MediaStory mediaStory ? mediaStory.MediaUrl : null,
-                MediaType = s is MediaStory mediaStoryType ? mediaStoryType.MediaType : null
-            }).ToList();
-    }
+                StoryType = s is TextStory ? "text" : "media",
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
+                MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
+                    $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
+                    $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null
+            })
+            .ToListAsync();
 
     public async Task<bool> HasUnseenStoriesAsync(string currentUserId, string friendId)
     {
@@ -54,6 +55,9 @@ public sealed class StoryRepository(
 
     public async Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId)
     {
+        var apiBaseUrl = configuration["BaseApiUrl"];
+
+
         var isFriend = await context.Friendships
             .AsNoTracking()
             .Include(x => x.Requester)
@@ -91,7 +95,9 @@ public sealed class StoryRepository(
                         HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                         Content = s is TextStory ? ((TextStory)s).Content : null,
                         MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
-                        MediaUrl = s is MediaStory ? ((MediaStory)s).MediaUrl : null,
+                        MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
+                            $"{apiBaseUrl}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
+                            $"{apiBaseUrl}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
                         Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                         ViewersCount = s.StoryViewers.Count,
                         ReactionsCount = s.StoryReactions.Count,
@@ -122,7 +128,9 @@ public sealed class StoryRepository(
                 HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
-                MediaUrl = s is MediaStory ? ((MediaStory)s).MediaUrl : null,
+                MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
+                    $"{apiBaseUrl}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
+                    $"{apiBaseUrl}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                 ExpiresAt = s.ExpiresAt,
                 CreatedAt = s.CreatedAt,
@@ -143,4 +151,32 @@ public sealed class StoryRepository(
 
         return storyViews;
     }
+
+    public async Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId)
+        => await context.Stories
+            .AsNoTracking()
+            .Where(s => s.StoryViewers.Any(v => v.ViewerId == currentUserId && v.IsViewed))
+            .Select(s => new StoryViewedDto
+            {
+                StoryId = s.Id,
+                CreatorId = s.UserId,
+                CreatorFullName = "",
+                CreatorProfilePicture = string.IsNullOrEmpty(s.User.ProfilePictureUrl)
+                    ? null
+                    : $"{configuration["BaseApiUrl"]}/Uploads/Images/{s.User.ProfilePictureUrl}",
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory ?
+                    (IsVideoMediaType(((MediaStory)s).MediaType) ?
+                        $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
+                        $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                CreatedAt = s.CreatedAt,
+                ReactionsCount = s.StoryReactions.Count,
+                CommentsCount = s.StoryComments.Count,
+                ViewsCount = s.StoryViewers.Count
+            }).ToListAsync();
+
+    private static bool IsVideoMediaType(MediaType? mediaType) => mediaType == MediaType.Video;
 }

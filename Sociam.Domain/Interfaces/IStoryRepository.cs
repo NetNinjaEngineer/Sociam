@@ -8,4 +8,5 @@ public interface IStoryRepository : IGenericRepository<Story>
     Task<bool> HasUnseenStoriesAsync(string currentUserId, string friendId);
     Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId);
     Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId);
+    Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId);
 }

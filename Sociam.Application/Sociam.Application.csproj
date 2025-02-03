@@ -33,7 +33,8 @@
     <Folder Include="Features\Stories\Queries\GetExpiredStories\" />
     <Folder Include="Features\Stories\Queries\GetMostReactedStories\" />
     <Folder Include="Features\Stories\Queries\GetStoriesWithComments\" />
-    <Folder Include="Features\Stories\Queries\ViewedStoriesByMe\" />
+    <Folder Include="Features\Stories\Queries\GetStoriesByParams\" />
+    <Folder Include="Features\Stories\Queries\GetViewedStoriesByMeWithParams\" />
   </ItemGroup>
 
 </Project>

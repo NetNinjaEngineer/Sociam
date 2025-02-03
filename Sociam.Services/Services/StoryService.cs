@@ -454,4 +454,7 @@ public sealed class StoryService(
 
         return Result<StoryViewsResponseDto?>.Success(views);
     }
+
+    public async Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync()
+        => Result<List<StoryViewedDto>>.Success(await unitOfWork.StoryRepository.GetStoriesViewedByMeAsync(currentUser.Id));
 }
