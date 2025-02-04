@@ -5,12 +5,14 @@ using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Utils;
+using System.Linq.Expressions;
 
 namespace Sociam.Infrastructure.Persistence.Repositories;
 
 public sealed class StoryRepository(
     ApplicationDbContext context,
-    IConfiguration configuration) : GenericRepository<Story>(context), IStoryRepository
+    IConfiguration configuration)
+    : GenericRepository<Story>(context), IStoryRepository
 {
     public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId)
         => await context.Stories
@@ -28,8 +30,8 @@ public sealed class StoryRepository(
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                 MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
-                    $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
-                    $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                    $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
+                    $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null
             })
             .ToListAsync();
@@ -97,8 +99,8 @@ public sealed class StoryRepository(
                         Content = s is TextStory ? ((TextStory)s).Content : null,
                         MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                         MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
-                            $"{apiBaseUrl}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
-                            $"{apiBaseUrl}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                            $"{apiBaseUrl}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
+                            $"{apiBaseUrl}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                         Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                         ViewersCount = s.StoryViewers.Count,
                         ReactionsCount = s.StoryReactions.Count,
@@ -130,8 +132,8 @@ public sealed class StoryRepository(
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                 MediaUrl = s is MediaStory ? (IsVideoMediaType(((MediaStory)s).MediaType) ?
-                    $"{apiBaseUrl}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
-                    $"{apiBaseUrl}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                    $"{apiBaseUrl}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
+                    $"{apiBaseUrl}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                 ExpiresAt = s.ExpiresAt,
                 CreatedAt = s.CreatedAt,
@@ -170,8 +172,8 @@ public sealed class StoryRepository(
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                 MediaUrl = s is MediaStory ?
                     (IsVideoMediaType(((MediaStory)s).MediaType) ?
-                        $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
-                        $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
+                        $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
+                        $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                 CreatedAt = s.CreatedAt,
                 ReactionsCount = s.StoryReactions.Count,
@@ -179,82 +181,47 @@ public sealed class StoryRepository(
                 ViewsCount = s.StoryViewers.Count
             }).ToListAsync();
 
-    public async Task<List<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(
+    public async Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(
         string currentUserId,
-        StoryQueryParameters queryStoryQueryParameters)
-    {
-        var storiesQuery = context.Stories.AsQueryable();
+        StoryQueryParameters? queryStoryQueryParameters) => await GetStoriesAsync(null, queryStoryQueryParameters);
 
-        if (queryStoryQueryParameters.StartDate.HasValue)
+    public async Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(
+        string creatorId,
+        StoryQueryParameters? queryParameters)
+     => await GetStoriesAsync(s => s.UserId == creatorId && s.ExpiresAt < DateTimeOffset.Now, queryParameters);
+
+    public async Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(
+        string currentUserId,
+        StoryQueryParameters? queryParameters)
+        => await GetStoriesAsync(s => s.UserId == currentUserId && s.IsArchived, queryParameters);
+
+    private async Task<PagedResult<StoryViewsResponseDto>> GetStoriesAsync(
+        Expression<Func<Story, bool>>? predicate, StoryQueryParameters? queryStoryQueryParameters)
+    {
+        var storiesQuery = predicate is null ?
+           context.Stories.AsQueryable() : context.Stories.Where(predicate).AsQueryable();
+
+        if (queryStoryQueryParameters is { StartDate: not null })
             storiesQuery = storiesQuery.Where(s => DateOnly.FromDateTime(s.CreatedAt.Date) >= queryStoryQueryParameters.StartDate);
 
-        if (queryStoryQueryParameters.EndDate.HasValue)
+        if (queryStoryQueryParameters is { EndDate: not null })
             storiesQuery = storiesQuery.Where(s =>
                 DateOnly.FromDateTime(s.CreatedAt.Date) <= queryStoryQueryParameters.EndDate);
 
-        if (!string.IsNullOrEmpty(queryStoryQueryParameters.Contains))
+        if (!string.IsNullOrEmpty(queryStoryQueryParameters?.Contains))
             storiesQuery = storiesQuery.Where(s =>
                 (s is TextStory && ((TextStory)s).Content!.Contains(queryStoryQueryParameters.Contains)) ||
                 (s is MediaStory && ((MediaStory)s).Caption!.Contains(queryStoryQueryParameters.Contains)));
 
-        if (queryStoryQueryParameters.MediaType is not null)
+        if (queryStoryQueryParameters is { MediaType: not null })
             storiesQuery = storiesQuery.Where(s =>
                 (s is MediaStory && ((MediaStory)s).MediaType == queryStoryQueryParameters.MediaType));
 
-        if (queryStoryQueryParameters.Privacy is not null)
+        if (queryStoryQueryParameters is { Privacy: not null })
             storiesQuery = storiesQuery.Where(s => s.StoryPrivacy == queryStoryQueryParameters.Privacy);
 
-        var stories = await storiesQuery
-            .AsNoTracking()
-            .Where(s => s.UserId == currentUserId)
-            .Select(s => new StoryViewsResponseDto
-            {
-                StoryId = s.Id,
-                CreatorId = s.UserId,
-                CreatorFirstName = s.User.FirstName ?? "",
-                CreatorLastName = s.User.LastName ?? "",
-                CreatorProfilePicture = string.IsNullOrEmpty(s.User.ProfilePictureUrl)
-                    ? null : $"{configuration["BaseApiUrl"]}/Uploads/Images/{s.User.ProfilePictureUrl}",
-                CreatorUserName = s.User.UserName ?? "",
-                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
-                Content = s is TextStory ? ((TextStory)s).Content : null,
-                MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
-                MediaUrl = s is MediaStory ?
-                    (IsVideoMediaType(((MediaStory)s).MediaType) ?
-                        $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}" :
-                        $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}") : null,
-                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiresAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
-                ReactionsCount = s.StoryReactions.Count,
-                CommentsCount = s.StoryComments.Count,
-                ViewsCount = s.StoryViewers.Count,
-                Viewers = s.StoryViewers
-                    .Select(view => new StoryViewerDto
-                    {
-                        ViewedAt = view.ViewedAt,
-                        ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
-                        ProfilePictureUrl = string.IsNullOrEmpty(view.Viewer.ProfilePictureUrl) ?
-                            null : $"{configuration["BaseApiUrl"]}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
-                    }).ToList()
-            })
-            .ToListAsync();
-
-
-        if (queryStoryQueryParameters.Hashtags?.Count > 0)
-            stories = stories
-                .Where(s => s.HashTags != null &&
-                            s.HashTags.Any(ht => queryStoryQueryParameters.Hashtags.Contains(ht)))
-                .ToList();
-
-        return stories;
-    }
-
-    public async Task<IEnumerable<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId)
-        => await context.Stories
-            .AsNoTracking()
-            .Where(s => s.UserId == creatorId && s.ExpiresAt < DateTimeOffset.Now)
-            .Select(s => new StoryViewsResponseDto
+        var stories = await storiesQuery.Select(
+            s => new StoryViewsResponseDto
             {
                 StoryId = s.Id,
                 CreatorId = s.UserId,
@@ -268,9 +235,9 @@ public sealed class StoryRepository(
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                 MediaUrl = s is MediaStory
-                    ? (IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}")
+                    ? IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
                     : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
                 ExpiresAt = s.ExpiresAt,
@@ -283,12 +250,31 @@ public sealed class StoryRepository(
                     {
                         ViewedAt = view.ViewedAt,
                         ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
-                        ProfilePictureUrl = string.IsNullOrEmpty(view.Viewer.ProfilePictureUrl)
-                            ? null
-                            : $"{configuration["BaseApiUrl"]}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
+                        ProfilePictureUrl = view.Viewer.ProfilePictureUrl,
                     }).ToList()
-
             }).ToListAsync();
+
+        if (queryStoryQueryParameters?.Hashtags?.Count > 0)
+            stories = stories
+                .Where(s => s.HashTags != null &&
+                            s.HashTags.Any(ht => queryStoryQueryParameters.Hashtags.Contains(ht)))
+                .ToList();
+
+        var totalCount = await storiesQuery.CountAsync();
+
+        if (queryStoryQueryParameters != null)
+            stories = stories.Skip((queryStoryQueryParameters.PageNumber - 1) * queryStoryQueryParameters.PageSize)
+                .Take(queryStoryQueryParameters.PageSize)
+                .ToList();
+
+        return new PagedResult<StoryViewsResponseDto>
+        {
+            Page = queryStoryQueryParameters?.PageNumber,
+            PageSize = queryStoryQueryParameters?.PageSize,
+            Items = stories,
+            TotalCount = totalCount
+        };
+    }
 
     private static bool IsVideoMediaType(MediaType? mediaType) => mediaType == MediaType.Video;
 }

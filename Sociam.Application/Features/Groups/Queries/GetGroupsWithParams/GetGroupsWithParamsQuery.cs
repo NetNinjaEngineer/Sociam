@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Groups;
-using Sociam.Application.Helpers;
+using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Utils;
 
 namespace Sociam.Application.Features.Groups.Queries.GetGroupsWithParams

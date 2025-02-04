@@ -13,6 +13,7 @@ using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetExpiredStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
 using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
+using Sociam.Application.Features.Stories.Queries.GetStoryArchive;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
@@ -54,8 +55,8 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
 
     [HttpGet("me/stories-by-params")]
     [Guard(roles: [AppConstants.Roles.User])]
-    [ProducesResponseType(typeof(Result<List<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetStoriesByParamsAsync([FromQuery] StoryQueryParameters @params)
+    [ProducesResponseType(typeof(Result<PagedResult<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PagedResult<StoryViewsResponseDto>>>> GetStoriesByParamsAsync([FromQuery] StoryQueryParameters @params)
         => CustomResult(await Mediator.Send(new GetStoriesByParamsQuery { StoryQueryParameters = @params }));
 
 
@@ -124,9 +125,17 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
 
     [HttpGet("me/expired-stories")]
     [Guard(roles: [AppConstants.Roles.User])]
-    [ProducesResponseType(typeof(Result<IEnumerable<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<IEnumerable<StoryViewsResponseDto>>>> GetExpiredStoriesAsync()
-        => CustomResult(await Mediator.Send(new GetExpiredStoriesQuery()));
+    [ProducesResponseType(typeof(Result<PagedResult<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PagedResult<StoryViewsResponseDto>>>> GetExpiredStoriesAsync(
+        [FromQuery] StoryQueryParameters @parameters)
+        => CustomResult(await Mediator.Send(new GetExpiredStoriesQuery() { QueryParameters = @parameters }));
+
+    [HttpGet("me/archived")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<PagedResult<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PagedResult<StoryViewsResponseDto>>>> GetArchivedStoriesAsync(
+        [FromQuery] StoryQueryParameters @parameters)
+        => CustomResult(await Mediator.Send(new GetStoryArchiveQuery() { QueryParameters = @parameters }));
 
 
 }

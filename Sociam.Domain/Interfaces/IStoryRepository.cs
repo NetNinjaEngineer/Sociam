@@ -10,6 +10,7 @@ public interface IStoryRepository : IGenericRepository<Story>
     Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId);
     Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId);
     Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId);
-    Task<List<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(string currentUserId, StoryQueryParameters queryStoryQueryParameters);
-    Task<IEnumerable<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId);
+    Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(string currentUserId, StoryQueryParameters? queryStoryQueryParameters);
+    Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId, StoryQueryParameters? queryParameters);
+    Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(string currentUserId, StoryQueryParameters? queryParameters);
 }

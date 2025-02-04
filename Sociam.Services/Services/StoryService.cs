@@ -24,6 +24,7 @@ using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
+using Sociam.Domain.Utils;
 using Sociam.Infrastructure.Persistence;
 using System.Net;
 
@@ -459,14 +460,12 @@ public sealed class StoryService(
     public async Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync()
         => Result<List<StoryViewedDto>>.Success(await unitOfWork.StoryRepository.GetStoriesViewedByMeAsync(currentUser.Id));
 
-    public async Task<Result<List<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query)
-    {
-        var stories = await unitOfWork.StoryRepository.GetStoriesWithParamsForMeAsync(
-            currentUser.Id, query.StoryQueryParameters);
+    public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query)
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoriesWithParamsForMeAsync(currentUser.Id, query.StoryQueryParameters));
 
-        return Result<List<StoryViewsResponseDto>>.Success(stories);
-    }
+    public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetExpiredStoriesAsync(StoryQueryParameters? parameters)
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetExpiredStoriesAsync(currentUser.Id, parameters));
 
-    public async Task<Result<IEnumerable<StoryViewsResponseDto>>> GetExpiredStoriesAsync()
-        => Result<IEnumerable<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetExpiredStoriesAsync(currentUser.Id));
+    public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoryArchiveAsync(StoryQueryParameters? parameters)
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoryArchiveAsync(currentUser.Id, parameters));
 }

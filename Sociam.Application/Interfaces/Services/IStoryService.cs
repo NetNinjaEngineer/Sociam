@@ -12,6 +12,7 @@ using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Features.Stories.Queries.IsStoryViewed;
 using Sociam.Domain.Interfaces.DataTransferObjects;
+using Sociam.Domain.Utils;
 
 namespace Sociam.Application.Interfaces.Services;
 public interface IStoryService
@@ -28,6 +29,7 @@ public interface IStoryService
     Task<Result<bool>> IsStoryViewedAsync(IsStoryViewedQuery query);
     Task<Result<StoryViewsResponseDto?>> GetStoryViewsAsync(GetStoryViewersQuery query);
     Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync();
-    Task<Result<List<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query);
-    Task<Result<IEnumerable<StoryViewsResponseDto>>> GetExpiredStoriesAsync();
+    Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query);
+    Task<Result<PagedResult<StoryViewsResponseDto>>> GetExpiredStoriesAsync(StoryQueryParameters? parameters);
+    Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoryArchiveAsync(StoryQueryParameters? parameters);
 }

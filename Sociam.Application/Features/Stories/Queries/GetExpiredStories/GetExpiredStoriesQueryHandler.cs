@@ -5,9 +5,9 @@ using Sociam.Domain.Interfaces.DataTransferObjects;
 
 namespace Sociam.Application.Features.Stories.Queries.GetExpiredStories;
 public sealed class GetExpiredStoriesQueryHandler(IStoryService service)
-    : IRequestHandler<GetExpiredStoriesQuery, Result<IEnumerable<StoryViewsResponseDto>>>
+    : IRequestHandler<GetExpiredStoriesQuery, Result<PagedResult<StoryViewsResponseDto>>>
 {
-    public async Task<Result<IEnumerable<StoryViewsResponseDto>>> Handle(
+    public async Task<Result<PagedResult<StoryViewsResponseDto>>> Handle(
         GetExpiredStoriesQuery request, CancellationToken cancellationToken)
-        => await service.GetExpiredStoriesAsync();
+        => await service.GetExpiredStoriesAsync(request.QueryParameters);
 }

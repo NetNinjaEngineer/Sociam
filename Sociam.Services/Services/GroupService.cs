@@ -22,6 +22,7 @@ using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
 using System.Net;
 

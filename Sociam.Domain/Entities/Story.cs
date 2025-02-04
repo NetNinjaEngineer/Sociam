@@ -7,6 +7,7 @@ public class Story : BaseEntity
 {
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.Now.AddHours(24);
+    public bool IsArchived { get; set; }
     public StoryPrivacy StoryPrivacy { get; set; }
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
