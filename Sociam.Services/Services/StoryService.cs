@@ -466,4 +466,7 @@ public sealed class StoryService(
 
         return Result<List<StoryViewsResponseDto>>.Success(stories);
     }
+
+    public async Task<Result<IEnumerable<StoryViewsResponseDto>>> GetExpiredStoriesAsync()
+        => Result<IEnumerable<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetExpiredStoriesAsync(currentUser.Id));
 }

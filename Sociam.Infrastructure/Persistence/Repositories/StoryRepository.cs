@@ -250,5 +250,45 @@ public sealed class StoryRepository(
         return stories;
     }
 
+    public async Task<IEnumerable<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId)
+        => await context.Stories
+            .AsNoTracking()
+            .Where(s => s.UserId == creatorId && s.ExpiresAt < DateTimeOffset.Now)
+            .Select(s => new StoryViewsResponseDto
+            {
+                StoryId = s.Id,
+                CreatorId = s.UserId,
+                CreatorFirstName = s.User.FirstName ?? "",
+                CreatorLastName = s.User.LastName ?? "",
+                CreatorProfilePicture = string.IsNullOrEmpty(s.User.ProfilePictureUrl)
+                    ? null
+                    : $"{configuration["BaseApiUrl"]}/Uploads/Images/{s.User.ProfilePictureUrl}",
+                CreatorUserName = s.User.UserName ?? "",
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
+                MediaUrl = s is MediaStory
+                    ? (IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Images/{((MediaStory)s).MediaUrl}")
+                    : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiresAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                ReactionsCount = s.StoryReactions.Count,
+                CommentsCount = s.StoryComments.Count,
+                ViewsCount = s.StoryViewers.Count,
+                Viewers = s.StoryViewers
+                    .Select(view => new StoryViewerDto
+                    {
+                        ViewedAt = view.ViewedAt,
+                        ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
+                        ProfilePictureUrl = string.IsNullOrEmpty(view.Viewer.ProfilePictureUrl)
+                            ? null
+                            : $"{configuration["BaseApiUrl"]}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
+                    }).ToList()
+
+            }).ToListAsync();
+
     private static bool IsVideoMediaType(MediaType? mediaType) => mediaType == MediaType.Video;
 }

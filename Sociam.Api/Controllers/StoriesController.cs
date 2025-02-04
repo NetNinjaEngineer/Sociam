@@ -10,6 +10,7 @@ using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
 using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
+using Sociam.Application.Features.Stories.Queries.GetExpiredStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
 using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
@@ -64,33 +65,33 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<List<StoryViewedDto>>>> GetStoriesViewedByMeAsync()
         => CustomResult(await Mediator.Send(new GetStoriesViewedByMeQuery()));
 
-    [HttpGet("friends/all-active-stories")]
+    [HttpGet("me/friends/all-active-stories")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<IEnumerable<StoryDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<StoryDto>>>> GetActiveStoriesAsync()
         => CustomResult(await Mediator.Send(new GetActiveFriendStoriesQuery()));
 
-    [HttpGet("friends/{friendId:guid}/active-stories")]
+    [HttpGet("me/friends/{friendId:guid}/active-stories")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<UserWithStoriesDto?>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<UserWithStoriesDto?>>> GetActiveUserStoriesAsync([FromRoute] Guid friendId)
         => CustomResult(await Mediator.Send(new GetUserStoriesQuery { FriendId = friendId.ToString() }));
 
-    [HttpGet("friends/{friendId:guid}/has-stories-i-have-not-seen")]
+    [HttpGet("me/friends/{friendId:guid}/has-stories-i-have-not-seen")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<bool>>> GetFriendStoryStatusAsync([FromRoute] Guid friendId)
         => CustomResult(await Mediator.Send(new HasUnseenStoriesQuery { FriendId = friendId.ToString() }));
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}/me")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<StoryDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StoryDto>>> GetStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new GetStoryByIdQuery { StoryId = id }));
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:guid}/me")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
@@ -98,21 +99,21 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<bool>>> DeleteStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new DeleteStoryCommand { StoryId = id }));
 
-    [HttpGet("{id:guid}/viewes")]
+    [HttpGet("{id:guid}/me/viewes")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<StoryViewsResponseDto?>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<StoryViewsResponseDto?>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StoryViewsResponseDto?>>> GetStoryViewsAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new GetStoryViewersQuery { StoryId = id }));
 
-    [HttpGet("{id:guid}/have-i-viewed")]
+    [HttpGet("{id:guid}/me/have-i-viewed")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<bool>>> IsStoryViewedAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new IsStoryViewedQuery { StoryId = id }));
 
-    [HttpPut("{id:guid}/mark-as-viewed")]
+    [HttpPut("{id:guid}/me/mark-as-viewed")]
     [Guard(roles: [AppConstants.Roles.User])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
@@ -120,6 +121,12 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<bool>>> ViewStoryAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new MarkStoryAsViewedCommand { StoryId = id }));
+
+    [HttpGet("me/expired-stories")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<IEnumerable<StoryViewsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<IEnumerable<StoryViewsResponseDto>>>> GetExpiredStoriesAsync()
+        => CustomResult(await Mediator.Send(new GetExpiredStoriesQuery()));
 
 
 }

@@ -29,4 +29,5 @@ public interface IStoryService
     Task<Result<StoryViewsResponseDto?>> GetStoryViewsAsync(GetStoryViewersQuery query);
     Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync();
     Task<Result<List<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query);
+    Task<Result<IEnumerable<StoryViewsResponseDto>>> GetExpiredStoriesAsync();
 }
