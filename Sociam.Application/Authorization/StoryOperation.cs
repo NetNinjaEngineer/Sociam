@@ -4,5 +4,7 @@ public enum StoryOperation
     View,
     Edit,
     Delete,
-    ManageViewers
+    ManageViewers,
+    React,
+    Comment
 }

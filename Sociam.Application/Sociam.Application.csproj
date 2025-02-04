@@ -24,7 +24,6 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="Features\Stories\Commands\AddStoryReaction\" />
     <Folder Include="Features\Stories\Commands\AddStoryComment\" />
     <Folder Include="Features\Stories\Commands\ChangeStoryPrivacy\" />
     <Folder Include="Features\Stories\Queries\GetStoryComments\" />

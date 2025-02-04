@@ -9,6 +9,8 @@ public static class StoryPolicies
     public const string EditStory = "StoryPolicy_EditStory";
     public const string DeleteStory = "StoryPolicy_DeleteStory";
     public const string ManageStoryViewers = "StoryPolicy_ManageViewers";
+    public const string React = "StoryPolicy_React";
+    public const string Comment = "StoryPolicy_Comment";
 
     public static void AddStoryPolicies(this AuthorizationOptions options)
     {
@@ -23,6 +25,14 @@ public static class StoryPolicies
 
         options.AddPolicy(ManageStoryViewers,
             policy => policy.Requirements.Add(new StoryOperationRequirement(StoryOperation.ManageViewers)));
+
+
+        options.AddPolicy(Comment,
+            policy => policy.Requirements.Add(new StoryOperationRequirement(StoryOperation.Comment)));
+
+
+        options.AddPolicy(React,
+            policy => policy.Requirements.Add(new StoryOperationRequirement(StoryOperation.React)));
     }
 
 }

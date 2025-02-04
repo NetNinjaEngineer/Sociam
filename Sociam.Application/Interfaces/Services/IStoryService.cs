@@ -1,5 +1,6 @@
 ﻿using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
+using Sociam.Application.Features.Stories.Commands.AddStoryReaction;
 using Sociam.Application.Features.Stories.Commands.CreateMediaStory;
 using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
@@ -32,4 +33,5 @@ public interface IStoryService
     Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query);
     Task<Result<PagedResult<StoryViewsResponseDto>>> GetExpiredStoriesAsync(StoryQueryParameters? parameters);
     Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoryArchiveAsync(StoryQueryParameters? parameters);
+    Task<Result<bool>> ReactToStoryAsync(AddStoryReactionCommand command);
 }

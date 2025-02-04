@@ -8,15 +8,17 @@ public sealed class CreateTextStoryCommandValidator : AbstractValidator<CreateTe
     public CreateTextStoryCommandValidator()
     {
         RuleFor(x => x.Content)
-            .NotNull().WithMessage("Content can not be null")
-            .NotEmpty().WithMessage("Content can not be empty");
+            .NotNull().WithMessage("Content cannot be null")
+            .NotEmpty().WithMessage("Content cannot be empty");
 
         RuleFor(x => x.StoryPrivacy)
-            .IsInEnum().WithMessage("Invalid Privacy Type.")
-            .Must((command, privacy) => IsStoryViewersRequired(privacy, command.AllowedViewerIds))
-            .WithMessage("You must assign the viewers of the story as you selected the custom story privacy option !!!");
+            .IsInEnum().WithMessage("Invalid Privacy Type.");
+
+        RuleFor(x => x)
+            .Must(command => IsStoryViewersValid(command.StoryPrivacy, command.AllowedViewerIds))
+            .WithMessage("You must assign viewers when selecting the custom story privacy option!");
     }
 
-    private static bool IsStoryViewersRequired(StoryPrivacy privacy, List<string>? commandAllowedViewerIds)
-        => privacy == StoryPrivacy.Custom && commandAllowedViewerIds?.Count > 0;
+    private static bool IsStoryViewersValid(StoryPrivacy privacy, List<string>? allowedViewerIds)
+        => privacy != StoryPrivacy.Custom || allowedViewerIds is { Count: > 0 };
 }

@@ -28,8 +28,6 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.UseTphMappingStrategy();
 
-        builder.HasQueryFilter(s => s.ExpiresAt <= DateTimeOffset.Now);
-
         builder.ToTable("Stories");
     }
 }

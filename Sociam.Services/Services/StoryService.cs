@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Sociam.Application.Authorization;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
+using Sociam.Application.Features.Stories.Commands.AddStoryReaction;
 using Sociam.Application.Features.Stories.Commands.CreateMediaStory;
 using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
@@ -468,4 +469,49 @@ public sealed class StoryService(
 
     public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoryArchiveAsync(StoryQueryParameters? parameters)
         => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoryArchiveAsync(currentUser.Id, parameters));
+
+    public async Task<Result<bool>> ReactToStoryAsync(AddStoryReactionCommand command)
+    {
+        var specification = new GetActiveStorySpecification(command.StoryId);
+
+        var activeStory = await unitOfWork.Repository<Story>()?.GetBySpecificationAsync(specification)!;
+
+        if (activeStory is null)
+            return Result<bool>.Failure(
+                statusCode: HttpStatusCode.NotFound,
+                error: string.Format(DomainErrors.Story.StoryNotFounded, command.StoryId));
+
+        var authResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: activeStory,
+            policyName: StoryPolicies.React);
+
+
+        if (!authResult.Succeeded) return Result<bool>.Failure(HttpStatusCode.Forbidden);
+
+        var storyReaction = new StoryReaction
+        {
+            Id = Guid.NewGuid(),
+            ReactedById = currentUser.Id,
+            StoryId = command.StoryId,
+            ReactionType = command.ReactionType
+        };
+
+        unitOfWork.Repository<StoryReaction>()?.Create(storyReaction);
+
+        await unitOfWork.SaveChangesAsync();
+
+        // Notify the story owner with the reactions
+        // Get the story views
+
+        var storyStatistics = await unitOfWork.StoryRepository.GetStoryViewsAsync(activeStory.Id, activeStory.UserId);
+
+        await hubContext.Clients.User(activeStory.UserId).SendAsync(
+            "NewReaction",
+            $"{currentUser.FullName} reacted to your story",
+            storyReaction.ReactionType.ToString(),
+            storyStatistics);
+
+        return Result<bool>.Success(true);
+    }
 }

@@ -5,6 +5,7 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
+using Sociam.Application.Features.Stories.Commands.AddStoryReaction;
 using Sociam.Application.Features.Stories.Commands.CreateMediaStory;
 using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
@@ -21,6 +22,7 @@ using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
 using Sociam.Application.Features.Stories.Queries.IsStoryViewed;
 using Sociam.Application.Features.Stories.Queries.ViewedStoriesByMe;
 using Sociam.Application.Helpers;
+using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Utils;
 
@@ -138,4 +140,12 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
         => CustomResult(await Mediator.Send(new GetStoryArchiveQuery() { QueryParameters = @parameters }));
 
 
+    [HttpPost("me/{id:guid}/react")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<bool>>> ReactToStoryAsync(
+        [FromRoute] Guid id, [FromForm] ReactionType reaction)
+        => CustomResult(await Mediator.Send(new AddStoryReactionCommand { StoryId = id, ReactionType = reaction }));
 }

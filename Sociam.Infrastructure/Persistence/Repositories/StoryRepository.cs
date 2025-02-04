@@ -195,6 +195,11 @@ public sealed class StoryRepository(
         StoryQueryParameters? queryParameters)
         => await GetStoriesAsync(s => s.UserId == currentUserId && s.IsArchived, queryParameters);
 
+    public async Task<string?> GetStoryOwnerIdAsync(Guid storyId)
+        => (await context.Stories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == storyId))?.UserId;
+
     private async Task<PagedResult<StoryViewsResponseDto>> GetStoriesAsync(
         Expression<Func<Story, bool>>? predicate, StoryQueryParameters? queryStoryQueryParameters)
     {
