@@ -499,18 +499,32 @@ public sealed class StoryService(
 
         unitOfWork.Repository<StoryReaction>()?.Create(storyReaction);
 
-        await unitOfWork.SaveChangesAsync();
 
-        // Notify the story owner with the reactions
-        // Get the story views
+        var notification = new StoryNotification
+        {
+            Id = Guid.NewGuid(),
+            ActorId = currentUser.Id,
+            RecipientId = activeStory.UserId,
+            Status = NotificationStatus.UnRead,
+            Type = NotificationType.NewStoryReaction,
+            StoryId = activeStory.Id
+        };
+
+        notification.ActionUrl = NotificationUrlGenerator.GenerateUrl(notification);
+        notification.Message = notification.GenerateNotificationText(currentUser.FullName);
+
+        unitOfWork.Repository<StoryNotification>()?.Create(notification);
+
+        await unitOfWork.SaveChangesAsync();
 
         var storyStatistics = await unitOfWork.StoryRepository.GetStoryViewsAsync(activeStory.Id, activeStory.UserId);
 
         await hubContext.Clients.User(activeStory.UserId).SendAsync(
             "NewReaction",
-            $"{currentUser.FullName} reacted to your story",
+            notification.GenerateNotificationText(currentUser.FullName),
             storyReaction.ReactionType.ToString(),
-            storyStatistics);
+            storyStatistics,
+            notification);
 
         return Result<bool>.Success(true);
     }

@@ -24,6 +24,14 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Folder Include="Features\Notifications\Commands\MarkAsRead\" />
+    <Folder Include="Features\Notifications\Commands\MarkAllAsRead\" />
+    <Folder Include="Features\Notifications\Queries\GetNotifications\" />
+    <Folder Include="Features\Notifications\Queries\GetNotification\" />
+    <Folder Include="Features\Notifications\Queries\GetUnReadNotifications\" />
+    <Folder Include="Features\Notifications\Queries\GetUnReadCount\" />
+    <Folder Include="Features\Notifications\Queries\GetReadCount\" />
+    <Folder Include="Features\Notifications\Queries\GetReadedNotfications\" />
     <Folder Include="Features\Stories\Commands\AddStoryComment\" />
     <Folder Include="Features\Stories\Commands\ChangeStoryPrivacy\" />
     <Folder Include="Features\Stories\Queries\GetStoryComments\" />

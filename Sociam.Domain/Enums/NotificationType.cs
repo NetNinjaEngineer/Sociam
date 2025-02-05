@@ -1,0 +1,28 @@
+﻿namespace Sociam.Domain.Enums;
+public enum NotificationType
+{
+    NewPostCreated,
+    PostReaction,
+    PostComment,
+    TaggedInPost,
+    MentionedInPost,
+    MentionedInComment,
+    StartFollowing,
+    PostShare,
+    FriendRequest,
+    FriendAccepted,
+    BirthdayReminder,
+    GroupInvitation,
+    GroupPostActivity,
+    NewStoryCreated,
+    NewStoryReaction,
+    NewStoryComment,
+    GroupInvite,
+    GroupJoinRequest,
+    GroupRoleChange,
+    NewMedia,
+    MediaTag,
+    MediaComment,
+    MediaReaction,
+    ProfileView,
+}
