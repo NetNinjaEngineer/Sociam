@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Sociam.Application.Authorization.Helpers;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
@@ -42,7 +43,8 @@ public sealed class StoryService(
     IHubContext<StoryHub> hubContext,
     IAuthorizationService authorizationService,
     INotificationUrlGenerator urlGenerator,
-    ICacheService cacheService) : IStoryService
+    ICacheService cacheService,
+    IConfiguration configuration) : IStoryService
 {
     public async Task<Result<MediaStoryDto>> CreateMediaStoryAsync(CreateMediaStoryCommand command)
     {
@@ -469,6 +471,11 @@ public sealed class StoryService(
 
         if (!authResult.Succeeded) return Result<bool>.Failure(HttpStatusCode.Forbidden);
 
+        // Cache Invalidation
+        var cacheKey = $"story_stats_{command.StoryId}_{currentUser.Id}";
+
+        cacheService.Remove(cacheKey);
+
         var storyReaction = new StoryReaction
         {
             Id = Guid.NewGuid(),
@@ -611,6 +618,10 @@ public sealed class StoryService(
         if (!authResult.Succeeded)
             return Result<bool>.Failure(HttpStatusCode.Forbidden);
 
+        var cacheKey = $"story_stats_{command.StoryId}_{currentUser.Id}";
+
+        cacheService.Remove(cacheKey);
+
         var comment = new StoryComment()
         {
             Id = Guid.NewGuid(),
@@ -675,7 +686,6 @@ public sealed class StoryService(
         return Result<StoryWithReactionsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithReactionsAsync(currentUser.Id, query.StoryId));
     }
 
-    // Support The Caching
     public async Task<Result<StoryStatisticsDto?>> GetStoryStatisticsAsync(GetStoryStatisticsQuery query)
     {
         // check cache first
@@ -705,7 +715,10 @@ public sealed class StoryService(
 
         // save to cache
         if (storyResponse != null)
-            cacheService.Set(cacheKey, storyResponse, TimeSpan.FromMinutes(10));
+            cacheService.Set(
+                cacheKey,
+                storyResponse,
+                TimeSpan.FromMinutes(Convert.ToInt32(configuration["CacheExpirationInMinutes"])));
 
         return Result<StoryStatisticsDto?>.Success(storyResponse);
     }
