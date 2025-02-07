@@ -25,4 +25,5 @@ public enum NotificationType
     MediaComment,
     MediaReaction,
     ProfileView,
+    PrivacyChanged
 }

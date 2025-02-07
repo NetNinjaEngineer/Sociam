@@ -620,6 +620,7 @@ public sealed class AuthService(
 
 
     public async Task<Result<SignInResponseDto>> LoginAsync(LoginUserCommand command)
+
     {
         var loggedInUser = await userManager.FindByEmailAsync(command.Email);
 
@@ -644,15 +645,14 @@ public sealed class AuthService(
                 $"Your account is locked until {loggedInUser.LockoutEnd!.Value.ToLocalTime()}");
         }
 
-        var result = await signInManager.PasswordSignInAsync(
+        var result = await signInManager.CheckPasswordSignInAsync(
             user: loggedInUser,
             password: command.Password,
-            isPersistent: true,
             lockoutOnFailure: true);
 
         if (result.IsLockedOut)
         {
-            TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
 
             var lockoutEndTime = TimeZoneInfo.ConvertTimeFromUtc(loggedInUser.LockoutEnd!.Value.UtcDateTime, timeZone);
 
@@ -660,14 +660,13 @@ public sealed class AuthService(
                  HttpStatusCode.Unauthorized, $"Your account is locked until {lockoutEndTime}");
         }
 
-        if (result.Succeeded)
-        {
-            var response = await CreateLoginResponseAsync(userManager, loggedInUser);
-            return Result<SignInResponseDto>.Success(response);
-        }
+        if (!result.Succeeded)
+            return Result<SignInResponseDto>.Failure(
+                HttpStatusCode.Unauthorized, DomainErrors.Users.InvalidCredientials);
 
-        return Result<SignInResponseDto>.Failure(
-            HttpStatusCode.Unauthorized, DomainErrors.Users.InvalidCredientials);
+        var response = await CreateLoginResponseAsync(userManager, loggedInUser);
+        return Result<SignInResponseDto>.Success(response);
+
     }
 
     private static async Task<Result<SignInResponseDto>> GetTwoFactorResponseAsync(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IMailService mailService, IHttpContextAccessor contextAccessor, LoginUserCommand command, ApplicationUser? loggedInUser)

@@ -1,22 +1,23 @@
-﻿using Sociam.Domain.Entities;
+﻿using Sociam.Application.Interfaces.Services;
+using Sociam.Domain.Entities;
 using Sociam.Domain.Enums;
 
-namespace Sociam.Domain.Utils;
+namespace Sociam.Services.Services;
 
-//TODO: Still needs handling with frontend
-public static class NotificationUrlGenerator
+public sealed class NotificationUrlGenerator : INotificationUrlGenerator
 {
-    public static string GenerateUrl(Notification notification)
-        => notification switch
+    public string GenerateUrl(Notification notification)
+    {
+        return notification switch
         {
-            PostNotification postNotification => GeneratePostNotificationUrl(postNotification),
-            NetworkNotification networkNotification => GenerateNetworkNotificationUrl(networkNotification),
+            MediaNotification mediaNotification => GenerateMediaNotificationUrl(mediaNotification),
             StoryNotification storyNotification => GenerateStoryNotificationUrl(storyNotification),
             GroupNotification groupNotification => GenerateGroupNotificationUrl(groupNotification),
-            MediaNotification mediaNotification => GenerateMediaNotificationUrl(mediaNotification),
-            _ => "/notifications"
+            NetworkNotification networkNotification => GenerateNetworkNotificationUrl(networkNotification),
+            PostNotification postNotification => GeneratePostNotificationUrl(postNotification),
+            _ => throw new ArgumentException("Ïnvalid Notification Type")
         };
-
+    }
 
     private static string GenerateMediaNotificationUrl(MediaNotification notification)
         => $"/media/{notification.MediaId}";

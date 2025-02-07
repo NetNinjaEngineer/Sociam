@@ -32,8 +32,6 @@
     <Folder Include="Features\Notifications\Queries\GetUnReadCount\" />
     <Folder Include="Features\Notifications\Queries\GetReadCount\" />
     <Folder Include="Features\Notifications\Queries\GetReadedNotfications\" />
-    <Folder Include="Features\Stories\Commands\AddStoryComment\" />
-    <Folder Include="Features\Stories\Commands\ChangeStoryPrivacy\" />
     <Folder Include="Features\Stories\Queries\GetStoryComments\" />
     <Folder Include="Features\Stories\Queries\GetStoryReactions\" />
     <Folder Include="Features\Stories\Queries\GetStoryStatistics\" />

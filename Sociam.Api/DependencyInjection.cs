@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Features;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
+using Sociam.Api.WorkerServices;
 using Sociam.Application.Authorization;
 using System.Text.Json.Serialization;
 
@@ -20,6 +21,8 @@ public static class DependencyInjection
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
+
+        services.AddHostedService<StoryArchiveWorker>();
 
         services.AddSwaggerDocumentation();
 

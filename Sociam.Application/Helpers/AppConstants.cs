@@ -62,5 +62,6 @@ public sealed class AppConstants
     public static class Story
     {
         public const string StoryDeleteCompleted = "Story '{0}' delete completed";
+        public const string StoryPrivacyUpdated = "Story privacy updated successfully";
     }
 }

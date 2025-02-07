@@ -113,6 +113,8 @@ public static class DependencyInjection
 
         services.AddScoped<IGroupService, GroupService>();
 
+        services.AddScoped<INotificationUrlGenerator, NotificationUrlGenerator>();
+
         return services;
     }
 }

@@ -5,7 +5,10 @@ public sealed class GetActiveStorySpecification : BaseSpecification<Story>
 {
     public GetActiveStorySpecification(Guid storyId, string createdById)
         : base(story => story.UserId == createdById && story.Id == storyId && story.ExpiresAt > DateTimeOffset.Now)
-        => AddIncludes(story => story.User);
+    {
+        AddIncludes(story => story.User);
+        AddIncludes(story => story.StoryViewers);
+    }
 
     public GetActiveStorySpecification(Guid storyId)
         : base(story => story.Id == storyId && story.ExpiresAt > DateTimeOffset.Now) { }

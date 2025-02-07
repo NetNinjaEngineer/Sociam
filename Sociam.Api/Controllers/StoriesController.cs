@@ -5,7 +5,9 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
+using Sociam.Application.Features.Stories.Commands.AddStoryComment;
 using Sociam.Application.Features.Stories.Commands.AddStoryReaction;
+using Sociam.Application.Features.Stories.Commands.ChangeStoryPrivacy;
 using Sociam.Application.Features.Stories.Commands.CreateMediaStory;
 using Sociam.Application.Features.Stories.Commands.CreateTextStory;
 using Sociam.Application.Features.Stories.Commands.DeleteStory;
@@ -148,4 +150,29 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<bool>>> ReactToStoryAsync(
         [FromRoute] Guid id, [FromForm] ReactionType reaction)
         => CustomResult(await Mediator.Send(new AddStoryReactionCommand { StoryId = id, ReactionType = reaction }));
+
+    [HttpPut("me/{id:guid}/change-privacy")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<bool>>> ChangeStoryPrivacyAsync(
+        [FromRoute] Guid id, [FromForm] ChangeStoryPrivacyDto request)
+        => CustomResult(await Mediator.Send(
+            new ChangeStoryPrivacyCommand
+            {
+                StoryId = id,
+                Privacy = request.Privacy,
+                AllowedViewerIds = request.AllowedViewerIds
+            }));
+
+
+    [HttpPost("me/{id:guid}/comment")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<bool>>> CommentToStoryAsync(
+        [FromRoute] Guid id, [FromBody] string comment)
+        => CustomResult(await Mediator.Send(new AddStoryCommentCommand() { StoryId = id, Comment = comment }));
 }

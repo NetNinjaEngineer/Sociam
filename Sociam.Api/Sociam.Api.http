@@ -8,3 +8,25 @@ Accept: application/json
 DELETE {{Sociam.Api_HostAddress}}/api/v1/conversations
 
 ###
+
+GET {{Sociam.Api_HostAddress}}/api/v1/auth/access-token
+X-API-KEY: 66Wo86U1CazeW9TROml0TzMc59S1DIuT0KLi8KfP
+###
+
+POST {{Sociam.Api_HostAddress}}/api/v1/auth/login-user
+X-API-KEY: 66Wo86U1CazeW9TROml0TzMc59S1DIuT0KLi8KfP
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "me5260287@gmail.com",
+  "password": "P@ssw1234"
+}
+
+###
+
+GET {{Sociam.Api_HostAddress}}/api/v1/stories/me
+X-API-KEY: 66Wo86U1CazeW9TROml0TzMc59S1DIuT0KLi8KfP
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJNb2VoYWJAMjAwMiIsImp0aSI6IjM0NTMwM2MzLTk4YzUtNDkyMy1hZjUyLWE5Y2YxMDA5NjIzMyIsImVtYWlsIjoibWU1MjYwMjg3QGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiNzAyQzc0MDEtRjgzQy00Njg0LTk0MjEtOUFBNzRGQzQwMDUwIiwiRnVsbE5hbWUiOiJNb2hhbWVkIEVoYWIiLCJEYXRlT2ZCaXJ0aCI6IjIwMDItMDEtMDEiLCJHZW5kZXIiOiJNYWxlIiwiUHJvZmlsZVBpY3R1cmVVcmwiOiJodHRwczovL2xvY2FsaG9zdDo3MDQyL1VwbG9hZHMvSW1hZ2VzLyIsIkNyZWF0ZWRBdCI6IjIwMjUtMDItMDZUMTI6MzI6MDguNTUzNTUyMyswMjowMCIsIkJpbyI6IlNvZnR3YXJlIERldmVsb3BlciBhbmQgVGVjaCBFbnRodXNpYXN0LiIsInVpZCI6IjcwMkM3NDAxLUY4M0MtNDY4NC05NDIxLTlBQTc0RkM0MDA1MCIsImlwIjoiOjoxIiwidXNlckFnZW50IjoiIiwiZmluZ2VyUHJpbnQiOiI3L2pueWxCbUovNFYzYVhnNVJMOHF0Y0xiVklQTjh4MldYL2JUeTJEb2FNPSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJVc2VyIiwiQWRtaW4iXSwiZXhwIjoxNzM4OTI2NjI4LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo3MDQyIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NzA0MiJ9.vXmP0RRgKcy9TocD0qv6R8eqlqzCGgaynZuE2YdRi3Q
+Accept: application/json
+###
