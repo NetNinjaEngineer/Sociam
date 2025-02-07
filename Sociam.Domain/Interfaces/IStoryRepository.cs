@@ -14,4 +14,7 @@ public interface IStoryRepository : IGenericRepository<Story>
     Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId, StoryQueryParameters? queryParameters);
     Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(string currentUserId, StoryQueryParameters? queryParameters);
     Task<string?> GetStoryOwnerIdAsync(Guid storyId);
+    Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId);
+    Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId);
+    Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId);
 }

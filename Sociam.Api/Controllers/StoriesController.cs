@@ -16,8 +16,11 @@ using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetExpiredStories;
 using Sociam.Application.Features.Stories.Queries.GetMyStories;
 using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
+using Sociam.Application.Features.Stories.Queries.GetStoriesWithComments;
 using Sociam.Application.Features.Stories.Queries.GetStoryArchive;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.GetStoryComments;
+using Sociam.Application.Features.Stories.Queries.GetStoryReactions;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
@@ -175,4 +178,26 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<bool>>> CommentToStoryAsync(
         [FromRoute] Guid id, [FromBody] string comment)
         => CustomResult(await Mediator.Send(new AddStoryCommentCommand() { StoryId = id, Comment = comment }));
+
+
+
+    [HttpGet("me/with-comments")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<IEnumerable<StoryWithCommentsResponseDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<IEnumerable<StoryWithCommentsResponseDto>>>> GetStoriesWithCommentsAsync()
+        => CustomResult(await Mediator.Send(new GetStoriesWithCommentsQuery()));
+
+    [HttpGet("me/{id:guid}/with-comments")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<StoryWithCommentsResponseDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<StoryWithCommentsResponseDto?>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<StoryWithCommentsResponseDto?>>> GetStoryWithCommentsAsync(
+        [FromRoute] Guid id) => CustomResult(await Mediator.Send(new GetStoryCommentsQuery { StoryId = id }));
+
+    [HttpGet("me/{id:guid}/with-reactions")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<StoryWithReactionsResponseDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<StoryWithReactionsResponseDto?>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<StoryWithReactionsResponseDto?>>> GetStoryWithReactionsAsync(
+        [FromRoute] Guid id) => CustomResult(await Mediator.Send(new GetStoryReactionsQuery { StoryId = id }));
 }

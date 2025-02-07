@@ -200,6 +200,115 @@ public sealed class StoryRepository(
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == storyId))?.UserId;
 
+    public async Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId)
+        => await context.Stories
+            .AsNoTracking()
+            .Where(s => s.UserId == currentUserId)
+            .Select(s => new StoryWithCommentsResponseDto
+            {
+                Id = s.Id,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiredAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory
+                    ? IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                    : null,
+                Privacy = s.StoryPrivacy.ToString(),
+                Type = s is TextStory ? "text" : "media",
+                IsArchived = s.IsArchived,
+                Commenters =
+                    s.StoryComments
+                        .Select(comment => new StoryCommenterResponseDto()
+                        {
+                            FirstName = comment.CommentedBy.FirstName ?? "",
+                            LastName = comment.CommentedBy.LastName ?? "",
+                            ProfilePictureUrl = comment.CommentedBy.ProfilePictureUrl != null
+                                ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{comment.CommentedBy.ProfilePictureUrl}"
+                                : null,
+                            Comment = comment.Comment,
+                            UserName = comment.CommentedBy.UserName ?? "",
+                            CommenterId = comment.CommentedById.ToString(),
+                            CommentedAt = comment.CommentedAt
+                        })
+            }).ToListAsync();
+
+    public async Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId)
+        => await context.Stories
+            .AsNoTracking()
+            .Where(s => s.UserId == currentUserId && s.Id == queryStoryId)
+            .Select(s => new StoryWithCommentsResponseDto()
+            {
+                Id = s.Id,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiredAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory
+                    ? IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                    : null,
+                Privacy = s.StoryPrivacy.ToString(),
+                Type = s is TextStory ? "text" : "media",
+                IsArchived = s.IsArchived,
+                Commenters =
+                    s.StoryComments
+                        .Select(comment => new StoryCommenterResponseDto()
+                        {
+                            FirstName = comment.CommentedBy.FirstName ?? "",
+                            LastName = comment.CommentedBy.LastName ?? "",
+                            ProfilePictureUrl = comment.CommentedBy.ProfilePictureUrl != null
+                                ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{comment.CommentedBy.ProfilePictureUrl}"
+                                : null,
+                            Comment = comment.Comment,
+                            UserName = comment.CommentedBy.UserName ?? "",
+                            CommenterId = comment.CommentedById.ToString(),
+                            CommentedAt = comment.CommentedAt
+                        })
+            }).FirstOrDefaultAsync();
+
+    public async Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId)
+        => await context.Stories
+            .AsNoTracking()
+            .Where(s => s.UserId == currentUserId && s.Id == queryStoryId)
+            .Select(s => new StoryWithReactionsResponseDto
+            {
+                Id = s.Id,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiredAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory
+                    ? IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                    : null,
+                Privacy = s.StoryPrivacy.ToString(),
+                Type = s is TextStory ? "text" : "media",
+                IsArchived = s.IsArchived,
+                Reactions =
+                    s.StoryReactions
+                        .Select(reaction => new StoryReactionResponseDto
+                        {
+                            ReactedBy = string.Concat(reaction.ReactedBy.FirstName, " ", reaction.ReactedBy.LastName),
+                            ProfilePictureUrl = reaction.ReactedBy.ProfilePictureUrl != null
+                                ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{reaction.ReactedBy.ProfilePictureUrl}"
+                                : null,
+                            ReactionType = reaction.ReactionType.ToString(),
+                            ReactedAt = reaction.ReactedAt,
+                            ReactedById = reaction.ReactedById
+                        })
+            }).FirstOrDefaultAsync();
+
     private async Task<PagedResult<StoryViewsResponseDto>> GetStoriesAsync(
         Expression<Func<Story, bool>>? predicate, StoryQueryParameters? queryStoryQueryParameters)
     {

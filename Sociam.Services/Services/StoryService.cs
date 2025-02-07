@@ -15,6 +15,8 @@ using Sociam.Application.Features.Stories.Commands.MarkAsViewed;
 using Sociam.Application.Features.Stories.Queries.GetActiveFriendStories;
 using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
+using Sociam.Application.Features.Stories.Queries.GetStoryComments;
+using Sociam.Application.Features.Stories.Queries.GetStoryReactions;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
@@ -643,5 +645,33 @@ public sealed class StoryService(
                 notification);
 
         return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<IEnumerable<StoryWithCommentsResponseDto>>> GetStoriesWithCommentsAsync()
+        => Result<IEnumerable<StoryWithCommentsResponseDto>>.Success(await unitOfWork.StoryRepository.GetAllStoriesWithCommentsAsync(currentUser.Id));
+
+    public async Task<Result<StoryWithCommentsResponseDto?>> GetStoryWithCommentsAsync(GetStoryCommentsQuery query)
+    {
+        var existedStory = await unitOfWork.StoryRepository.GetByIdAsync(query.StoryId);
+
+        if (existedStory == null)
+            return Result<StoryWithCommentsResponseDto?>.Failure(
+                HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
+
+        return Result<StoryWithCommentsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithCommentsAsync(currentUser.Id, query.StoryId));
+
+    }
+
+    public async Task<Result<StoryWithReactionsResponseDto?>> GetStoryWithReactionsAsync(GetStoryReactionsQuery query)
+    {
+        var existedStory = await unitOfWork.StoryRepository.GetByIdAsync(query.StoryId);
+
+        if (existedStory == null)
+            return Result<StoryWithReactionsResponseDto?>.Failure(
+                HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
+
+        return Result<StoryWithReactionsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithReactionsAsync(currentUser.Id, query.StoryId));
     }
 }
