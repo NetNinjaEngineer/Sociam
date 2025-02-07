@@ -2,7 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Sociam.Application.Authorization;
+using Sociam.Application.Authorization.Helpers;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Stories;
 using Sociam.Application.Features.Stories.Commands.AddStoryComment;
@@ -17,6 +17,7 @@ using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryComments;
 using Sociam.Application.Features.Stories.Queries.GetStoryReactions;
+using Sociam.Application.Features.Stories.Queries.GetStoryStatistics;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
@@ -30,7 +31,6 @@ using Sociam.Domain.Interfaces;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
 using Sociam.Domain.Utils;
-using Sociam.Infrastructure.Persistence;
 using System.Net;
 
 namespace Sociam.Services.Services;
@@ -41,8 +41,8 @@ public sealed class StoryService(
     IFileService fileService,
     IHubContext<StoryHub> hubContext,
     IAuthorizationService authorizationService,
-    ApplicationDbContext context,
-    INotificationUrlGenerator urlGenerator) : IStoryService
+    INotificationUrlGenerator urlGenerator,
+    ICacheService cacheService) : IStoryService
 {
     public async Task<Result<MediaStoryDto>> CreateMediaStoryAsync(CreateMediaStoryCommand command)
     {
@@ -673,5 +673,40 @@ public sealed class StoryService(
                 string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
 
         return Result<StoryWithReactionsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithReactionsAsync(currentUser.Id, query.StoryId));
+    }
+
+    // Support The Caching
+    public async Task<Result<StoryStatisticsDto?>> GetStoryStatisticsAsync(GetStoryStatisticsQuery query)
+    {
+        // check cache first
+        var cacheKey = $"story_stats_{query.StoryId}_{currentUser.Id}";
+        var cachedStatistics = cacheService.Get<StoryStatisticsDto?>(cacheKey);
+
+        if (cachedStatistics != null)
+            return Result<StoryStatisticsDto?>.Success(cachedStatistics);
+
+        var existedStory = await unitOfWork.StoryRepository.GetByIdAsync(query.StoryId);
+
+        if (existedStory == null)
+            return Result<StoryStatisticsDto?>.Failure(
+                HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
+
+        var authorizationResult =
+            await authorizationService.AuthorizeAsync(
+                user: currentUser.GetUser()!,
+                resource: existedStory,
+                policyName: StoryPolicies.ViewStatistics);
+
+        if (!authorizationResult.Succeeded)
+            return Result<StoryStatisticsDto?>.Failure(HttpStatusCode.Forbidden);
+
+        var storyResponse = await unitOfWork.StoryRepository.GetStoryStatisticsAsync(query.StoryId, currentUser.Id);
+
+        // save to cache
+        if (storyResponse != null)
+            cacheService.Set(cacheKey, storyResponse, TimeSpan.FromMinutes(10));
+
+        return Result<StoryStatisticsDto?>.Success(storyResponse);
     }
 }

@@ -21,6 +21,7 @@ using Sociam.Application.Features.Stories.Queries.GetStoryArchive;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryComments;
 using Sociam.Application.Features.Stories.Queries.GetStoryReactions;
+using Sociam.Application.Features.Stories.Queries.GetStoryStatistics;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
@@ -200,4 +201,11 @@ public class StoriesController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<StoryWithReactionsResponseDto?>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StoryWithReactionsResponseDto?>>> GetStoryWithReactionsAsync(
         [FromRoute] Guid id) => CustomResult(await Mediator.Send(new GetStoryReactionsQuery { StoryId = id }));
+
+    [HttpGet("me/{id:guid}/statistics")]
+    [Guard(roles: [AppConstants.Roles.User])]
+    [ProducesResponseType(typeof(Result<StoryStatisticsDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<StoryStatisticsDto?>>> GetStatisticsAsync(
+        [FromRoute] Guid id) => CustomResult(await Mediator.Send(new GetStoryStatisticsQuery { StoryId = id }));
 }

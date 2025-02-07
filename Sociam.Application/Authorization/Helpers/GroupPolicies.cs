@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Sociam.Application.Authorization.Requirements;
 
-namespace Sociam.Application.Authorization
+namespace Sociam.Application.Authorization.Helpers
 {
     public static class GroupPolicies
     {

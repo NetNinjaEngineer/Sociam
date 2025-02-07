@@ -115,6 +115,8 @@ public static class DependencyInjection
 
         services.AddScoped<INotificationUrlGenerator, NotificationUrlGenerator>();
 
+        services.AddScoped<ICacheService, CacheService>();
+
         return services;
     }
 }

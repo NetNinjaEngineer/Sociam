@@ -309,6 +309,122 @@ public sealed class StoryRepository(
                         })
             }).FirstOrDefaultAsync();
 
+    public async Task<StoryStatisticsDto?> GetStoryStatisticsAsync(Guid queryStoryId, string currentUserId)
+    {
+        return await context.Stories
+            .AsNoTracking()
+            .Include(s => s.StoryComments)
+            .Include(s => s.StoryReactions)
+            .Include(s => s.StoryViewers)
+            .ThenInclude(sv => sv.Viewer)
+            .Where(s => s.UserId == currentUserId && s.Id == queryStoryId)
+            .Select(s => new StoryStatisticsDto
+            {
+                StoryId = s.Id,
+                Content = s is TextStory ? ((TextStory)s).Content : null,
+                Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
+                ExpiresAt = s.ExpiresAt,
+                CreatedAt = s.CreatedAt,
+                HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
+                MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
+                MediaUrl = s is MediaStory
+                    ? IsVideoMediaType(((MediaStory)s).MediaType)
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                    : null,
+                Privacy = s.StoryPrivacy.ToString(),
+                Type = s is TextStory ? "text" : "media",
+                IsArchived = s.IsArchived,
+                Reactions =
+                    s.StoryReactions
+                        .Select(reaction => new StoryReactionResponseDto
+                        {
+                            ReactedBy = string.Concat(reaction.ReactedBy.FirstName, " ", reaction.ReactedBy.LastName),
+                            ProfilePictureUrl = reaction.ReactedBy.ProfilePictureUrl != null
+                                ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{reaction.ReactedBy.ProfilePictureUrl}"
+                                : null,
+                            ReactionType = reaction.ReactionType.ToString(),
+                            ReactedAt = reaction.ReactedAt,
+                            ReactedById = reaction.ReactedById
+                        }).ToList(),
+                TotalComments = s.StoryComments.Count,
+                TotalViews = s.StoryViewers.Count,
+                Comments = s.StoryComments
+                    .Select(comment => new StoryCommenterResponseDto()
+                    {
+                        FirstName = comment.CommentedBy.FirstName ?? "",
+                        LastName = comment.CommentedBy.LastName ?? "",
+                        ProfilePictureUrl = comment.CommentedBy.ProfilePictureUrl != null
+                            ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{comment.CommentedBy.ProfilePictureUrl}"
+                            : null,
+                        Comment = comment.Comment,
+                        UserName = comment.CommentedBy.UserName ?? "",
+                        CommenterId = comment.CommentedById.ToString(),
+                        CommentedAt = comment.CommentedAt
+                    }).ToList(),
+                UniqueViews = s.StoryViewers.Distinct().Count(),
+                Viewers = s.StoryViewers
+                    .Where(view => view.IsViewed)
+                    .Select(view => new ViewerBreakdownDto
+                    {
+                        ViewedAt = view.ViewedAt!.Value,
+                        ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
+                        ProfilePictureUrl = string.IsNullOrEmpty(view.Viewer.ProfilePictureUrl)
+                            ? null : $"{configuration["BaseApiUrl"]}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
+                        ViewerId = view.ViewerId,
+                        ViewerType = ""
+                    }).ToList(),
+                TotalReactions = s.StoryReactions.Count,
+                ViewersByAgeGroup = GetViewersByAgeGroup(s.StoryViewers),
+                ReactionsBreakdown = GetReactionBreakdown(s.StoryReactions),
+                GetViewersByGender = GetViewersByGender(s.StoryViewers)
+            }).FirstOrDefaultAsync();
+    }
+
+    private static Dictionary<string, int> GetViewersByGender(ICollection<StoryView> storyViewers)
+        => storyViewers.GroupBy(x => x.Viewer.Gender)
+            .ToDictionary(
+                x => x.Key.ToString(),
+                x => x.Count());
+
+    private static Dictionary<string, int> GetReactionBreakdown(ICollection<StoryReaction>? reactions)
+    {
+        if (reactions == null || reactions.Count == 0)
+            return new Dictionary<string, int>();
+
+        return reactions
+            .GroupBy(r => r.ReactionType)
+            .ToDictionary(g => g.Key.ToString(), g => g.Count());
+    }
+
+    private static Dictionary<string, int> GetViewersByAgeGroup(ICollection<StoryView> storyViewers)
+    {
+        return storyViewers.GroupBy(v => CalculateAgeGroup(v.Viewer.DateOfBirth))
+            .ToDictionary(x => x.Key, x => x.Count());
+    }
+
+    private static string CalculateAgeGroup(DateOnly dateOfBirth)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        var age = today.Year - dateOfBirth.Year;
+
+        if (dateOfBirth.AddYears(age) > today)
+            age--;
+
+        return age switch
+        {
+            < 13 => "Under 13",
+            >= 13 and < 18 => "13-17",
+            >= 18 and < 25 => "18-24",
+            >= 25 and < 35 => "25-34",
+            >= 35 and < 45 => "35-44",
+            >= 45 and < 55 => "45-54",
+            >= 55 and < 65 => "55-64",
+            _ => "65+"
+        };
+    }
+
     private async Task<PagedResult<StoryViewsResponseDto>> GetStoriesAsync(
         Expression<Func<Story, bool>>? predicate, StoryQueryParameters? queryStoryQueryParameters)
     {

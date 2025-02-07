@@ -1,4 +1,4 @@
-﻿namespace Sociam.Application.Authorization;
+﻿namespace Sociam.Application.Authorization.Helpers;
 public enum StoryOperation
 {
     View,
@@ -6,5 +6,6 @@ public enum StoryOperation
     Delete,
     ManageViewers,
     React,
-    Comment
+    Comment,
+    ViewStatistics
 }

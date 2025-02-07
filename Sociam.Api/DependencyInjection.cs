@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
 using Sociam.Api.WorkerServices;
-using Sociam.Application.Authorization;
+using Sociam.Application.Authorization.Helpers;
 using System.Text.Json.Serialization;
 
 namespace Sociam.Api;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Sociam.Application.Authorization.Helpers;
 
 namespace Sociam.Application.Authorization.Requirements
 {

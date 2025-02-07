@@ -17,4 +17,5 @@ public interface IStoryRepository : IGenericRepository<Story>
     Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId);
     Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId);
     Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId);
+    Task<StoryStatisticsDto?> GetStoryStatisticsAsync(Guid queryStoryId, string currentUserId);
 }

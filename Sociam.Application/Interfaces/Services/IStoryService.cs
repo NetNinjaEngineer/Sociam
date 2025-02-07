@@ -12,6 +12,7 @@ using Sociam.Application.Features.Stories.Queries.GetStoriesByParams;
 using Sociam.Application.Features.Stories.Queries.GetStoryById;
 using Sociam.Application.Features.Stories.Queries.GetStoryComments;
 using Sociam.Application.Features.Stories.Queries.GetStoryReactions;
+using Sociam.Application.Features.Stories.Queries.GetStoryStatistics;
 using Sociam.Application.Features.Stories.Queries.GetStoryViewers;
 using Sociam.Application.Features.Stories.Queries.GetUserStories;
 using Sociam.Application.Features.Stories.Queries.HasUnseenStories;
@@ -43,4 +44,5 @@ public interface IStoryService
     Task<Result<IEnumerable<StoryWithCommentsResponseDto>>> GetStoriesWithCommentsAsync();
     Task<Result<StoryWithCommentsResponseDto?>> GetStoryWithCommentsAsync(GetStoryCommentsQuery query);
     Task<Result<StoryWithReactionsResponseDto?>> GetStoryWithReactionsAsync(GetStoryReactionsQuery query);
+    Task<Result<StoryStatisticsDto?>> GetStoryStatisticsAsync(GetStoryStatisticsQuery query);
 }

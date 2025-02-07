@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Sociam.Application.Authorization.Requirements;
 
-namespace Sociam.Application.Authorization;
+namespace Sociam.Application.Authorization.Helpers;
 
 public static class StoryPolicies
 {
@@ -11,6 +11,7 @@ public static class StoryPolicies
     public const string ManageStoryViewers = "StoryPolicy_ManageViewers";
     public const string React = "StoryPolicy_React";
     public const string Comment = "StoryPolicy_Comment";
+    public const string ViewStatistics = "StoryPolicy_ViewStatistics";
 
     public static void AddStoryPolicies(this AuthorizationOptions options)
     {
@@ -33,6 +34,10 @@ public static class StoryPolicies
 
         options.AddPolicy(React,
             policy => policy.Requirements.Add(new StoryOperationRequirement(StoryOperation.React)));
+
+
+        options.AddPolicy(ViewStatistics,
+            policy => policy.Requirements.Add(new StoryOperationRequirement(StoryOperation.ViewStatistics)));
     }
 
 }

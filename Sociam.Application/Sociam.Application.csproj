@@ -32,7 +32,6 @@
     <Folder Include="Features\Notifications\Queries\GetUnReadCount\" />
     <Folder Include="Features\Notifications\Queries\GetReadCount\" />
     <Folder Include="Features\Notifications\Queries\GetReadedNotfications\" />
-    <Folder Include="Features\Stories\Queries\GetStoryStatistics\" />
   </ItemGroup>
 
 </Project>

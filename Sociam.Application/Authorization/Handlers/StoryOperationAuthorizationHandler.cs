@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Sociam.Application.Authorization.Helpers;
 using Sociam.Application.Authorization.Requirements;
 using Sociam.Application.Helpers;
 using Sociam.Domain.Entities;
@@ -35,6 +36,7 @@ public sealed class StoryOperationAuthorizationHandler(IUnitOfWork unitOfWork)
             case { StoryOperation: StoryOperation.Delete }:
             case { StoryOperation: StoryOperation.Edit }:
             case { StoryOperation: StoryOperation.ManageViewers }:
+            case { StoryOperation: StoryOperation.ViewStatistics }:
                 if (isCreator)
                     context.Succeed(requirement);
                 break;

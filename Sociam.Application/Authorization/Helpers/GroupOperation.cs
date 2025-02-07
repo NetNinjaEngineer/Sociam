@@ -1,4 +1,4 @@
-﻿namespace Sociam.Application.Authorization
+﻿namespace Sociam.Application.Authorization.Helpers
 {
     public enum GroupOperation
     {
