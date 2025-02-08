@@ -10,11 +10,9 @@ public sealed class MediaStoryConfiguration : IEntityTypeConfiguration<MediaStor
     public void Configure(EntityTypeBuilder<MediaStory> builder)
     {
         builder.Property(s => s.MediaUrl)
-            .HasColumnType("VARCHAR")
             .IsRequired();
 
         builder.Property(s => s.MediaType)
-            .HasColumnType("VARCHAR")
             .HasConversion(
                 m => m.ToString(),
                 m => Enum.Parse<MediaType>(m));
