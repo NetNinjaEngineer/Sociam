@@ -15,6 +15,8 @@ public sealed class MigrateDatabaseMiddleware(RequestDelegate next)
 
         await dbContext.Database.MigrateAsync();
 
+        await dbContext.SeedDatabaseAsync();
+
         await next(context);
     }
 }

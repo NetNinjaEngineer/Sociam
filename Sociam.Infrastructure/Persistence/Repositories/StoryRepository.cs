@@ -377,7 +377,17 @@ public sealed class StoryRepository(
                 TotalReactions = s.StoryReactions.Count,
                 ViewersByAgeGroup = GetViewersByAgeGroup(s.StoryViewers),
                 ReactionsBreakdown = GetReactionBreakdown(s.StoryReactions),
-                GetViewersByGender = GetViewersByGender(s.StoryViewers)
+                GetViewersByGender = GetViewersByGender(s.StoryViewers),
+                UserReactions =
+                    s.StoryReactions
+                    .GroupBy(sr => sr.ReactedById)
+                    .Select(g =>
+                        new UserReactionDto
+                        {
+                            User = g.Select(x => string.Concat(x.ReactedBy.FirstName, " ", x.ReactedBy.LastName)).FirstOrDefault() ?? "",
+                            Reactions = g.Select(x => x.ReactionType.ToString()).ToList()
+                        }).ToList()
+
             }).FirstOrDefaultAsync();
     }
 

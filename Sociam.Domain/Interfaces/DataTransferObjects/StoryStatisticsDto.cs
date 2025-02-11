@@ -24,4 +24,5 @@ public sealed class StoryStatisticsDto
     public List<StoryReactionResponseDto> Reactions { get; set; } = [];
     public Dictionary<string, int> ViewersByAgeGroup { get; set; } = [];
     public Dictionary<string, int> GetViewersByGender { get; set; } = [];
+    public List<UserReactionDto> UserReactions { get; set; } = [];
 }

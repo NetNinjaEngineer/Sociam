@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="wwwroot\Uploads\Groups\" />
     <Folder Include="wwwroot\Uploads\Images\" />
     <Folder Include="wwwroot\Uploads\Stories\Images\" />

@@ -1,0 +1,102 @@
+[
+  {
+    "Id": "C19D69E1-30E4-4644-BFCB-C4521B67B0DC",
+    "CreatedAt": "2024-02-11T12:00:00Z",
+    "ExpiresAt": "2024-02-12T12:00:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 1,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Life is a journey, not a destination!",
+    "HashTags": [ "#Motivation", "#Life", "#Journey" ]
+  },
+  {
+    "Id": "4BFC3BB6-670E-4339-AE0E-18592CA6EB1C",
+    "CreatedAt": "2024-02-11T12:10:00Z",
+    "ExpiresAt": "2024-02-12T12:10:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 2,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Chasing dreams, one step at a time!",
+    "HashTags": [ "#DreamBig", "#HardWork" ]
+  },
+  {
+    "Id": "4279D13D-F397-48B4-8724-27E8E8865247",
+    "CreatedAt": "2024-02-11T12:20:00Z",
+    "ExpiresAt": "2024-02-12T12:20:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 3,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Enjoying the little moments in life!",
+    "HashTags": [ "#Happiness", "#GoodVibes" ]
+  },
+  {
+    "Id": "2DF970BE-5C2E-40F5-BEAA-CA42E944DB45",
+    "CreatedAt": "2024-02-11T12:30:00Z",
+    "ExpiresAt": "2024-02-12T12:30:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 4,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Self-reflection is the key to self-improvement.",
+    "HashTags": [ "#SelfGrowth", "#Mindset" ]
+  },
+  {
+    "Id": "844FD539-B0F9-4830-9A06-77DE372AA717",
+    "CreatedAt": "2024-02-11T12:40:00Z",
+    "ExpiresAt": "2024-02-12T12:40:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 1,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Taking risks is the first step toward success!",
+    "HashTags": [ "#Success", "#RiskTaker" ]
+  },
+  {
+    "Id": "7BCC070F-E830-4B8C-A233-71024ECB76FB",
+    "CreatedAt": "2024-02-11T13:00:00Z",
+    "ExpiresAt": "2024-02-12T13:00:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 1,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "The best way to predict the future is to create it.",
+    "HashTags": [ "#Future", "#Innovation" ]
+  },
+  {
+    "Id": "58DBF2FA-A269-447F-888C-1CCD3EABBDE5",
+    "CreatedAt": "2024-02-11T13:10:00Z",
+    "ExpiresAt": "2024-02-12T13:10:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 2,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Strive for progress, not perfection.",
+    "HashTags": [ "#Progress", "#HardWork" ]
+  },
+  {
+    "Id": "3D74D654-FF27-4E60-99EB-056E76149524",
+    "CreatedAt": "2024-02-11T13:20:00Z",
+    "ExpiresAt": "2024-02-12T13:20:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 3,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Be yourself; everyone else is already taken.",
+    "HashTags": [ "#Authenticity", "#Confidence" ]
+  },
+  {
+    "Id": "8DF675DA-1696-4D39-9271-E40B8B883E0F",
+    "CreatedAt": "2024-02-11T13:30:00Z",
+    "ExpiresAt": "2024-02-12T13:30:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 4,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Happiness is not by chance, but by choice.",
+    "HashTags": [ "#Happiness", "#Mindset" ]
+  },
+  {
+    "Id": "AF2F2A1A-DCA8-42CA-B985-D7C2806FD712",
+    "CreatedAt": "2024-02-11T13:40:00Z",
+    "ExpiresAt": "2024-02-12T13:40:00Z",
+    "IsArchived": false,
+    "StoryPrivacy": 1,
+    "UserId": "702C7401-F83C-4684-9421-9AA74FC40050",
+    "Content": "Believe in yourself and all that you are.",
+    "HashTags": [ "#Believe", "#SelfConfidence" ]
+  }
+]
