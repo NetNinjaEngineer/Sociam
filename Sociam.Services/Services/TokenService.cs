@@ -60,7 +60,7 @@ public sealed class TokenService(
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTimeOffset.Now.AddDays(_jwtSettings.ExpirationInDays).UtcDateTime,
+            expires: DateTime.UtcNow.AddDays(_jwtSettings.ExpirationInDays),
             signingCredentials: signingCredentials);
 
         return _jwtSecurityTokenHandler.WriteToken(jwtSecurityToken);

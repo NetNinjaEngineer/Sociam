@@ -113,7 +113,7 @@ public sealed class AuthService(
             EmailConfirmed = payload.EmailVerified,
             ProfilePictureUrl = payload.Picture,
             UserName = payload.Email,
-            CreatedAt = DateTimeOffset.Now
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         var createResult = await userManager.CreateAsync(existingUser);
@@ -147,6 +147,7 @@ public sealed class AuthService(
 
         var (uploaded, uploadedFileName) = await fileService.UploadFileAsync(command.Picture, "Images");
         user.ProfilePictureUrl = uploadedFileName;
+        user.TimeZoneId = TimeZoneInfo.Local.Id;
 
         var result = await userManager.CreateAsync(user, command.Password);
 
@@ -185,7 +186,7 @@ public sealed class AuthService(
             var encodedAuthenticationCode = Convert.ToBase64String(Encoding.UTF8.GetBytes(authenticationCode));
 
             user.Code = encodedAuthenticationCode;
-            user.CodeExpiration = DateTimeOffset.Now.AddMinutes(
+            user.CodeExpiration = DateTimeOffset.UtcNow.AddMinutes(
                 minutes: Convert.ToDouble(configuration[AppConstants.AuthCodeExpireKey]!)
             );
 
@@ -227,8 +228,8 @@ public sealed class AuthService(
 
             await transaction.CommitAsync();
             return Result<SendCodeConfirmEmailResponseDto>.Success(
-                SendCodeConfirmEmailResponseDto.ToResponse(user.CodeExpiration.Value),
-                AppConstants.ConfirmEmailCodeSentSuccessfully
+                    SendCodeConfirmEmailResponseDto.ToResponse(user.CodeExpiration.Value.ConvertToUserLocalTimeZone(user.TimeZoneId)),
+                    AppConstants.ConfirmEmailCodeSentSuccessfully
             );
         }
         catch (Exception ex)
@@ -247,8 +248,8 @@ public sealed class AuthService(
         return new RefreshToken()
         {
             Token = Convert.ToBase64String(randomNumber),
-            ExpiresOn = DateTimeOffset.Now.AddDays(10),
-            CreatedOn = DateTimeOffset.Now
+            ExpiresOn = DateTimeOffset.UtcNow.AddDays(10),
+            CreatedOn = DateTimeOffset.UtcNow
         };
     }
 
@@ -278,7 +279,7 @@ public sealed class AuthService(
         var authCode = Convert.ToBase64String(Encoding.UTF8.GetBytes(decoded));
         user.Code = authCode;
         user.CodeExpiration =
-            DateTimeOffset.Now.AddMinutes(Convert.ToDouble(configuration[AppConstants.AuthCodeExpireKey]));
+            DateTimeOffset.UtcNow.AddMinutes(Convert.ToDouble(configuration[AppConstants.AuthCodeExpireKey]));
 
         //Update user
         var updateResult = await userManager.UpdateAsync(user);
@@ -325,7 +326,7 @@ public sealed class AuthService(
         if (decodedAuthCode != command.Code)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.InvalidAuthCode);
 
-        if (DateTimeOffset.Now > user.CodeExpiration)
+        if (DateTimeOffset.UtcNow > user.CodeExpiration)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.CodeExpired);
 
         await userManager.RemovePasswordAsync(user);
@@ -517,7 +518,7 @@ public sealed class AuthService(
             if (decodedAuthenticationCode == command.Token)
             {
                 // check if the token is expired
-                if (DateTimeOffset.Now > user.CodeExpiration)
+                if (DateTimeOffset.UtcNow > user.CodeExpiration)
                     return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.AuthCodeExpired);
 
                 // confirm the email for the user
@@ -652,9 +653,8 @@ public sealed class AuthService(
 
         if (result.IsLockedOut)
         {
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
-
-            var lockoutEndTime = TimeZoneInfo.ConvertTimeFromUtc(loggedInUser.LockoutEnd!.Value.UtcDateTime, timeZone);
+            var lockoutEndTime = loggedInUser.LockoutEnd!.Value
+                .ConvertToUserLocalTimeZone(loggedInUser.TimeZoneId);
 
             return Result<SignInResponseDto>.Failure(
                  HttpStatusCode.Unauthorized, $"Your account is locked until {lockoutEndTime}");
@@ -734,7 +734,7 @@ public sealed class AuthService(
             if (activeRefreshToken != null)
             {
                 response.RefreshToken = activeRefreshToken.Token;
-                response.RefreshTokenExpiration = activeRefreshToken.ExpiresOn;
+                response.RefreshTokenExpiration = activeRefreshToken.ExpiresOn.ConvertToUserLocalTimeZone(loggedInUser.TimeZoneId);
             }
         }
         else
@@ -742,7 +742,7 @@ public sealed class AuthService(
             // user not have active refresh token
             var refreshToken = GenerateRefreshToken();
             response.RefreshToken = refreshToken.Token;
-            response.RefreshTokenExpiration = refreshToken.ExpiresOn;
+            response.RefreshTokenExpiration = refreshToken.ExpiresOn.ConvertToUserLocalTimeZone(loggedInUser.TimeZoneId);
             loggedInUser.RefreshTokens?.Add(refreshToken);
             await userManager.UpdateAsync(loggedInUser);
         }
@@ -752,7 +752,7 @@ public sealed class AuthService(
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
             Secure = true,
-            Expires = DateTimeOffset.Now.AddDays(_jwtSettings.ExpirationInDays).UtcDateTime
+            Expires = DateTimeOffset.UtcNow.AddDays(_jwtSettings.ExpirationInDays)
         };
 
         var refreshTokenCookieOptions = new CookieOptions
@@ -760,7 +760,7 @@ public sealed class AuthService(
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
             Secure = true,
-            Expires = response.RefreshTokenExpiration.UtcDateTime,
+            Expires = response.RefreshTokenExpiration,
         };
 
         contextAccessor.HttpContext?.Response.Cookies.Append("access_token", Convert.ToBase64String(Encoding.UTF8.GetBytes(token)), tokenCookieOptions);
@@ -831,7 +831,7 @@ public sealed class AuthService(
 
     private Result<ApplicationUser> RevokeUserTokenAndReturnsAppUser(RefreshToken userRefreshToken)
     {
-        userRefreshToken.RevokedOn = DateTimeOffset.Now;
+        userRefreshToken.RevokedOn = DateTimeOffset.UtcNow;
         var user = userManager.Users.SingleOrDefault(x =>
             x.RefreshTokens != null && x.RefreshTokens.Any(x => x.Token == userRefreshToken.Token));
         return Result<ApplicationUser>.Success(user!);

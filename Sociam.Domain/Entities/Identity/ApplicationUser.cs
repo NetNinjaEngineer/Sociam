@@ -15,6 +15,7 @@ public sealed class ApplicationUser : IdentityUser
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? Code { get; set; }
     public DateTimeOffset? CodeExpiration { get; set; }
+    public string TimeZoneId { get; set; } = string.Empty;
     public List<RefreshToken>? RefreshTokens { get; set; }
     public ICollection<LiveStream> LiveStreams { get; set; } = [];
     public ICollection<Story> Stories { get; set; } = [];

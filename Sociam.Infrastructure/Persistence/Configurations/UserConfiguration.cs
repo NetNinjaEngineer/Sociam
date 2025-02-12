@@ -77,7 +77,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(2002, 1, 1),
                 Gender = Gender.Male,
                 Bio = "Software Developer and Tech Enthusiast.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -93,7 +94,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1990, 5, 15),
                 Gender = Gender.Male,
                 Bio = "Loves hiking and photography.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -109,7 +111,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1985, 8, 22),
                 Gender = Gender.Female,
                 Bio = "Passionate about art and design.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -125,7 +128,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1995, 3, 10),
                 Gender = Gender.Female,
                 Bio = "Travel enthusiast and foodie.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -141,7 +145,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1980, 12, 5),
                 Gender = Gender.Male,
                 Bio = "Tech entrepreneur and mentor.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -157,7 +162,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1992, 7, 18),
                 Gender = Gender.Female,
                 Bio = "Fitness trainer and health coach.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -173,7 +179,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1988, 9, 25),
                 Gender = Gender.Male,
                 Bio = "Musician and songwriter.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -189,7 +196,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1998, 4, 30),
                 Gender = Gender.Female,
                 Bio = "Book lover and aspiring writer.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -205,7 +213,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1975, 11, 12),
                 Gender = Gender.Male,
                 Bio = "History buff and teacher.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -221,7 +230,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1990, 6, 20),
                 Gender = Gender.Female,
                 Bio = "Nature lover and environmentalist.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             },
             new ApplicationUser()
             {
@@ -237,7 +247,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 DateOfBirth = new DateOnly(1985, 2, 14),
                 Gender = Gender.Male,
                 Bio = "Gamer and tech enthusiast.",
-                CreatedAt = DateTimeOffset.Now
+                CreatedAt = DateTimeOffset.Now,
+                TimeZoneId = "Egypt Standard Time"
             }
         ];
     }
