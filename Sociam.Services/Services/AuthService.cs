@@ -122,7 +122,7 @@ public sealed class AuthService(
             return Result<GoogleUserProfile?>.Failure(
                 statusCode: HttpStatusCode.UnprocessableEntity,
                 message: "One or more errors happened",
-                errors: createResult.Errors.Select(e => $"{e.Code}: {e.Description}").ToList());
+                errs: createResult.Errors.Select(e => $"{e.Code}: {e.Description}").ToList());
 
         var loginResult = await userManager.AddLoginAsync(existingUser,
             new UserLoginInfo("Google", existingUser.Email, existingUser.FirstName));
@@ -135,7 +135,7 @@ public sealed class AuthService(
         return Result<GoogleUserProfile?>.Failure(
             statusCode: HttpStatusCode.UnprocessableEntity,
             message: "One or more errors happened when tring to login !!!",
-            errors: loginResult.Errors.Select(e => $"{e.Code} : {e.Description}").ToList());
+            errs: loginResult.Errors.Select(e => $"{e.Code} : {e.Description}").ToList());
     }
 
     public async Task<Result<RegisterResponseDto>> RegisterAsync(RegisterCommand command)
@@ -145,7 +145,7 @@ public sealed class AuthService(
 
         var user = mapper.Map<ApplicationUser>(command);
 
-        var (uploaded, uploadedFileName) = await fileService.UploadFileAsync(command.Picture, "Images");
+        var (_, uploadedFileName) = await fileService.UploadFileAsync(command.Picture, "Images");
         user.ProfilePictureUrl = uploadedFileName;
         user.TimeZoneId = TimeZoneInfo.Local.Id;
 
@@ -243,8 +243,8 @@ public sealed class AuthService(
     private static RefreshToken GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
-        using var rng = new RNGCryptoServiceProvider();
-        rng.GetBytes(randomNumber);
+        var generator = RandomNumberGenerator.Create();
+        generator.GetBytes(randomNumber);
         return new RefreshToken()
         {
             Token = Convert.ToBase64String(randomNumber),
@@ -257,7 +257,7 @@ public sealed class AuthService(
         string refreshToken)
     {
         var user = await userManager.Users.SingleOrDefaultAsync(x =>
-            x.RefreshTokens != null && x.RefreshTokens.Any(x => x.Token == refreshToken));
+            x.RefreshTokens != null && x.RefreshTokens.Any(token => token.Token == refreshToken));
         return user is null
             ? Result<ApplicationUser>.Failure(HttpStatusCode.NotFound, "Invalid Token")
             : Result<ApplicationUser>.Success(user);
@@ -332,14 +332,11 @@ public sealed class AuthService(
         await userManager.RemovePasswordAsync(user);
         var result = await userManager.AddPasswordAsync(user, command.NewPassword);
 
-        if (!result.Succeeded)
-        {
-            var err = result.Errors.Select(x => x.Description).FirstOrDefault();
-            return Result<string>.Failure(HttpStatusCode.UnprocessableEntity, error: err);
-        }
+        if (result.Succeeded) return Result<string>.Success("Reset Password Successfuly.");
+
+        return Result<string>.Failure(HttpStatusCode.UnprocessableEntity);
 
 
-        return Result<string>.Success("Reset Password Successfuly.");
     }
 
     public async Task<Result<string>> Enable2FaAsync(Enable2FaCommand command)
@@ -669,56 +666,12 @@ public sealed class AuthService(
 
     }
 
-    private static async Task<Result<SignInResponseDto>> GetTwoFactorResponseAsync(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IMailService mailService, IHttpContextAccessor contextAccessor, LoginUserCommand command, ApplicationUser? loggedInUser)
-    {
-        // if two factor is enabled send code to user
-        var twoFactorCode = await userManager.GenerateTwoFactorTokenAsync(loggedInUser, "Email");
-
-        await signInManager.TwoFactorSignInAsync("Email", twoFactorCode, false, true);
-
-        contextAccessor.HttpContext!.Response.Cookies.Append(
-            "userEmail",
-            Convert.ToBase64String(Encoding.UTF8.GetBytes(loggedInUser.Email!)),
-            new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-            });
-
-        await mailService.SendEmailAsync(
-            new EmailMessage()
-            {
-                To = command.Email,
-                Subject = "Syncify 2FA Code Required",
-                Message = @$"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
-                        <h1 style='color: #4CAF50; font-size: 24px; margin-top: 20px;'>2-Factor Authentication Required</h1>
-                        <p style='font-size: 16px; line-height: 1.5;'>
-                            To complete the login process, you'll need to enter a 2-factor authentication (2FA) code.
-                        </p>
-                        <div style='text-align: center; margin: 20px 0;'>
-                            <span style='font-size: 32px; font-weight: 500; color: #4CAF50;'>{twoFactorCode}</span>
-                        </div>
-                        <p style='font-size: 16px; line-height: 1.5;'>
-                            Please enter this code to verify your identity and access your Syncify account.
-                        </p>
-                        <p style='font-size: 16px; line-height: 1.5; color: #333;'>
-                            Best regards,<br>
-                            <strong>The Syncify Team</strong>
-                        </p>
-                    </div>"
-            });
-
-
-
-        return Result<SignInResponseDto>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.TwoFactorRequired);
-    }
-
     private async Task<SignInResponseDto> CreateLoginResponseAsync(
-        UserManager<ApplicationUser> userManager,
+        UserManager<ApplicationUser> manager,
         ApplicationUser loggedInUser)
     {
         var token = await tokenService.GenerateJwtTokenAsync(loggedInUser);
-        var userRoles = await userManager.GetRolesAsync(loggedInUser);
+        var userRoles = await manager.GetRolesAsync(loggedInUser);
         var response = new SignInResponseDto()
         {
             Email = loggedInUser.Email!,
@@ -744,7 +697,7 @@ public sealed class AuthService(
             response.RefreshToken = refreshToken.Token;
             response.RefreshTokenExpiration = refreshToken.ExpiresOn.ConvertToUserLocalTimeZone(loggedInUser.TimeZoneId);
             loggedInUser.RefreshTokens?.Add(refreshToken);
-            await userManager.UpdateAsync(loggedInUser);
+            await manager.UpdateAsync(loggedInUser);
         }
 
         var tokenCookieOptions = new CookieOptions
@@ -833,7 +786,7 @@ public sealed class AuthService(
     {
         userRefreshToken.RevokedOn = DateTimeOffset.UtcNow;
         var user = userManager.Users.SingleOrDefault(x =>
-            x.RefreshTokens != null && x.RefreshTokens.Any(x => x.Token == userRefreshToken.Token));
+            x.RefreshTokens != null && x.RefreshTokens.Any(refreshToken => refreshToken.Token == userRefreshToken.Token));
         return Result<ApplicationUser>.Success(user!);
     }
 

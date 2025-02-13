@@ -13,7 +13,7 @@ public sealed class GuardFilter(
     {
         var user = context.HttpContext.User;
 
-        if (user?.Identity?.IsAuthenticated != true)
+        if (user.Identity?.IsAuthenticated != true)
         {
             context.Result = new UnauthorizedObjectResult(GetUnauthorizedResponse());
 
@@ -36,7 +36,7 @@ public sealed class GuardFilter(
 
         if (policies?.Length == 0) return Task.CompletedTask;
 
-        var authTasks = policies.Select(
+        var authTasks = policies!.Select(
             policy => authorizationService.AuthorizeAsync(user, policy));
 
         return Task.WhenAll(authTasks)

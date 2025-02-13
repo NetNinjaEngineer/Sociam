@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
@@ -7,8 +6,7 @@ using Sociam.Domain.Interfaces;
 
 namespace Sociam.Infrastructure.Persistence.Repositories;
 public sealed class FriendshipRepository(
-    ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager) :
+    ApplicationDbContext context) :
     GenericRepository<Friendship>(context), IFriendshipRepository
 {
     public async Task<Friendship?> GetFriendshipAsync(string user1Id, string user2Id)

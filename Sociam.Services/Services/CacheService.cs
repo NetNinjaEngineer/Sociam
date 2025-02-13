@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Sociam.Application.Interfaces.Services;
 
 namespace Sociam.Services.Services;
 
 public sealed class CacheService(
-    IMemoryCache memoryCache,
-    ILogger<CacheService> logger) : ICacheService
+    IMemoryCache memoryCache) : ICacheService
 {
     public T? Get<T>(string cacheKey) =>
         memoryCache.Get<T>(cacheKey) ?? default;

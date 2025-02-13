@@ -124,7 +124,7 @@ public sealed class RoleService(
     public async Task<Result<IEnumerable<string>>> GetAllRoles()
     {
         var roles = await Task.FromResult(roleManager.Roles.Select(r => r.Name));
-        return Result<IEnumerable<string>>.Success(roles);
+        return Result<IEnumerable<string>>.Success(roles!);
     }
 
     public async Task<Result<string>> AddRoleToUser(AssignRoleToUserCommand request)

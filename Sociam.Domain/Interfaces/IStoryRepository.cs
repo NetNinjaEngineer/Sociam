@@ -5,17 +5,17 @@ using Sociam.Domain.Utils;
 namespace Sociam.Domain.Interfaces;
 public interface IStoryRepository : IGenericRepository<Story>
 {
-    Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId);
+    Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId, string timeZoneId);
     Task<bool> HasUnseenStoriesAsync(string currentUserId, string friendId);
-    Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId);
-    Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId);
-    Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId);
-    Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(string currentUserId, StoryQueryParameters? queryStoryQueryParameters);
-    Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId, StoryQueryParameters? queryParameters);
-    Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(string currentUserId, StoryQueryParameters? queryParameters);
+    Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId, string timeZoneId);
+    Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId, string timeZoneId);
+    Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId, string timeZoneId);
+    Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(string currentUserId, string timeZoneId, StoryQueryParameters? queryStoryQueryParameters);
+    Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(string creatorId, string timeZoneId, StoryQueryParameters? queryParameters);
+    Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(string currentUserId, string timeZoneId, StoryQueryParameters? queryParameters);
     Task<string?> GetStoryOwnerIdAsync(Guid storyId);
-    Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId);
-    Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId);
-    Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId);
-    Task<StoryStatisticsDto?> GetStoryStatisticsAsync(Guid queryStoryId, string currentUserId);
+    Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId, string timeZoneId);
+    Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId, string timeZoneId);
+    Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId, string timeZoneId);
+    Task<StoryStatisticsDto?> GetStoryStatisticsAsync(Guid queryStoryId, string currentUserId, string timeZoneId);
 }

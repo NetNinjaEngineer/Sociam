@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Sociam.Application.Helpers;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
@@ -14,15 +15,16 @@ public sealed class StoryRepository(
     IConfiguration configuration)
     : GenericRepository<Story>(context), IStoryRepository
 {
-    public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId)
+    public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(
+        string creatorId, string timeZoneId)
         => await context.Stories
             .AsNoTracking()
             .Where(s => s.UserId == creatorId && s.ExpiresAt > DateTimeOffset.UtcNow)
             .Select(s => new StoryDto
             {
                 Id = s.Id,
-                ExpiresAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiresAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 StoryPrivacy = s.StoryPrivacy,
                 UserId = s.UserId,
                 StoryType = s is TextStory ? "text" : "media",
@@ -56,7 +58,10 @@ public sealed class StoryRepository(
         return activeFriendStories.Any(activeStory => !viewedStoriesIds.Contains(activeStory.Id));
     }
 
-    public async Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(string currentUserId, string friendId)
+    public async Task<UserWithStoriesDto?> GetActiveUserStoriesAsync(
+        string currentUserId,
+        string friendId,
+        string timeZoneId)
     {
         var apiBaseUrl = configuration["BaseApiUrl"];
 
@@ -84,7 +89,7 @@ public sealed class StoryRepository(
                 UserName = u.UserName ?? "",
                 ProfilePicture = u.ProfilePictureUrl,
                 Stories = u.Stories
-                    .Where(s => s.ExpiresAt > DateTimeOffset.Now &&
+                    .Where(s => s.ExpiresAt > DateTimeOffset.UtcNow &&
                                 (s.StoryPrivacy == StoryPrivacy.Public ||
                                  (s.StoryPrivacy == StoryPrivacy.Friends && isFriend) ||
                                  (s.StoryPrivacy == StoryPrivacy.Custom && isSetAsStoryViewer)))
@@ -92,8 +97,8 @@ public sealed class StoryRepository(
                     .Select(s => new StoryForReturnDto
                     {
                         Id = s.Id,
-                        CreatedAt = s.CreatedAt,
-                        ExpiresAt = s.ExpiresAt,
+                        CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
+                        ExpiresAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
                         StoryPrivacy = s.StoryPrivacy,
                         HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                         Content = s is TextStory ? ((TextStory)s).Content : null,
@@ -113,7 +118,8 @@ public sealed class StoryRepository(
         return userWithStories;
     }
 
-    public async Task<StoryViewsResponseDto?> GetStoryViewsAsync(Guid existedStoryId, string currentUserId)
+    public async Task<StoryViewsResponseDto?> GetStoryViewsAsync(
+        Guid existedStoryId, string currentUserId, string timeZoneId)
     {
         var apiBaseUrl = configuration["BaseApiUrl"];
 
@@ -135,8 +141,8 @@ public sealed class StoryRepository(
                     $"{apiBaseUrl}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
                     $"{apiBaseUrl}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiresAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiresAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 ReactionsCount = s.StoryReactions.Count,
                 CommentsCount = s.StoryComments.Count,
                 ViewsCount = s.StoryViewers.Count,
@@ -146,7 +152,7 @@ public sealed class StoryRepository(
                     {
                         ViewerId = view.ViewerId,
                         ViewerName = string.Concat(view.Viewer.FirstName, " ", view.Viewer.LastName),
-                        ViewedAt = view.ViewedAt,
+                        ViewedAt = view.ViewedAt.HasValue ? view.ViewedAt.Value.ConvertToUserLocalTimeZone(timeZoneId) : null,
                         ProfilePictureUrl = string.IsNullOrEmpty(s.User.ProfilePictureUrl) ? null : $"{apiBaseUrl}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
                     }).ToList()
             })
@@ -155,7 +161,8 @@ public sealed class StoryRepository(
         return storyViews;
     }
 
-    public async Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(string currentUserId)
+    public async Task<List<StoryViewedDto>> GetStoriesViewedByMeAsync(
+        string currentUserId, string timeZoneId)
         => await context.Stories
             .AsNoTracking()
             .Where(s => s.StoryViewers.Any(v => v.ViewerId == currentUserId && v.IsViewed))
@@ -175,7 +182,7 @@ public sealed class StoryRepository(
                         $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}" :
                         $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}") : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                CreatedAt = s.CreatedAt,
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 ReactionsCount = s.StoryReactions.Count,
                 CommentsCount = s.StoryComments.Count,
                 ViewsCount = s.StoryViewers.Count
@@ -183,24 +190,43 @@ public sealed class StoryRepository(
 
     public async Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(
         string currentUserId,
-        StoryQueryParameters? queryStoryQueryParameters) => await GetStoriesAsync(null, queryStoryQueryParameters);
+        string timeZoneId,
+        StoryQueryParameters? queryStoryQueryParameters) => await GetStoriesAsync(timeZoneId, null, queryStoryQueryParameters);
 
     public async Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(
         string creatorId,
+        string timeZoneId,
         StoryQueryParameters? queryParameters)
-     => await GetStoriesAsync(s => s.UserId == creatorId && s.ExpiresAt < DateTimeOffset.Now, queryParameters);
+    {
+        // Get the user's time zone
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+        // Calculate the current time in UTC
+        var currentTimeUtc = DateTimeOffset.UtcNow;
+
+        // Calculate the UTC offset for the user's time zone
+        var utcOffset = timeZone.GetUtcOffset(currentTimeUtc.DateTime);
+
+        var pagedResult = await GetStoriesAsync(timeZoneId,
+            s => s.UserId == creatorId && s.ExpiresAt < currentTimeUtc + utcOffset, queryParameters);
+
+        return pagedResult;
+
+    }
 
     public async Task<PagedResult<StoryViewsResponseDto>> GetStoryArchiveAsync(
         string currentUserId,
+        string timeZoneId,
         StoryQueryParameters? queryParameters)
-        => await GetStoriesAsync(s => s.UserId == currentUserId && s.IsArchived, queryParameters);
+        => await GetStoriesAsync(timeZoneId, s => s.UserId == currentUserId && s.IsArchived, queryParameters);
 
     public async Task<string?> GetStoryOwnerIdAsync(Guid storyId)
         => (await context.Stories
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == storyId))?.UserId;
 
-    public async Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(string currentUserId)
+    public async Task<IEnumerable<StoryWithCommentsResponseDto>> GetAllStoriesWithCommentsAsync(
+        string currentUserId, string timeZoneId)
         => await context.Stories
             .AsNoTracking()
             .Where(s => s.UserId == currentUserId)
@@ -209,14 +235,14 @@ public sealed class StoryRepository(
                 Id = s.Id,
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiredAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
+                ExpiredAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
                 HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
                 MediaUrl = s is MediaStory
                     ? IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}"
                     : null,
                 Privacy = s.StoryPrivacy.ToString(),
                 Type = s is TextStory ? "text" : "media",
@@ -233,11 +259,12 @@ public sealed class StoryRepository(
                             Comment = comment.Comment,
                             UserName = comment.CommentedBy.UserName ?? "",
                             CommenterId = comment.CommentedById.ToString(),
-                            CommentedAt = comment.CommentedAt
+                            CommentedAt = comment.CommentedAt.ConvertToUserLocalTimeZone(timeZoneId)
                         })
             }).ToListAsync();
 
-    public async Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(string currentUserId, Guid queryStoryId)
+    public async Task<StoryWithCommentsResponseDto?> GetStoryWithCommentsAsync(
+        string currentUserId, Guid queryStoryId, string timeZoneId)
         => await context.Stories
             .AsNoTracking()
             .Where(s => s.UserId == currentUserId && s.Id == queryStoryId)
@@ -246,14 +273,14 @@ public sealed class StoryRepository(
                 Id = s.Id,
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiredAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiredAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
                 MediaUrl = s is MediaStory
                     ? IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}"
                     : null,
                 Privacy = s.StoryPrivacy.ToString(),
                 Type = s is TextStory ? "text" : "media",
@@ -270,11 +297,12 @@ public sealed class StoryRepository(
                             Comment = comment.Comment,
                             UserName = comment.CommentedBy.UserName ?? "",
                             CommenterId = comment.CommentedById.ToString(),
-                            CommentedAt = comment.CommentedAt
+                            CommentedAt = comment.CommentedAt.ConvertToUserLocalTimeZone(timeZoneId)
                         })
             }).FirstOrDefaultAsync();
 
-    public async Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(string currentUserId, Guid queryStoryId)
+    public async Task<StoryWithReactionsResponseDto?> GetStoryWithReactionsAsync(
+        string currentUserId, Guid queryStoryId, string timeZoneId)
         => await context.Stories
             .AsNoTracking()
             .Where(s => s.UserId == currentUserId && s.Id == queryStoryId)
@@ -283,14 +311,14 @@ public sealed class StoryRepository(
                 Id = s.Id,
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiredAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiredAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
                 MediaUrl = s is MediaStory
                     ? IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}"
                     : null,
                 Privacy = s.StoryPrivacy.ToString(),
                 Type = s is TextStory ? "text" : "media",
@@ -304,12 +332,13 @@ public sealed class StoryRepository(
                                 ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{reaction.ReactedBy.ProfilePictureUrl}"
                                 : null,
                             ReactionType = reaction.ReactionType.ToString(),
-                            ReactedAt = reaction.ReactedAt,
+                            ReactedAt = reaction.ReactedAt.ConvertToUserLocalTimeZone(timeZoneId),
                             ReactedById = reaction.ReactedById
                         })
             }).FirstOrDefaultAsync();
 
-    public async Task<StoryStatisticsDto?> GetStoryStatisticsAsync(Guid queryStoryId, string currentUserId)
+    public async Task<StoryStatisticsDto?> GetStoryStatisticsAsync(
+        Guid queryStoryId, string currentUserId, string timeZoneId)
     {
         return await context.Stories
             .AsNoTracking()
@@ -323,14 +352,14 @@ public sealed class StoryRepository(
                 StoryId = s.Id,
                 Content = s is TextStory ? ((TextStory)s).Content : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiresAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiresAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 HashTags = s is TextStory ? ((TextStory)s).HashTags : null,
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType.ToString() : null,
                 MediaUrl = s is MediaStory
                     ? IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}"
                     : null,
                 Privacy = s.StoryPrivacy.ToString(),
                 Type = s is TextStory ? "text" : "media",
@@ -344,7 +373,7 @@ public sealed class StoryRepository(
                                 ? $"{configuration["BaseApiUrl"]}/Uploads/Images/{reaction.ReactedBy.ProfilePictureUrl}"
                                 : null,
                             ReactionType = reaction.ReactionType.ToString(),
-                            ReactedAt = reaction.ReactedAt,
+                            ReactedAt = reaction.ReactedAt.ConvertToUserLocalTimeZone(timeZoneId),
                             ReactedById = reaction.ReactedById
                         }).ToList(),
                 TotalComments = s.StoryComments.Count,
@@ -360,14 +389,14 @@ public sealed class StoryRepository(
                         Comment = comment.Comment,
                         UserName = comment.CommentedBy.UserName ?? "",
                         CommenterId = comment.CommentedById.ToString(),
-                        CommentedAt = comment.CommentedAt
+                        CommentedAt = comment.CommentedAt.ConvertToUserLocalTimeZone(timeZoneId)
                     }).ToList(),
                 UniqueViews = s.StoryViewers.Distinct().Count(),
                 Viewers = s.StoryViewers
                     .Where(view => view.IsViewed)
                     .Select(view => new ViewerBreakdownDto
                     {
-                        ViewedAt = view.ViewedAt!.Value,
+                        ViewedAt = view.ViewedAt.HasValue ? view.ViewedAt.Value.ConvertToUserLocalTimeZone(timeZoneId) : null,
                         ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
                         ProfilePictureUrl = string.IsNullOrEmpty(view.Viewer.ProfilePictureUrl)
                             ? null : $"{configuration["BaseApiUrl"]}/Uploads/Images/{view.Viewer.ProfilePictureUrl}",
@@ -425,18 +454,20 @@ public sealed class StoryRepository(
         return age switch
         {
             < 13 => "Under 13",
-            >= 13 and < 18 => "13-17",
-            >= 18 and < 25 => "18-24",
-            >= 25 and < 35 => "25-34",
-            >= 35 and < 45 => "35-44",
-            >= 45 and < 55 => "45-54",
-            >= 55 and < 65 => "55-64",
+            < 18 => "13-17",
+            < 25 => "18-24",
+            < 35 => "25-34",
+            < 45 => "35-44",
+            < 55 => "45-54",
+            < 65 => "55-64",
             _ => "65+"
         };
     }
 
     private async Task<PagedResult<StoryViewsResponseDto>> GetStoriesAsync(
-        Expression<Func<Story, bool>>? predicate, StoryQueryParameters? queryStoryQueryParameters)
+        string timeZoneId,
+        Expression<Func<Story, bool>>? predicate,
+        StoryQueryParameters? queryStoryQueryParameters)
     {
         var storiesQuery = predicate is null ?
            context.Stories.AsQueryable() : context.Stories.Where(predicate).AsQueryable();
@@ -476,19 +507,19 @@ public sealed class StoryRepository(
                 MediaType = s is MediaStory ? ((MediaStory)s).MediaType : null,
                 MediaUrl = s is MediaStory
                     ? IsVideoMediaType(((MediaStory)s).MediaType)
-                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{s.User.ProfilePictureUrl}"
-                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{s.User.ProfilePictureUrl}"
+                        ? $"{configuration["BaseApiUrl"]}/Uploads/Stories/Videos/{((MediaStory)s).MediaUrl}"
+                        : $"{configuration["BaseApiUrl"]}/Uploads/Stories/Images/{((MediaStory)s).MediaUrl}"
                     : null,
                 Caption = s is MediaStory ? ((MediaStory)s).Caption : null,
-                ExpiresAt = s.ExpiresAt,
-                CreatedAt = s.CreatedAt,
+                ExpiresAt = s.ExpiresAt.ConvertToUserLocalTimeZone(timeZoneId),
+                CreatedAt = s.CreatedAt.ConvertToUserLocalTimeZone(timeZoneId),
                 ReactionsCount = s.StoryReactions.Count,
                 CommentsCount = s.StoryComments.Count,
                 ViewsCount = s.StoryViewers.Count,
                 Viewers = s.StoryViewers
                     .Select(view => new StoryViewerDto
                     {
-                        ViewedAt = view.ViewedAt,
+                        ViewedAt = view.ViewedAt.HasValue ? view.ViewedAt.Value.ConvertToUserLocalTimeZone(timeZoneId) : null,
                         ViewerName = $"{view.Viewer.FirstName} {view.Viewer.LastName}",
                         ProfilePictureUrl = view.Viewer.ProfilePictureUrl,
                     }).ToList()

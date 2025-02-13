@@ -94,9 +94,8 @@ public sealed class StoryService(
 
         var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
-        var mappedResult = mapper.Map<MediaStoryDto>(mediaStory);
-        mappedResult.CreatedAt = mappedResult.CreatedAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
-        mappedResult.ExpiresAt = mappedResult.ExpiresAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
+        var mappedResult = mapper.Map<MediaStoryDto>(mediaStory,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
         if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mappedResult);
 
@@ -173,10 +172,8 @@ public sealed class StoryService(
 
         var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
-        var mappedResult = mapper.Map<TextStoryDto>(textStory);
-        mappedResult.CreatedAt = mappedResult.CreatedAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
-        mappedResult.ExpiresAt = mappedResult.ExpiresAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
-
+        var mappedResult = mapper.Map<TextStoryDto>(textStory,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
         if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
 
@@ -382,7 +379,8 @@ public sealed class StoryService(
             statusCode: HttpStatusCode.NotFound,
                 error: string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
 
-        var mappedResult = mapper.Map<StoryDto>(activeStory);
+        var mappedResult = mapper.Map<StoryDto>(activeStory,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
         return Result<StoryDto>.Success(mappedResult);
     }
@@ -410,14 +408,15 @@ public sealed class StoryService(
     public async Task<Result<UserWithStoriesDto?>> GetActiveUserStoriesAsync(GetUserStoriesQuery query)
     {
         var isFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(
-            query.FriendId.ToString(), currentUser.Id);
+            query.FriendId, currentUser.Id);
 
         if (!isFriend)
             return Result<UserWithStoriesDto?>.Failure(HttpStatusCode.Forbidden);
 
         var activeUserStories = await unitOfWork.StoryRepository.GetActiveUserStoriesAsync(
             currentUserId: currentUser.Id,
-            friendId: query.FriendId);
+            friendId: query.FriendId,
+            timeZoneId: currentUser.TimeZoneId);
 
         return Result<UserWithStoriesDto?>.Success(activeUserStories);
     }
@@ -444,22 +443,23 @@ public sealed class StoryService(
                 statusCode: HttpStatusCode.NotFound,
                 error: string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
 
-        var views = await unitOfWork.StoryRepository.GetStoryViewsAsync(existedStory.Id, currentUser.Id);
+        var views = await unitOfWork.StoryRepository.GetStoryViewsAsync(
+            existedStory.Id, currentUser.Id, currentUser.TimeZoneId);
 
         return Result<StoryViewsResponseDto?>.Success(views);
     }
 
     public async Task<Result<List<StoryViewedDto>>> GetStoriesViewedByMeAsync()
-        => Result<List<StoryViewedDto>>.Success(await unitOfWork.StoryRepository.GetStoriesViewedByMeAsync(currentUser.Id));
+        => Result<List<StoryViewedDto>>.Success(await unitOfWork.StoryRepository.GetStoriesViewedByMeAsync(currentUser.Id, currentUser.TimeZoneId));
 
     public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoriesByParamsAsync(GetStoriesByParamsQuery query)
-        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoriesWithParamsForMeAsync(currentUser.Id, query.StoryQueryParameters));
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoriesWithParamsForMeAsync(currentUser.Id, currentUser.TimeZoneId, query.StoryQueryParameters));
 
     public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetExpiredStoriesAsync(StoryQueryParameters? parameters)
-        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetExpiredStoriesAsync(currentUser.Id, parameters));
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetExpiredStoriesAsync(currentUser.Id, currentUser.TimeZoneId, parameters));
 
     public async Task<Result<PagedResult<StoryViewsResponseDto>>> GetStoryArchiveAsync(StoryQueryParameters? parameters)
-        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoryArchiveAsync(currentUser.Id, parameters));
+        => Result<PagedResult<StoryViewsResponseDto>>.Success(await unitOfWork.StoryRepository.GetStoryArchiveAsync(currentUser.Id, currentUser.TimeZoneId, parameters));
 
     public async Task<Result<bool>> ReactToStoryAsync(AddStoryReactionCommand command)
     {
@@ -513,7 +513,7 @@ public sealed class StoryService(
 
         await unitOfWork.SaveChangesAsync();
 
-        var storyStatistics = await unitOfWork.StoryRepository.GetStoryViewsAsync(activeStory.Id, activeStory.UserId);
+        var storyStatistics = await unitOfWork.StoryRepository.GetStoryViewsAsync(activeStory.Id, activeStory.UserId, currentUser.TimeZoneId);
 
         await hubContext.Clients.User(activeStory.UserId).SendAsync(
             "NewReaction",
@@ -668,7 +668,7 @@ public sealed class StoryService(
     }
 
     public async Task<Result<IEnumerable<StoryWithCommentsResponseDto>>> GetStoriesWithCommentsAsync()
-        => Result<IEnumerable<StoryWithCommentsResponseDto>>.Success(await unitOfWork.StoryRepository.GetAllStoriesWithCommentsAsync(currentUser.Id));
+        => Result<IEnumerable<StoryWithCommentsResponseDto>>.Success(await unitOfWork.StoryRepository.GetAllStoriesWithCommentsAsync(currentUser.Id, currentUser.TimeZoneId));
 
     public async Task<Result<StoryWithCommentsResponseDto?>> GetStoryWithCommentsAsync(GetStoryCommentsQuery query)
     {
@@ -679,7 +679,7 @@ public sealed class StoryService(
                 HttpStatusCode.NotFound,
                 string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
 
-        return Result<StoryWithCommentsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithCommentsAsync(currentUser.Id, query.StoryId));
+        return Result<StoryWithCommentsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithCommentsAsync(currentUser.Id, query.StoryId, currentUser.TimeZoneId));
 
     }
 
@@ -692,7 +692,7 @@ public sealed class StoryService(
                 HttpStatusCode.NotFound,
                 string.Format(DomainErrors.Story.StoryNotFounded, query.StoryId));
 
-        return Result<StoryWithReactionsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithReactionsAsync(currentUser.Id, query.StoryId));
+        return Result<StoryWithReactionsResponseDto?>.Success(await unitOfWork.StoryRepository.GetStoryWithReactionsAsync(currentUser.Id, query.StoryId, currentUser.TimeZoneId));
     }
 
     public async Task<Result<StoryStatisticsDto?>> GetStoryStatisticsAsync(GetStoryStatisticsQuery query)
@@ -720,7 +720,7 @@ public sealed class StoryService(
         if (!authorizationResult.Succeeded)
             return Result<StoryStatisticsDto?>.Failure(HttpStatusCode.Forbidden);
 
-        var storyResponse = await unitOfWork.StoryRepository.GetStoryStatisticsAsync(query.StoryId, currentUser.Id);
+        var storyResponse = await unitOfWork.StoryRepository.GetStoryStatisticsAsync(query.StoryId, currentUser.Id, currentUser.TimeZoneId);
 
         // save to cache
         if (storyResponse != null)

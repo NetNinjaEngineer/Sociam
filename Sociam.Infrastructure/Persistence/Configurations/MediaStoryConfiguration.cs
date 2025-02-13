@@ -15,7 +15,7 @@ public sealed class MediaStoryConfiguration : IEntityTypeConfiguration<MediaStor
         builder.Property(s => s.MediaType)
             .HasConversion(
                 m => m.ToString(),
-                m => Enum.Parse<MediaType>(m));
+                m => Enum.Parse<MediaType>(m ?? string.Empty));
 
         builder.Property(s => s.Caption)
             .HasMaxLength(500);

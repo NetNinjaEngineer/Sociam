@@ -13,7 +13,7 @@ public sealed class UnitOfWork(
     IConfiguration configuration) : IUnitOfWork
 {
     private readonly Hashtable _repositories = [];
-    public IFriendshipRepository FriendshipRepository => new FriendshipRepository(context, userManager);
+    public IFriendshipRepository FriendshipRepository => new FriendshipRepository(context);
 
     public IMessageRepository MessageRepository => new MessageRepository(context);
 
