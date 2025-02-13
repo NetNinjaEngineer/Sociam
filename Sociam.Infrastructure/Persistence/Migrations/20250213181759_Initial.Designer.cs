@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sociam.Infrastructure.Persistence;
 
 #nullable disable
@@ -12,7 +12,7 @@ using Sociam.Infrastructure.Persistence;
 namespace Sociam.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250212102134_Initial")]
+    [Migration("20250213181759_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -21,33 +21,32 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.1")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
 
@@ -70,19 +69,19 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -95,19 +94,19 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -119,17 +118,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -141,10 +140,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -213,16 +212,16 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -232,26 +231,26 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Attachment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<long>("AttachmentSize")
                         .HasColumnType("bigint");
 
                     b.Property<string>("AttachmentType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("MessageId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -263,13 +262,13 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Conversation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("LastMessageAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -281,25 +280,25 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Friendship", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FriendshipStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ReceiverId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RequesterId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -313,29 +312,29 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Group", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedByUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("GroupPrivacy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("PictureName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -347,25 +346,25 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.GroupMember", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AddedById")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("JoinedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -381,97 +380,97 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Bio")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("Code")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("CodeExpiration")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("CoverPhotoUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("ProfilePictureUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("TimeZoneId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
@@ -480,8 +479,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
 
@@ -491,8 +489,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "702C7401-F83C-4684-9421-9AA74FC40050",
                             AccessFailedCount = 0,
                             Bio = "Software Developer and Tech Enthusiast.",
-                            ConcurrencyStamp = "9fc6fb1a-279a-40b4-99ab-8adf9a4866e3",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 422, DateTimeKind.Unspecified).AddTicks(8088), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "b2c99d51-77e0-4a56-8640-9f05cc85b404",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 612, DateTimeKind.Unspecified).AddTicks(1149), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(2002, 1, 1),
                             Email = "me5260287@gmail.com",
                             EmailConfirmed = true,
@@ -502,9 +500,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ME5260287@GMAIL.COM",
                             NormalizedUserName = "MOEHAB@2002",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEkVQav7uM/httOWGUq9uVr8FWNkvabpdEH4Mu+5OCA4Zuh34rLloz5TNN48XuNSgw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELFtfwlwwgYv7t+V4TmanvV+NCRLXpZ83ywGUT78JeM6myNU6NKWCwS/yheXWcY7/w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c96739b2-3f26-408f-85cc-72fd467d6d7e",
+                            SecurityStamp = "f9d2bc2e-18e1-499d-94c2-eaf498b94fca",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "Moehab@2002"
@@ -514,8 +512,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "3EB45CDA-F2EE-43E7-B9F1-D52562E05929",
                             AccessFailedCount = 0,
                             Bio = "Loves hiking and photography.",
-                            ConcurrencyStamp = "567d24a1-df4a-4f63-9000-7a509c80782b",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 533, DateTimeKind.Unspecified).AddTicks(4019), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "f77acfaf-9c16-4869-9d0e-17db532a05cd",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 713, DateTimeKind.Unspecified).AddTicks(5213), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1990, 5, 15),
                             Email = "johndoe@example.com",
                             EmailConfirmed = true,
@@ -525,9 +523,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "JOHNDOE@EXAMPLE.COM",
                             NormalizedUserName = "JOHNDOE@123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEX3jD84fq9OPy4Uo6sBLapAn44rtfUSI66DqGV33V1GwWVt+8jgIU4aaQ9nVUEHKw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJiJxyjfbVBSJGZJFwo4MQ3g3kmHGyLJVlzcpwf11KgHsbxjwrO52Z1lDH8CgtvZTQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "651a6aa6-8d39-4eb2-9fe1-2cb24a454e31",
+                            SecurityStamp = "0f196752-d57f-4674-b0ff-b78a877b7eb9",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "JohnDoe@123"
@@ -537,8 +535,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "9818FAE0-A167-4808-A30D-BC7418A53CB0",
                             AccessFailedCount = 0,
                             Bio = "Passionate about art and design.",
-                            ConcurrencyStamp = "d4eeae61-8c21-4a93-b7ef-fa5e6aa821a4",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 650, DateTimeKind.Unspecified).AddTicks(9867), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "aa914b7e-de09-42c4-b06e-42c703f2a55a",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 808, DateTimeKind.Unspecified).AddTicks(2039), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1985, 8, 22),
                             Email = "janesmith@example.com",
                             EmailConfirmed = true,
@@ -548,9 +546,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "JANESMITH@EXAMPLE.COM",
                             NormalizedUserName = "JANESMITH@456",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHgtGFwOgUVwdrYHyM1ANHOC7YPIikbrLLCbMewGU3v41bBgX23Wt8pbV/+xQAZApQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIeEtYqbUNoNpWmO4LX1sUguv/WjH67kHq0lGbUeMFI+yxV8SKSfLnX+5mnWHCKOXg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f7665391-181b-4db7-b127-54936afe4a16",
+                            SecurityStamp = "eef4cf3f-6aaa-4dbf-a4ec-593d4b1b58c9",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "JaneSmith@456"
@@ -560,8 +558,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "FE2FB445-6562-49DD-B0A3-77E0A3A1C376",
                             AccessFailedCount = 0,
                             Bio = "Travel enthusiast and foodie.",
-                            ConcurrencyStamp = "9b7c6802-4a2f-4451-a5e2-348965a33308",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 745, DateTimeKind.Unspecified).AddTicks(16), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "67489bf9-369f-4156-b42c-6c26b28a9cc3",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 901, DateTimeKind.Unspecified).AddTicks(9297), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1995, 3, 10),
                             Email = "alicej@example.com",
                             EmailConfirmed = true,
@@ -571,9 +569,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ALICEJ@EXAMPLE.COM",
                             NormalizedUserName = "ALICEJ@789",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFinwmM2ZemEktvz+yxBTF9PKsF+FTkM7dmZ1gof8+cLQ69vUGkh1/CNhxkGHoYepg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEF9T6zXdBEB/aetyNPNGA681MpXXzYG8jUxHU8gRqClnlbTxSd83knUjyMRnlGipHw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "952435d7-f36c-4971-b07a-e58f5daa3437",
+                            SecurityStamp = "97e05a2b-ccff-4340-adac-f83091c34f9e",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "AliceJ@789"
@@ -583,8 +581,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "0821819C-64AE-4C73-96F2-4E607AA59D7E",
                             AccessFailedCount = 0,
                             Bio = "Tech entrepreneur and mentor.",
-                            ConcurrencyStamp = "8d98d3e5-ec94-4ac8-8b5b-615ea63e2df4",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 836, DateTimeKind.Unspecified).AddTicks(7239), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "6c7229bb-9c0e-42f4-a943-2610871bcf56",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 0, DateTimeKind.Unspecified).AddTicks(6211), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1980, 12, 5),
                             Email = "bobbrown@example.com",
                             EmailConfirmed = true,
@@ -594,9 +592,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "BOBBROWN@EXAMPLE.COM",
                             NormalizedUserName = "BOBBROWN@101",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOFN/GQt8slgStaGFTvO0DksqC8Iwvcv5DH045vxnIgfVGmLDD58ZRxQhz+fwEYq0w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEODH27munkWAI+DiLdZH/ixp7rNgifFhJLZTm5aMie2poSt40h33faUHl67GrDZP1g==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "58831c96-1cb0-4083-8d91-01d57d37f0a0",
+                            SecurityStamp = "d32e913e-fa13-47df-a0f9-8f3122e36c5d",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "BobBrown@101"
@@ -606,8 +604,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "5B91855C-2D98-4E2B-B919-CDE322C9002D",
                             AccessFailedCount = 0,
                             Bio = "Fitness trainer and health coach.",
-                            ConcurrencyStamp = "7a20d2cd-a2fe-452c-a8fd-15ed693f78c7",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 928, DateTimeKind.Unspecified).AddTicks(8243), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "327aeb98-2fdb-4933-8cc7-0556b3d00cfe",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 93, DateTimeKind.Unspecified).AddTicks(4455), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1992, 7, 18),
                             Email = "emilyd@example.com",
                             EmailConfirmed = true,
@@ -617,9 +615,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "EMILYD@EXAMPLE.COM",
                             NormalizedUserName = "EMILYD@202",
-                            PasswordHash = "AQAAAAIAAYagAAAAEM+5wtJscOPCLzLCvvN8s0AGr6FVWPmKidqOuVd2IZpV0Wt6HRZTMfjNCszuTQDqYA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAED+u9mMW2NgOZu+Ygg2tn8y5JNqbKQFBFW+8NVgJs03lyOC3i8A00sLVAO3Yj1EEVA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "53ced8d3-808a-418e-951e-26304348c15f",
+                            SecurityStamp = "52136f26-aa7f-4950-90c3-7119e76634d6",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "EmilyD@202"
@@ -629,8 +627,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "5326BB55-A26F-47FE-ABC4-9DF44F7B0333",
                             AccessFailedCount = 0,
                             Bio = "Musician and songwriter.",
-                            ConcurrencyStamp = "6739dfaf-2981-4ec9-b3da-d2671453e5a1",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 25, DateTimeKind.Unspecified).AddTicks(5819), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "47cb1a72-6f4c-4365-8b95-ff9be5d75298",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 186, DateTimeKind.Unspecified).AddTicks(504), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1988, 9, 25),
                             Email = "michaelw@example.com",
                             EmailConfirmed = true,
@@ -640,9 +638,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "MICHAELW@EXAMPLE.COM",
                             NormalizedUserName = "MICHAELW@303",
-                            PasswordHash = "AQAAAAIAAYagAAAAEC1f5ErfiIdIB2/pmM1SH2/wTkWkvg3eFczuylkak3O6tcoIoOe42JI3ihjWx6E/ww==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJwDmLZn8HqYxeSywn6fWo852uwjsu9JXWcHPRnORc9Kl0C9Gkzg1giv4Q0SmKk+1w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f5530732-ec1c-44ba-abac-d006cc00a0da",
+                            SecurityStamp = "1227f26d-bd84-4233-b7e7-19fcd0be1b31",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "MichaelW@303"
@@ -652,8 +650,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "B3945AB7-1F46-4829-9DEA-6860E283582F",
                             AccessFailedCount = 0,
                             Bio = "Book lover and aspiring writer.",
-                            ConcurrencyStamp = "885b75ad-eba3-4103-aa1c-aa93ec1a28b4",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 122, DateTimeKind.Unspecified).AddTicks(9384), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "847c3acb-5170-4cce-a7c9-b02dfa54244b",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 282, DateTimeKind.Unspecified).AddTicks(1738), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1998, 4, 30),
                             Email = "sarahm@example.com",
                             EmailConfirmed = true,
@@ -663,9 +661,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "SARAHM@EXAMPLE.COM",
                             NormalizedUserName = "SARAHM@404",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAmrHAOGs6bRz1IzD0Br+RsStx5J1/y//Ay+Pb6JCMzZd6UWMb+XQi3WLl/o1ajPHA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAwetCbo6Prdp3rddWRw/NHW/SHaRhrB8Pvk1CPRgm3Ud+6HsmgUNiZCjR8FHs0nhw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e9c6391a-8a3a-41c6-a048-13347e484717",
+                            SecurityStamp = "c9629f3f-2959-444e-b24d-446bdc6c8516",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "SarahM@404"
@@ -675,8 +673,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "3944C201-0184-4F97-83A6-B6E4852C961F",
                             AccessFailedCount = 0,
                             Bio = "History buff and teacher.",
-                            ConcurrencyStamp = "baed667c-273b-48a2-90fc-8e304c097dbb",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 227, DateTimeKind.Unspecified).AddTicks(1892), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "379a3e35-3b82-484c-812b-0d60ee8ccefd",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 404, DateTimeKind.Unspecified).AddTicks(9851), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1975, 11, 12),
                             Email = "davidm@example.com",
                             EmailConfirmed = true,
@@ -686,9 +684,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "DAVIDM@EXAMPLE.COM",
                             NormalizedUserName = "DAVIDM@505",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBDnwnf72s4H4x6ZosNvwNFvEhbChpQl83ll2TSX5O7ug+T51z0vKD5FZGK98280EA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECG5ZJansHwd3jDhCkR40jW5ZqlRlNjHOic1rTKItiDHjoI/LcQR+KueGLHwcocyRg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ffe43e9e-0335-4e4d-b5ae-18bd10d725b7",
+                            SecurityStamp = "a128a9a5-9b2e-4e5b-94d0-2fc48110b0fa",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "DavidM@505"
@@ -698,8 +696,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "0A9232F3-BC6D-4610-AAFF-F1032831E847",
                             AccessFailedCount = 0,
                             Bio = "Nature lover and environmentalist.",
-                            ConcurrencyStamp = "d69475f2-93a0-4266-9e9e-830ef2ec9f69",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 336, DateTimeKind.Unspecified).AddTicks(4392), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "a28da8db-fcc6-4d07-b85d-cfdc382187cf",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 500, DateTimeKind.Unspecified).AddTicks(8620), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1990, 6, 20),
                             Email = "laurat@example.com",
                             EmailConfirmed = true,
@@ -709,9 +707,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "LAURAT@EXAMPLE.COM",
                             NormalizedUserName = "LAURAT@606",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHQ+HKy+yx4lvdOs4bIZsEhj38s74d6aDz8sGohMWRtVpGNuYqN2BGSuy37NcLc2fw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHxurL2l4MGek49+K9fM/wf2SjFiRiKZVYmBrwoU5iC+wf0yNTQrTjBDnhtnalG/pA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5187869f-fd37-44f6-9b16-84f5d0b8954e",
+                            SecurityStamp = "c336980b-4911-4143-80cd-b08c45b948d3",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "LauraT@606"
@@ -721,8 +719,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "049759F5-3AD8-46BF-89EE-AC51F3BEED88",
                             AccessFailedCount = 0,
                             Bio = "Gamer and tech enthusiast.",
-                            ConcurrencyStamp = "84d98d3a-643b-4db1-85fb-04cb7cb8601c",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 445, DateTimeKind.Unspecified).AddTicks(9338), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "df41461b-300c-4576-bcb4-ee1d93914e32",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 599, DateTimeKind.Unspecified).AddTicks(8168), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1985, 2, 14),
                             Email = "chrisa@example.com",
                             EmailConfirmed = true,
@@ -732,9 +730,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "CHRISA@EXAMPLE.COM",
                             NormalizedUserName = "CHRISA@707",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOcOA+/b9HuoZXj2fTsdT3VoRl9usP/JAKWW6BDamp808tjm3qzBWFu134RS5m6+nw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBeCV4gggdYNijobGly63oAn7TTMTcP3n+gyItwm1OK30ffzzQf4ELezGLL17rO66Q==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "30f59d72-e24e-4264-89ad-06971e059b56",
+                            SecurityStamp = "a3f41fe4-bc8a-4dff-8a4b-ae027cdde175",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "ChrisA@707"
@@ -744,21 +742,21 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.JoinGroupRequest", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("RequestedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RequestorId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -773,31 +771,31 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("EndTime")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsLive")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("RecordingUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("StartTime")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<int>("ViewerCount")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -809,43 +807,43 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("GroupConversationId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsEdited")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPinned")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("MessageStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("PrivateConversationId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("ReadedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReceiverId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("SenderId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -863,18 +861,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.MessageMention", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("MentionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("MentionedUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("MessageId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -888,18 +886,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.MessageReaction", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("MessageId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ReactionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -913,35 +911,35 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.MessageReply", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("EditedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsEdited")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("OriginalMessageId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("ParentReplyId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("RepliedById")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ReplyStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -959,36 +957,36 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.Notification", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ActionUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ActorId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("ReadAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RecipientId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1005,20 +1003,20 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsArchived")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("StoryPrivacy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("StoryType")
                         .IsRequired()
@@ -1027,7 +1025,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1043,22 +1041,22 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.StoryComment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<DateTimeOffset>("CommentedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CommentedById")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("StoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -1072,21 +1070,21 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.StoryReaction", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ReactedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReactedById")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ReactionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("StoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -1101,28 +1099,27 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsViewed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("StoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("ViewedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ViewerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ViewerId");
 
                     b.HasIndex("StoryId", "ViewerId")
-                        .IsUnique()
-                        .HasFilter("[StoryId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("StoryViews", (string)null);
                 });
@@ -1130,18 +1127,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sociam.Domain.Entities.UserFollower", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("FollowedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FollowedUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("FollowerUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1157,7 +1154,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Sociam.Domain.Entities.Conversation");
 
                     b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasIndex("GroupId");
 
@@ -1170,17 +1167,16 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("ReceiverUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("SenderUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasIndex("ReceiverUserId");
 
                     b.HasIndex("SenderUserId", "ReceiverUserId")
-                        .IsUnique()
-                        .HasFilter("[SenderUserId] IS NOT NULL AND [ReceiverUserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("PrivateConversations");
                 });
@@ -1191,14 +1187,14 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("GroupId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("GroupName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("GroupRole")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasIndex("GroupId");
 
@@ -1210,11 +1206,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Sociam.Domain.Entities.Notification");
 
                     b.Property<Guid>("MediaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("MediaNotificationType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasIndex("MediaId");
 
@@ -1233,10 +1229,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Sociam.Domain.Entities.Notification");
 
                     b.Property<string>("PostContent")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasIndex("PostId");
 
@@ -1248,10 +1244,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Sociam.Domain.Entities.Notification");
 
                     b.Property<string>("Privacy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("StoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasIndex("StoryId");
 
@@ -1264,14 +1260,14 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Caption")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("MediaType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("MediaUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasDiscriminator().HasValue("media");
                 });
@@ -1281,10 +1277,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Sociam.Domain.Entities.Story");
 
                     b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("HashTags")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasDiscriminator().HasValue("text");
                 });
@@ -1413,26 +1409,26 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.OwnsMany("Sociam.Domain.Entities.Identity.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
-                                .HasColumnType("nvarchar(450)");
+                                .HasColumnType("text");
 
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
+                                .HasColumnType("integer");
 
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
 
                             b1.Property<DateTimeOffset>("CreatedOn")
-                                .HasColumnType("datetimeoffset");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<DateTimeOffset>("ExpiresOn")
-                                .HasColumnType("datetimeoffset");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<DateTimeOffset?>("RevokedOn")
-                                .HasColumnType("datetimeoffset");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<string>("Token")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("text");
 
                             b1.HasKey("ApplicationUserId", "Id");
 

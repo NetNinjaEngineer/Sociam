@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Sociam.Infrastructure.Persistence;
 public static class DatabaseSeeder
 {
-    private readonly static JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
 
     public static async Task SeedDatabaseAsync(this ApplicationDbContext context)
     {

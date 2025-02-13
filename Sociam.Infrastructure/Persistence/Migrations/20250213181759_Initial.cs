@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,10 +18,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -31,33 +32,33 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProfilePictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CoverPhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Bio = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CodeExpiration = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    TimeZoneId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Gender = table.Column<string>(type: "text", nullable: false),
+                    ProfilePictureUrl = table.Column<string>(type: "text", nullable: true),
+                    CoverPhotoUrl = table.Column<string>(type: "text", nullable: true),
+                    Bio = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Code = table.Column<string>(type: "text", nullable: true),
+                    CodeExpiration = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    TimeZoneId = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,11 +69,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -89,11 +90,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -110,10 +111,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -130,8 +131,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -154,10 +155,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -174,12 +175,12 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Friendships",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequesterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FriendshipStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequesterId = table.Column<string>(type: "text", nullable: false),
+                    ReceiverId = table.Column<string>(type: "text", nullable: false),
+                    FriendshipStatus = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -202,18 +203,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "GroupNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ActorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GroupId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    GroupName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GroupRole = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecipientId = table.Column<string>(type: "text", nullable: false),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "text", nullable: true),
+                    GroupId = table.Column<string>(type: "text", nullable: false),
+                    GroupName = table.Column<string>(type: "text", nullable: false),
+                    GroupRole = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -236,13 +237,13 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Groups",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    GroupPrivacy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PictureName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    GroupPrivacy = table.Column<string>(type: "text", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: false),
+                    PictureName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -259,14 +260,14 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "LiveStreams",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StartTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    EndTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    IsLive = table.Column<bool>(type: "bit", nullable: false),
-                    ViewerCount = table.Column<int>(type: "int", nullable: false),
-                    RecordingUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    StartTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EndTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IsLive = table.Column<bool>(type: "boolean", nullable: false),
+                    ViewerCount = table.Column<int>(type: "integer", nullable: false),
+                    RecordingUrl = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -283,17 +284,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "MediaNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ActorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MediaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MediaNotificationType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecipientId = table.Column<string>(type: "text", nullable: false),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "text", nullable: true),
+                    MediaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MediaNotificationType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -316,15 +317,15 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "NetworkNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ActorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecipientId = table.Column<string>(type: "text", nullable: false),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -347,17 +348,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "PostNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ActorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PostContent = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecipientId = table.Column<string>(type: "text", nullable: false),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "text", nullable: true),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PostContent = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -380,11 +381,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "PrivateConversations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastMessageAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    SenderUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastMessageAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    SenderUserId = table.Column<string>(type: "text", nullable: false),
+                    ReceiverUserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -407,13 +408,13 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "RefreshToken",
                 columns: table => new
                 {
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpiresOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    CreatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    RevokedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                    ApplicationUserId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    ExpiresOn = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedOn = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RevokedOn = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -430,18 +431,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Stories",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ExpiresAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    IsArchived = table.Column<bool>(type: "bit", nullable: false),
-                    StoryPrivacy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IsArchived = table.Column<bool>(type: "boolean", nullable: false),
+                    StoryPrivacy = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     StoryType = table.Column<string>(type: "VARCHAR(5)", maxLength: 5, nullable: false),
-                    Caption = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    MediaUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MediaType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    HashTags = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Caption = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    MediaUrl = table.Column<string>(type: "text", nullable: true),
+                    MediaType = table.Column<string>(type: "text", nullable: true),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    HashTags = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -458,17 +459,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "StoryNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ActorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Privacy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecipientId = table.Column<string>(type: "text", nullable: false),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "text", nullable: true),
+                    StoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Privacy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -491,10 +492,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "UserFollowers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FollowedUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FollowerUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FollowedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FollowedUserId = table.Column<string>(type: "text", nullable: false),
+                    FollowerUserId = table.Column<string>(type: "text", nullable: false),
+                    FollowedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -517,10 +518,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "GroupConversations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastMessageAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastMessageAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    GroupId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -537,12 +538,12 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "GroupMembers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JoinedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AddedById = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JoinedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    AddedById = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -570,11 +571,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "JoinGroupRequests",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    RequestorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RequestorId = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -597,11 +598,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "StoryComment",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    CommentedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CommentedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    CommentedById = table.Column<string>(type: "text", nullable: false),
+                    CommentedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -624,11 +625,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "StoryReaction",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReactedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReactedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ReactionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReactedById = table.Column<string>(type: "text", nullable: false),
+                    ReactedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReactionType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -651,11 +652,11 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "StoryViews",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ViewerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsViewed = table.Column<bool>(type: "bit", nullable: false),
-                    ViewedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ViewerId = table.Column<string>(type: "text", nullable: false),
+                    IsViewed = table.Column<bool>(type: "boolean", nullable: false),
+                    ViewedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -678,18 +679,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PrivateConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    GroupConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    ReadedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    MessageStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsEdited = table.Column<bool>(type: "bit", nullable: false),
-                    IsPinned = table.Column<bool>(type: "bit", nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PrivateConversationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    GroupConversationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ReadedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    MessageStatus = table.Column<string>(type: "text", nullable: false),
+                    IsEdited = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPinned = table.Column<bool>(type: "boolean", nullable: false),
+                    SenderId = table.Column<string>(type: "text", nullable: false),
+                    ReceiverId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -724,12 +725,12 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Attachments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Url = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     AttachmentSize = table.Column<long>(type: "bigint", nullable: false),
-                    AttachmentType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    AttachmentType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -746,10 +747,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "MessageMentions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MentionedUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MentionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MentionedUserId = table.Column<string>(type: "text", nullable: false),
+                    MentionType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -772,10 +773,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "MessageReactions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReactionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ReactionType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -798,15 +799,15 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "MessageReplies",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OriginalMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsEdited = table.Column<bool>(type: "bit", nullable: false),
-                    EditedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    RepliedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReplyStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ParentReplyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OriginalMessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsEdited = table.Column<bool>(type: "boolean", nullable: false),
+                    EditedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Content = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RepliedById = table.Column<string>(type: "text", nullable: false),
+                    ReplyStatus = table.Column<string>(type: "text", nullable: false),
+                    ParentReplyId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -845,17 +846,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Bio", "Code", "CodeExpiration", "ConcurrencyStamp", "CoverPhotoUrl", "CreatedAt", "DateOfBirth", "Email", "EmailConfirmed", "FirstName", "Gender", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePictureUrl", "SecurityStamp", "TimeZoneId", "TwoFactorEnabled", "UpdatedAt", "UserName" },
                 values: new object[,]
                 {
-                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "84d98d3a-643b-4db1-85fb-04cb7cb8601c", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 445, DateTimeKind.Unspecified).AddTicks(9338), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEOcOA+/b9HuoZXj2fTsdT3VoRl9usP/JAKWW6BDamp808tjm3qzBWFu134RS5m6+nw==", null, false, null, "30f59d72-e24e-4264-89ad-06971e059b56", "Egypt Standard Time", false, null, "ChrisA@707" },
-                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "8d98d3e5-ec94-4ac8-8b5b-615ea63e2df4", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 836, DateTimeKind.Unspecified).AddTicks(7239), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEOFN/GQt8slgStaGFTvO0DksqC8Iwvcv5DH045vxnIgfVGmLDD58ZRxQhz+fwEYq0w==", null, false, null, "58831c96-1cb0-4083-8d91-01d57d37f0a0", "Egypt Standard Time", false, null, "BobBrown@101" },
-                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "d69475f2-93a0-4266-9e9e-830ef2ec9f69", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 336, DateTimeKind.Unspecified).AddTicks(4392), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEHQ+HKy+yx4lvdOs4bIZsEhj38s74d6aDz8sGohMWRtVpGNuYqN2BGSuy37NcLc2fw==", null, false, null, "5187869f-fd37-44f6-9b16-84f5d0b8954e", "Egypt Standard Time", false, null, "LauraT@606" },
-                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "baed667c-273b-48a2-90fc-8e304c097dbb", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 227, DateTimeKind.Unspecified).AddTicks(1892), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEBDnwnf72s4H4x6ZosNvwNFvEhbChpQl83ll2TSX5O7ug+T51z0vKD5FZGK98280EA==", null, false, null, "ffe43e9e-0335-4e4d-b5ae-18bd10d725b7", "Egypt Standard Time", false, null, "DavidM@505" },
-                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "567d24a1-df4a-4f63-9000-7a509c80782b", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 533, DateTimeKind.Unspecified).AddTicks(4019), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEEX3jD84fq9OPy4Uo6sBLapAn44rtfUSI66DqGV33V1GwWVt+8jgIU4aaQ9nVUEHKw==", null, false, null, "651a6aa6-8d39-4eb2-9fe1-2cb24a454e31", "Egypt Standard Time", false, null, "JohnDoe@123" },
-                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "6739dfaf-2981-4ec9-b3da-d2671453e5a1", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 25, DateTimeKind.Unspecified).AddTicks(5819), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEC1f5ErfiIdIB2/pmM1SH2/wTkWkvg3eFczuylkak3O6tcoIoOe42JI3ihjWx6E/ww==", null, false, null, "f5530732-ec1c-44ba-abac-d006cc00a0da", "Egypt Standard Time", false, null, "MichaelW@303" },
-                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "7a20d2cd-a2fe-452c-a8fd-15ed693f78c7", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 928, DateTimeKind.Unspecified).AddTicks(8243), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEM+5wtJscOPCLzLCvvN8s0AGr6FVWPmKidqOuVd2IZpV0Wt6HRZTMfjNCszuTQDqYA==", null, false, null, "53ced8d3-808a-418e-951e-26304348c15f", "Egypt Standard Time", false, null, "EmilyD@202" },
-                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "9fc6fb1a-279a-40b4-99ab-8adf9a4866e3", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 422, DateTimeKind.Unspecified).AddTicks(8088), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEEkVQav7uM/httOWGUq9uVr8FWNkvabpdEH4Mu+5OCA4Zuh34rLloz5TNN48XuNSgw==", null, false, null, "c96739b2-3f26-408f-85cc-72fd467d6d7e", "Egypt Standard Time", false, null, "Moehab@2002" },
-                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "d4eeae61-8c21-4a93-b7ef-fa5e6aa821a4", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 650, DateTimeKind.Unspecified).AddTicks(9867), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAEHgtGFwOgUVwdrYHyM1ANHOC7YPIikbrLLCbMewGU3v41bBgX23Wt8pbV/+xQAZApQ==", null, false, null, "f7665391-181b-4db7-b127-54936afe4a16", "Egypt Standard Time", false, null, "JaneSmith@456" },
-                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "885b75ad-eba3-4103-aa1c-aa93ec1a28b4", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 33, 122, DateTimeKind.Unspecified).AddTicks(9384), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEAmrHAOGs6bRz1IzD0Br+RsStx5J1/y//Ay+Pb6JCMzZd6UWMb+XQi3WLl/o1ajPHA==", null, false, null, "e9c6391a-8a3a-41c6-a048-13347e484717", "Egypt Standard Time", false, null, "SarahM@404" },
-                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "9b7c6802-4a2f-4451-a5e2-348965a33308", null, new DateTimeOffset(new DateTime(2025, 2, 12, 12, 21, 32, 745, DateTimeKind.Unspecified).AddTicks(16), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEFinwmM2ZemEktvz+yxBTF9PKsF+FTkM7dmZ1gof8+cLQ69vUGkh1/CNhxkGHoYepg==", null, false, null, "952435d7-f36c-4971-b07a-e58f5daa3437", "Egypt Standard Time", false, null, "AliceJ@789" }
+                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "df41461b-300c-4576-bcb4-ee1d93914e32", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 599, DateTimeKind.Unspecified).AddTicks(8168), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEBeCV4gggdYNijobGly63oAn7TTMTcP3n+gyItwm1OK30ffzzQf4ELezGLL17rO66Q==", null, false, null, "a3f41fe4-bc8a-4dff-8a4b-ae027cdde175", "Egypt Standard Time", false, null, "ChrisA@707" },
+                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "6c7229bb-9c0e-42f4-a943-2610871bcf56", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 0, DateTimeKind.Unspecified).AddTicks(6211), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEODH27munkWAI+DiLdZH/ixp7rNgifFhJLZTm5aMie2poSt40h33faUHl67GrDZP1g==", null, false, null, "d32e913e-fa13-47df-a0f9-8f3122e36c5d", "Egypt Standard Time", false, null, "BobBrown@101" },
+                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "a28da8db-fcc6-4d07-b85d-cfdc382187cf", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 500, DateTimeKind.Unspecified).AddTicks(8620), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEHxurL2l4MGek49+K9fM/wf2SjFiRiKZVYmBrwoU5iC+wf0yNTQrTjBDnhtnalG/pA==", null, false, null, "c336980b-4911-4143-80cd-b08c45b948d3", "Egypt Standard Time", false, null, "LauraT@606" },
+                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "379a3e35-3b82-484c-812b-0d60ee8ccefd", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 404, DateTimeKind.Unspecified).AddTicks(9851), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAECG5ZJansHwd3jDhCkR40jW5ZqlRlNjHOic1rTKItiDHjoI/LcQR+KueGLHwcocyRg==", null, false, null, "a128a9a5-9b2e-4e5b-94d0-2fc48110b0fa", "Egypt Standard Time", false, null, "DavidM@505" },
+                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "f77acfaf-9c16-4869-9d0e-17db532a05cd", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 713, DateTimeKind.Unspecified).AddTicks(5213), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEJiJxyjfbVBSJGZJFwo4MQ3g3kmHGyLJVlzcpwf11KgHsbxjwrO52Z1lDH8CgtvZTQ==", null, false, null, "0f196752-d57f-4674-b0ff-b78a877b7eb9", "Egypt Standard Time", false, null, "JohnDoe@123" },
+                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "47cb1a72-6f4c-4365-8b95-ff9be5d75298", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 186, DateTimeKind.Unspecified).AddTicks(504), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEJwDmLZn8HqYxeSywn6fWo852uwjsu9JXWcHPRnORc9Kl0C9Gkzg1giv4Q0SmKk+1w==", null, false, null, "1227f26d-bd84-4233-b7e7-19fcd0be1b31", "Egypt Standard Time", false, null, "MichaelW@303" },
+                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "327aeb98-2fdb-4933-8cc7-0556b3d00cfe", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 93, DateTimeKind.Unspecified).AddTicks(4455), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAED+u9mMW2NgOZu+Ygg2tn8y5JNqbKQFBFW+8NVgJs03lyOC3i8A00sLVAO3Yj1EEVA==", null, false, null, "52136f26-aa7f-4950-90c3-7119e76634d6", "Egypt Standard Time", false, null, "EmilyD@202" },
+                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "b2c99d51-77e0-4a56-8640-9f05cc85b404", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 612, DateTimeKind.Unspecified).AddTicks(1149), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAELFtfwlwwgYv7t+V4TmanvV+NCRLXpZ83ywGUT78JeM6myNU6NKWCwS/yheXWcY7/w==", null, false, null, "f9d2bc2e-18e1-499d-94c2-eaf498b94fca", "Egypt Standard Time", false, null, "Moehab@2002" },
+                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "aa914b7e-de09-42c4-b06e-42c703f2a55a", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 808, DateTimeKind.Unspecified).AddTicks(2039), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAEIeEtYqbUNoNpWmO4LX1sUguv/WjH67kHq0lGbUeMFI+yxV8SKSfLnX+5mnWHCKOXg==", null, false, null, "eef4cf3f-6aaa-4dbf-a4ec-593d4b1b58c9", "Egypt Standard Time", false, null, "JaneSmith@456" },
+                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "847c3acb-5170-4cce-a7c9-b02dfa54244b", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 282, DateTimeKind.Unspecified).AddTicks(1738), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEAwetCbo6Prdp3rddWRw/NHW/SHaRhrB8Pvk1CPRgm3Ud+6HsmgUNiZCjR8FHs0nhw==", null, false, null, "c9629f3f-2959-444e-b24d-446bdc6c8516", "Egypt Standard Time", false, null, "SarahM@404" },
+                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "67489bf9-369f-4156-b42c-6c26b28a9cc3", null, new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 901, DateTimeKind.Unspecified).AddTicks(9297), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEF9T6zXdBEB/aetyNPNGA681MpXXzYG8jUxHU8gRqClnlbTxSd83knUjyMRnlGipHw==", null, false, null, "97e05a2b-ccff-4340-adac-f83091c34f9e", "Egypt Standard Time", false, null, "AliceJ@789" }
                 });
 
             migrationBuilder.InsertData(
@@ -885,8 +886,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -912,8 +912,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attachments_MessageId",
@@ -1094,8 +1093,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "IX_PrivateConversations_SenderUserId_ReceiverUserId",
                 table: "PrivateConversations",
                 columns: new[] { "SenderUserId", "ReceiverUserId" },
-                unique: true,
-                filter: "[SenderUserId] IS NOT NULL AND [ReceiverUserId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stories_UserId",
@@ -1141,8 +1139,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "IX_StoryViews_StoryId_ViewerId",
                 table: "StoryViews",
                 columns: new[] { "StoryId", "ViewerId" },
-                unique: true,
-                filter: "[StoryId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StoryViews_ViewerId",

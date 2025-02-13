@@ -208,7 +208,7 @@ public sealed class StoryRepository(
         var utcOffset = timeZone.GetUtcOffset(currentTimeUtc.DateTime);
 
         var pagedResult = await GetStoriesAsync(timeZoneId,
-            s => s.UserId == creatorId && s.ExpiresAt < currentTimeUtc + utcOffset, queryParameters);
+            s => s.UserId == creatorId && s.ExpiresAt <= currentTimeUtc + utcOffset, queryParameters);
 
         return pagedResult;
 
