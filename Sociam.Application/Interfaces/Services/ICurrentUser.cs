@@ -7,5 +7,6 @@ public interface ICurrentUser
     string FullName { get; }
     string Email { get; }
     string ProfilePictureUrl { get; }
+    string TimeZoneId { get; }
     ClaimsPrincipal? GetUser();
 }

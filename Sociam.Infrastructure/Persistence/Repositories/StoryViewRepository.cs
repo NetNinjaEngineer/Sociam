@@ -47,16 +47,15 @@ public sealed class StoryViewRepository(
         => await context.StoryViews.AsNoTracking()
             .AnyAsync(sv => sv.StoryId == activeStoryId && sv.ViewerId == currentUserId && sv.IsViewed);
 
-    public async Task<IEnumerable<string>> GetAllowedUsersAsync(Guid storyId)
+    public async Task<IEnumerable<StoryView>> GetAllowedUsersAsync(Guid storyId)
     {
-        var allowedUserIds = await context.StoryViews
+        var allowedUsers = await context.StoryViews
             .AsNoTracking()
             .Include(storyView => storyView.Viewer)
             .Include(storyView => storyView.Story)
             .Where(storyView => storyView.StoryId == storyId && !storyView.IsViewed && storyView.ViewedAt == null)
-            .Select(storyView => storyView.ViewerId)
             .ToListAsync();
 
-        return allowedUserIds;
+        return allowedUsers;
     }
 }

@@ -17,7 +17,7 @@ public sealed class StoryRepository(
     public async Task<IEnumerable<StoryDto>> GetActiveCreatorStoriesAsync(string creatorId)
         => await context.Stories
             .AsNoTracking()
-            .Where(s => s.UserId == creatorId && s.ExpiresAt > DateTimeOffset.Now)
+            .Where(s => s.UserId == creatorId && s.ExpiresAt > DateTimeOffset.UtcNow)
             .Select(s => new StoryDto
             {
                 Id = s.Id,
@@ -41,7 +41,7 @@ public sealed class StoryRepository(
         // Get active stories for the friend
         var activeFriendStories = await context.Stories
             .AsNoTracking()
-            .Where(story => story.UserId == friendId && story.ExpiresAt > DateTimeOffset.Now)
+            .Where(story => story.UserId == friendId && story.ExpiresAt > DateTimeOffset.UtcNow)
             .ToListAsync();
 
         if (activeFriendStories.Count == 0) return false;

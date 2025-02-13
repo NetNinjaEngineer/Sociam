@@ -72,7 +72,7 @@ public sealed class MessageService(
         if (existedMessage == null)
             return Result<bool>.Failure(HttpStatusCode.NotFound);
         existedMessage.Content = newContent;
-        existedMessage.UpdatedAt = DateTimeOffset.Now;
+        existedMessage.UpdatedAt = DateTimeOffset.UtcNow;
         existedMessage.IsEdited = true;
         unitOfWork.MessageRepository.Update(existedMessage);
         await unitOfWork.SaveChangesAsync();
@@ -170,7 +170,7 @@ public sealed class MessageService(
         if (existedMessage is not null)
         {
             existedMessage.MessageStatus = MessageStatus.Read;
-            existedMessage.ReadedAt = DateTimeOffset.Now;
+            existedMessage.ReadedAt = DateTimeOffset.UtcNow;
             unitOfWork.MessageRepository.Update(existedMessage);
             await unitOfWork.SaveChangesAsync();
             return Result<bool>.Success(true, successMessage: AppConstants.Messages.MessageStatusUpdated);

@@ -7,7 +7,7 @@ public sealed class Group : BaseEntity
 {
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public GroupPrivacy GroupPrivacy { get; set; }
     public string CreatedByUserId { get; set; } = null!;
     public ApplicationUser CreatedByUser { get; set; } = null!;

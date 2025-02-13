@@ -22,10 +22,7 @@ public static class SpecificationQueryEvaluator
             var firstOrderBy = specification.OrderBy.First();
             var orderedQuery = inputQuery.OrderBy(firstOrderBy);
 
-            foreach (var additionalOrderBy in specification.OrderBy.Skip(1))
-            {
-                orderedQuery = orderedQuery.ThenBy(additionalOrderBy);
-            }
+            orderedQuery = specification.OrderBy.Skip(1).Aggregate(orderedQuery, (current, additionalOrderBy) => current.ThenBy(additionalOrderBy));
             inputQuery = orderedQuery;
         }
 
@@ -33,10 +30,7 @@ public static class SpecificationQueryEvaluator
         {
             var firstOrderByExpression = specification.OrderByDescending.First();
             var orderedQuery = inputQuery.OrderByDescending(firstOrderByExpression);
-            foreach (var additionalOrderByExpression in specification.OrderByDescending.Skip(1))
-            {
-                orderedQuery = orderedQuery.ThenByDescending(additionalOrderByExpression);
-            }
+            orderedQuery = specification.OrderByDescending.Skip(1).Aggregate(orderedQuery, (current, additionalOrderByExpression) => current.ThenByDescending(additionalOrderByExpression));
             inputQuery = orderedQuery;
         }
 

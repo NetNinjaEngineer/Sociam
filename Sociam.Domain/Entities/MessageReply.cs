@@ -11,7 +11,7 @@ public sealed class MessageReply : BaseEntity
     public bool IsEdited { get; set; }
     public DateTimeOffset? EditedAt { get; set; }
     public string Content { get; set; } = null!;
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public string RepliedById { get; set; } = null!;
     public ApplicationUser RepliedBy { get; set; } = null!;
     public ReplyStatus ReplyStatus { get; set; } = ReplyStatus.Active;

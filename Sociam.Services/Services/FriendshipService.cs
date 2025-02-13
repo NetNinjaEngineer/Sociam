@@ -68,7 +68,7 @@ public sealed class FriendshipService(
             RequesterId = sendFriendshipRequest.RequesterId,
             ReceiverId = sendFriendshipRequest.AddresseeId,
             FriendshipStatus = FriendshipStatus.Pending,
-            UpdatedAt = DateTimeOffset.Now
+            UpdatedAt = DateTimeOffset.UtcNow
         };
 
         unitOfWork.Repository<Friendship>()?.Create(friendShip);
@@ -93,8 +93,8 @@ public sealed class FriendshipService(
                 myFriend,
                 string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
                 fShip.FriendshipStatus.ToString(),
-                fShip.CreatedAt,
-                fShip.UpdatedAt
+                fShip.CreatedAt.ConvertToUserLocalTimeZone(fShip.Requester.TimeZoneId),
+                fShip.UpdatedAt!.Value.ConvertToUserLocalTimeZone(fShip.Requester.TimeZoneId)
             ));
 
     }
@@ -121,7 +121,7 @@ public sealed class FriendshipService(
                 HttpStatusCode.BadRequest, DomainErrors.Friendship.FriendRequestMustBePending);
 
         friendship.FriendshipStatus = FriendshipStatus.Accepted;
-        friendship.UpdatedAt = DateTimeOffset.Now;
+        friendship.UpdatedAt = DateTimeOffset.UtcNow;
 
         unitOfWork.FriendshipRepository.Update(friendship);
 
@@ -142,8 +142,8 @@ public sealed class FriendshipService(
                 string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
                 myFriend,
                 fShip.FriendshipStatus.ToString(),
-                fShip.CreatedAt,
-                fShip.UpdatedAt
+                fShip.CreatedAt.ConvertToUserLocalTimeZone(fShip.Receiver.TimeZoneId),
+                fShip.UpdatedAt!.Value.ConvertToUserLocalTimeZone(fShip.Receiver.TimeZoneId)
             ));
         }
 
@@ -219,7 +219,7 @@ public sealed class FriendshipService(
             RequesterId = currentUser.Id,
             ReceiverId = command.FriendId,
             FriendshipStatus = FriendshipStatus.Pending,
-            UpdatedAt = DateTimeOffset.Now
+            UpdatedAt = DateTimeOffset.UtcNow
         };
 
         unitOfWork.Repository<Friendship>()?.Create(friendShip);
@@ -244,8 +244,8 @@ public sealed class FriendshipService(
                 senderRequest,
                 string.Concat(fShip.Receiver.FirstName, " ", fShip.Receiver.LastName),
                 fShip.FriendshipStatus.ToString(),
-                fShip.CreatedAt,
-                fShip.UpdatedAt
+                fShip.CreatedAt.ConvertToUserLocalTimeZone(fShip.Requester.TimeZoneId),
+                fShip.UpdatedAt!.Value.ConvertToUserLocalTimeZone(fShip.Requester.TimeZoneId)
             ));
 
     }
@@ -275,7 +275,7 @@ public sealed class FriendshipService(
                 HttpStatusCode.BadRequest, DomainErrors.Friendship.FriendRequestMustBePending);
 
         friendship.FriendshipStatus = FriendshipStatus.Accepted;
-        friendship.UpdatedAt = DateTimeOffset.Now;
+        friendship.UpdatedAt = DateTimeOffset.UtcNow;
 
         unitOfWork.FriendshipRepository.Update(friendship);
 
@@ -301,8 +301,8 @@ public sealed class FriendshipService(
                 string.Concat(fShip.Requester.FirstName, " ", fShip.Requester.LastName),
                 myFriend,
                 fShip.FriendshipStatus.ToString(),
-                fShip.CreatedAt,
-                fShip.UpdatedAt));
+                fShip.CreatedAt.ConvertToUserLocalTimeZone(fShip.Receiver.TimeZoneId),
+                fShip.UpdatedAt!.Value.ConvertToUserLocalTimeZone(fShip.Receiver.TimeZoneId)));
 
     }
 
@@ -330,7 +330,7 @@ public sealed class FriendshipService(
                 );
 
         friendship.FriendshipStatus = FriendshipStatus.Rejected;
-        friendship.UpdatedAt = DateTimeOffset.Now;
+        friendship.UpdatedAt = DateTimeOffset.UtcNow;
 
         await unitOfWork.SaveChangesAsync();
 

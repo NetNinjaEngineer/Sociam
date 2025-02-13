@@ -17,6 +17,8 @@ public sealed class StoryProfile : Profile
 
         CreateMap<Story, StoryDto>()
             .ForMember(dest => dest.StoryType, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom<StoryCreatedAtTimeZoneConverterValueResolver>())
+            .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom<StoryExpiredAtTimeZoneConverterValueResolver>())
             .Include<TextStory, StoryDto>()
             .Include<MediaStory, StoryDto>();
 

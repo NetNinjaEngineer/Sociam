@@ -11,4 +11,5 @@ public static class CustomClaims
     public const string IP = "ip";
     public const string UserAgent = "userAgent";
     public const string FingerPrint = "fingerPrint";
+    public const string TimeZoneId = "timeZoneId";
 }

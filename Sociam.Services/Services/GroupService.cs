@@ -45,7 +45,7 @@ public sealed class GroupService(
         var existedGroup = await GetGroupAsync(command.GroupId);
 
         // check the member is already added in the group
-        bool isMember = await IsMemberInGroupAsync(
+        var isMember = await IsMemberInGroupAsync(
             groupId: command.GroupId,
             memberId: command.UserId.ToString());
 
@@ -66,16 +66,14 @@ public sealed class GroupService(
         var affectedRows = await unitOfWork.SaveChangesAsync();
         var addedUser = await userManager.FindByIdAsync(command.UserId.ToString());
         var addedByUser = await userManager.FindByIdAsync(currentUser.Id);
-        if (affectedRows > 0)
-        {
-            var addedBy = $"{addedByUser!.FirstName} {addedByUser.LastName}";
+        if (affectedRows <= 0) return Result<bool>.Failure(HttpStatusCode.BadRequest);
 
-            await hubContext.Clients.User(command.UserId.ToString()).SendAsync("ReceiveAddedToGroup", $"{addedBy} added you to {existedGroup.Name}");
+        var addedBy = $"{addedByUser!.FirstName} {addedByUser.LastName}";
 
-            return Result<bool>.Success(true, string.Format(AppConstants.Group.UserAddedToGroup, $"{addedUser!.FirstName} {addedUser.LastName}", existedGroup.Name, $"{addedBy}"));
-        }
+        await hubContext.Clients.User(command.UserId.ToString()).SendAsync("ReceiveAddedToGroup", $"{addedBy} added you to {existedGroup.Name}");
 
-        return Result<bool>.Failure(HttpStatusCode.BadRequest);
+        return Result<bool>.Success(true, string.Format(AppConstants.Group.UserAddedToGroup, $"{addedUser!.FirstName} {addedUser.LastName}", existedGroup.Name, $"{addedBy}"));
+
     }
 
     public async Task<Result<Guid>> CreateNewGroupAsync(CreateNewGroupCommand command)
@@ -126,10 +124,11 @@ public sealed class GroupService(
         var existedGroup = await GetGroupAsync(groupId);
         var mappedGroup = mapper.Map<GroupListDto>(existedGroup);
 
-        if (mappedGroup is null)
-            return Result<GroupListDto>.Failure(HttpStatusCode.NotFound, string.Format(DomainErrors.Group.GroupNotExisted, groupId));
-
-        return Result<GroupListDto>.Success(mappedGroup);
+        return mappedGroup is null ?
+            Result<GroupListDto>.Failure(
+                HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Group.GroupNotExisted, groupId)) :
+            Result<GroupListDto>.Success(mappedGroup);
     }
 
     public async Task<Result<string>> JoinGroupAsync(JoinGroupCommand command)
@@ -180,7 +179,7 @@ public sealed class GroupService(
         if (existedRequest is null || existedGroup is null)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.JoinRequest.JoinRequestOrGroupNotFound);
 
-        bool isAdmin = await unitOfWork.GroupMemberRepository.IsAdminInGroupAsync(command.GroupId, currentUser.Id);
+        var isAdmin = await unitOfWork.GroupMemberRepository.IsAdminInGroupAsync(command.GroupId, currentUser.Id);
 
         if (!isAdmin)
             return Result<string>.Failure(HttpStatusCode.Forbidden, DomainErrors.JoinRequest.NotAllowed);
@@ -210,19 +209,20 @@ public sealed class GroupService(
 
     private async Task NotifyRequestorWithJoinRequestStatusAsync(string requestorId, JoinRequestStatus status)
     {
-        if (status == JoinRequestStatus.Pending)
-            return;
-
         switch (status)
         {
+            case JoinRequestStatus.Pending:
+                return;
             case JoinRequestStatus.Approved:
-                await hubContext.Clients.User(requestorId).SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestAccepted);
+                await hubContext.Clients.User(requestorId)
+                    .SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestAccepted);
                 break;
             case JoinRequestStatus.Rejected:
-                await hubContext.Clients.User(requestorId).SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestRejected);
+                await hubContext.Clients.User(requestorId)
+                    .SendAsync("ReceiveJoinRequestStatus", AppConstants.JoinRequest.JoinRequestRejected);
                 break;
             default:
-                break;
+                throw new ArgumentOutOfRangeException(nameof(status), status, null);
         }
     }
 

@@ -27,8 +27,8 @@ public sealed class MessageMentionConfiguration : IEntityTypeConfiguration<Messa
 
         builder.Property(e => e.MentionType)
             .HasConversion(
-                builder => builder.ToString(),
-                value => (MentionType)Enum.Parse(typeof(MentionType), value));
+                mentionType => mentionType.ToString(),
+                value => Enum.Parse<MentionType>(value));
 
         builder.ToTable("MessageMentions");
     }

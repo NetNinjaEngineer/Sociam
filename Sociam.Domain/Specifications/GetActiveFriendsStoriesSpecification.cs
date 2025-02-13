@@ -8,7 +8,7 @@ public sealed class GetActiveFriendsStoriesSpecification : BaseSpecification<Sto
     public GetActiveFriendsStoriesSpecification(IEnumerable<string> friendIds, string currentUserId)
         : base(story =>
             friendIds.Contains(story.UserId) &&
-            story.ExpiresAt > DateTimeOffset.Now &&
+            story.ExpiresAt > DateTimeOffset.UtcNow &&
             (story.StoryPrivacy == StoryPrivacy.Public ||
              story.StoryPrivacy == StoryPrivacy.Friends ||
              (story.StoryPrivacy == StoryPrivacy.Custom && story.StoryViewers.Any(storyView => storyView.ViewerId == currentUserId && !storyView.IsViewed))))

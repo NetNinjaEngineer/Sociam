@@ -94,7 +94,11 @@ public sealed class StoryService(
 
         var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
-        if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+        var mappedResult = mapper.Map<MediaStoryDto>(mediaStory);
+        mappedResult.CreatedAt = mappedResult.CreatedAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
+        mappedResult.ExpiresAt = mappedResult.ExpiresAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
+
+        if (friends.Count <= 0) return Result<MediaStoryDto>.Success(mappedResult);
 
         switch (mediaStory.StoryPrivacy)
         {
@@ -105,9 +109,9 @@ public sealed class StoryService(
                     break;
                 }
             case StoryPrivacy.Custom:
-                var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(mediaStory.Id);
-                foreach (var allowedUserId in allowedUsersIds)
-                    await hubContext.Clients.User(allowedUserId)
+                var allowedUsers = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(mediaStory.Id);
+                foreach (var allowedUser in allowedUsers)
+                    await hubContext.Clients.User(allowedUser.ViewerId)
                         .SendAsync("NewStoryCreated", new
                         {
                             StoryId = mediaStory.Id,
@@ -115,8 +119,8 @@ public sealed class StoryService(
                             currentUser.FullName,
                             ProfilePicture = currentUser.ProfilePictureUrl,
                             StoryType = "media",
-                            mediaStory.CreatedAt,
-                            mediaStory.ExpiresAt,
+                            CreatedAt = mediaStory.CreatedAt.ConvertToUserLocalTimeZone(allowedUser.Viewer.TimeZoneId),
+                            ExpiresAt = mediaStory.ExpiresAt.ConvertToUserLocalTimeZone(allowedUser.Viewer.TimeZoneId),
                             mediaStory.Caption,
                             mediaStory.MediaUrl,
                             mediaStory.MediaType,
@@ -125,7 +129,7 @@ public sealed class StoryService(
                 break;
         }
 
-        return Result<MediaStoryDto>.Success(mapper.Map<MediaStoryDto>(mediaStory));
+        return Result<MediaStoryDto>.Success(mappedResult);
     }
 
     public async Task<Result<TextStoryDto>> CreateTextStoryAsync(CreateTextStoryCommand command)
@@ -170,6 +174,9 @@ public sealed class StoryService(
         var friends = await unitOfWork.FriendshipRepository.GetFriendsOfUserAsync(currentUser.Id);
 
         var mappedResult = mapper.Map<TextStoryDto>(textStory);
+        mappedResult.CreatedAt = mappedResult.CreatedAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
+        mappedResult.ExpiresAt = mappedResult.ExpiresAt.ConvertToUserLocalTimeZone(currentUser.TimeZoneId);
+
 
         if (friends.Count <= 0) return Result<TextStoryDto>.Success(mappedResult);
 
@@ -186,17 +193,17 @@ public sealed class StoryService(
                                 currentUser.FullName,
                                 ProfilePicture = currentUser.ProfilePictureUrl,
                                 StoryType = "text",
-                                textStory.CreatedAt,
-                                textStory.ExpiresAt,
+                                CreatedAt = textStory.CreatedAt.ConvertToUserLocalTimeZone(friend.TimeZoneId),
+                                ExpiresAt = textStory.ExpiresAt.ConvertToUserLocalTimeZone(friend.TimeZoneId),
                                 textStory.Content,
                                 textStory.HashTags
                             });
                     break;
                 }
             case StoryPrivacy.Custom:
-                var allowedUsersIds = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(textStory.Id);
-                foreach (var allowedUserId in allowedUsersIds)
-                    await hubContext.Clients.User(allowedUserId)
+                var allowedUsers = await unitOfWork.StoryViewRepository.GetAllowedUsersAsync(textStory.Id);
+                foreach (var allowedUser in allowedUsers)
+                    await hubContext.Clients.User(allowedUser.ViewerId)
                         .SendAsync("NewStoryCreated", new
                         {
                             StoryId = textStory.Id,
@@ -204,8 +211,8 @@ public sealed class StoryService(
                             currentUser.FullName,
                             ProfilePicture = currentUser.ProfilePictureUrl,
                             StoryType = "text",
-                            textStory.CreatedAt,
-                            textStory.ExpiresAt,
+                            CreatedAt = textStory.CreatedAt.ConvertToUserLocalTimeZone(allowedUser.Viewer.TimeZoneId),
+                            ExpiresAt = textStory.ExpiresAt.ConvertToUserLocalTimeZone(allowedUser.Viewer.TimeZoneId),
                             textStory.Content,
                             textStory.HashTags
                         });
@@ -228,7 +235,8 @@ public sealed class StoryService(
 
         var activeStories = await unitOfWork.StoryRepository.GetAllWithSpecificationAsync(specification);
 
-        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(activeStories);
+        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(activeStories,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
@@ -237,7 +245,8 @@ public sealed class StoryService(
     {
         var specification = new GetUserActiveStoriesSpecification(currentUser.Id);
         var myActiveStories = await unitOfWork.Repository<Story>()?.GetAllWithSpecificationAsync(specification)!;
-        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(myActiveStories);
+        var mappedResults = mapper.Map<IEnumerable<StoryDto>>(myActiveStories,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
         return Result<IEnumerable<StoryDto>>.Success(mappedResults);
     }
 
@@ -320,7 +329,7 @@ public sealed class StoryService(
                 Id = Guid.NewGuid(),
                 IsViewed = true,
                 StoryId = activeStory.Id,
-                ViewedAt = DateTimeOffset.Now,
+                ViewedAt = DateTimeOffset.UtcNow,
                 ViewerId = currentUser.Id
             };
 
@@ -336,7 +345,7 @@ public sealed class StoryService(
                 return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.StoryView.ViewNotFound); // TODO
 
             view.IsViewed = true;
-            view.ViewedAt = DateTimeOffset.Now;
+            view.ViewedAt = DateTimeOffset.UtcNow;
 
             unitOfWork.StoryViewRepository.Update(view);
         }

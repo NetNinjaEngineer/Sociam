@@ -10,7 +10,7 @@ public abstract class Notification : BaseEntity
     public required string ActorId { get; set; }
     public NotificationType Type { get; set; }
     public NotificationStatus Status { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ReadAt { get; set; }
     public string Message { get; set; } = null!;
     public string? ActionUrl { get; set; }

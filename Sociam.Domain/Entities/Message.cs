@@ -11,7 +11,7 @@ public sealed class Message : BaseEntity
     public Guid? GroupConversationId { get; set; }
     public GroupConversation? GroupConversation { get; set; }
     public string? Content { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? ReadedAt { get; set; }
     public MessageStatus MessageStatus { get; set; }

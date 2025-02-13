@@ -11,7 +11,7 @@ public sealed class ApplicationUser : IdentityUser
     public string? ProfilePictureUrl { get; set; }
     public string? CoverPhotoUrl { get; set; }
     public string? Bio { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? Code { get; set; }
     public DateTimeOffset? CodeExpiration { get; set; }

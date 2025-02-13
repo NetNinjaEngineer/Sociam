@@ -48,7 +48,8 @@ public sealed class TokenService(
             new Claim(CustomClaims.Uid, user.Id),
             new Claim(CustomClaims.IP, ipAddress!),
             new Claim(CustomClaims.UserAgent, userAgent!),
-            new Claim(CustomClaims.FingerPrint, fingerPrint)
+            new Claim(CustomClaims.FingerPrint, fingerPrint),
+            new Claim(CustomClaims.TimeZoneId, user.TimeZoneId)
         }
             .Union(userClaims)
             .Union(roleClaims);

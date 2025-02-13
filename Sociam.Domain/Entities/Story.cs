@@ -5,8 +5,8 @@ using Sociam.Domain.Enums;
 namespace Sociam.Domain.Entities;
 public class Story : BaseEntity
 {
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
-    public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.Now.AddHours(24);
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.UtcNow.AddHours(24);
     public bool IsArchived { get; set; }
     public StoryPrivacy StoryPrivacy { get; set; }
     public string UserId { get; set; } = null!;

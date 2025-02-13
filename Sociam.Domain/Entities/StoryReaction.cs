@@ -10,6 +10,6 @@ public sealed class StoryReaction : BaseEntity
     public Story Story { get; set; } = null!;
     public string ReactedById { get; set; } = null!;
     public ApplicationUser ReactedBy { get; set; } = null!;
-    public DateTimeOffset ReactedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset ReactedAt { get; set; } = DateTimeOffset.UtcNow;
     public ReactionType ReactionType { get; set; }
 }

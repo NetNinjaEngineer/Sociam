@@ -9,5 +9,5 @@ public interface IStoryViewRepository : IGenericRepository<StoryView>
     Task<long> GetTotalViewsForStoryAsync(Guid activeStoryId);
     Task<IEnumerable<StoryViewsDto>?> GetStoryViewersAsync(Guid activeStoryId);
     Task<bool> IsStoryViewedAsync(Guid activeStoryId, string currentUserId);
-    Task<IEnumerable<string>> GetAllowedUsersAsync(Guid storyId);
+    Task<IEnumerable<StoryView>> GetAllowedUsersAsync(Guid storyId);
 }

@@ -63,7 +63,7 @@ public sealed class FollowingService(
         {
             FollowerUserId = userFollowerId,
             FollowedUserId = userToFollowId,
-            FollowedAt = DateTimeOffset.Now
+            FollowedAt = DateTimeOffset.UtcNow
         };
 
         unitOfWork.Repository<UserFollower>()!.Create(following);
