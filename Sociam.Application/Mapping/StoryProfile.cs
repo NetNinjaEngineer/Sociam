@@ -11,9 +11,14 @@ public sealed class StoryProfile : Profile
     {
         CreateMap<MediaStory, MediaStoryDto>()
             .ForMember(dest => dest.MediaType, opt => opt.MapFrom(src => src.MediaType.ToString()))
-            .ForMember(dest => dest.MediaUrl, opt => opt.MapFrom<StoryMediaUrlValueResolver>());
+            .ForMember(dest => dest.MediaUrl, opt => opt.MapFrom<StoryMediaUrlValueResolver>())
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom<MediaStoryCreatedAtTimeZoneConverterValueResolver>())
+            .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom<MediaStoryExpiredAtTimeZoneConverterValueResolver>());
 
-        CreateMap<TextStory, TextStoryDto>();
+
+        CreateMap<TextStory, TextStoryDto>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom<TextStoryCreatedAtTimeZoneConverterValueResolver>())
+            .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom<TextStoryExpiredAtTimeZoneConverterValueResolver>());
 
         CreateMap<Story, StoryDto>()
             .ForMember(dest => dest.StoryType, opt => opt.Ignore())
