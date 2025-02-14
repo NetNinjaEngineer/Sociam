@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sociam.Application\Sociam.Application.csproj" />
     <ProjectReference Include="..\Sociam.Infrastructure\Sociam.Infrastructure.csproj" />
+    <ProjectReference Include="..\Sociam.Persistence\Sociam.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

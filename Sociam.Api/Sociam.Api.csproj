@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>5a0710fb-5deb-472b-b4d1-4663392b2504</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Uploads\Groups\" />
     <Folder Include="wwwroot\Uploads\Images\" />
+    <Folder Include="wwwroot\Uploads\Groups\" />
     <Folder Include="wwwroot\Uploads\Stories\Images\" />
     <Folder Include="wwwroot\Uploads\Stories\Videos\" />
   </ItemGroup>

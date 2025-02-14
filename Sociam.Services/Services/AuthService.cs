@@ -30,11 +30,14 @@ using Sociam.Application.Features.Auth.Commands.VerifyMfa;
 using Sociam.Application.Features.Auth.Commands.VerifyMfaLogin;
 using Sociam.Application.Features.Auth.Queries.GetAccessToken;
 using Sociam.Application.Helpers;
+using Sociam.Application.Helpers.GeoLocation;
+using Sociam.Application.Helpers.IpInfo;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Infrastructure.Persistence;
+using Sociam.Persistence.Clients;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -55,11 +58,22 @@ public sealed class AuthService(
     ITokenService tokenService,
     IHttpContextAccessor contextAccessor,
     IFileService fileService,
-    IOptions<JwtSettings> jwtOptions) : IAuthService
+    IOptions<JwtSettings> jwtOptions,
+    IIpInfoApi ipInfoApi,
+    IGeoLocationApi geoLocationApi,
+    IOptions<IpGeoLocationOptions> geoLocationOptions,
+    IOptions<IpInfoOptions> ipInfoOptions) : IAuthService
 {
     private const string CacheKeyPrefix = "GoogleToken_";
     private readonly AuthOptions _authenticationOptions = authOptions.Value;
     private readonly JwtSettings _jwtSettings = jwtOptions.Value;
+
+    private readonly MemoryCacheEntryOptions _timeZoneCacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
+    };
+    private readonly IpInfoOptions _ipInfo = ipInfoOptions.Value;
+    private readonly IpGeoLocationOptions _ipGeoLocation = geoLocationOptions.Value;
 
     public async Task<Result<GoogleUserProfile?>> VerifyAndGetUserProfileAsync(SignInGoogleCommand command)
     {
@@ -147,7 +161,8 @@ public sealed class AuthService(
 
         var (_, uploadedFileName) = await fileService.UploadFileAsync(command.Picture, "Images");
         user.ProfilePictureUrl = uploadedFileName;
-        user.TimeZoneId = TimeZoneInfo.Local.Id;
+        var timeZoneId = await GetUserTimeZoneAsync();
+        user.TimeZoneId = timeZoneId ?? TimeZoneInfo.Local.Id;
 
         var result = await userManager.CreateAsync(user, command.Password);
 
@@ -160,6 +175,41 @@ public sealed class AuthService(
                 [result.Errors.Select(e => e.Description).FirstOrDefault() ?? string.Empty])
             : Result<RegisterResponseDto>.Success(new RegisterResponseDto(user.Id, true));
     }
+
+    private async Task<string?> GetUserTimeZoneAsync()
+    {
+        var userIpAddress = contextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        if (string.IsNullOrEmpty(userIpAddress))
+            return null;
+
+        if (memoryCache.TryGetValue(userIpAddress, out string? cachedTimeZone))
+            return cachedTimeZone;
+
+        var timeZone = await FetchTimeZoneFromApiAsync(userIpAddress);
+        if (!string.IsNullOrEmpty(timeZone))
+            memoryCache.Set(userIpAddress, timeZone, _timeZoneCacheOptions);
+
+        return timeZone;
+    }
+
+    private async Task<string?> FetchTimeZoneFromApiAsync(string ipAddress)
+    {
+        try
+        {
+            var response = await ipInfoApi.GetIpInfoAsync(ipAddress, _ipInfo.Token);
+            if (!string.IsNullOrEmpty(response?.Timezone))
+                return response.Timezone;
+
+            var geoLocationResponse = await geoLocationApi.GetGeoLocationAsync(_ipGeoLocation.ApiKey, ipAddress);
+            return geoLocationResponse?.TimeZone.Name;
+        }
+        catch (Exception)
+        {
+            logger.LogInformation("Local ip address: {0}", ipAddress);
+            return null;
+        }
+    }
+
 
     public async Task<Result<SendCodeConfirmEmailResponseDto>> SendConfirmEmailCodeAsync(
         SendConfirmEmailCodeCommand command)

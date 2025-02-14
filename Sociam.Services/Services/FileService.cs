@@ -9,13 +9,13 @@ public sealed class FileService(
     IConfiguration configuration,
     IHttpContextAccessor contextAccessor) : IFileService
 {
-    public async Task<(bool uploaded, string fileName)> UploadFileAsync(
+    public async Task<(bool uploaded, string? fileName)> UploadFileAsync(
         IFormFile? file, string folderPath)
     {
         if (file is null || file.Length == 0)
-            return (false, string.Empty);
+            return (false, null);
 
-        var uniqueFileName = $"{DateTimeOffset.Now:yyyyMMdd_HHmmssfff}_{file.FileName}"; // 20241127_153025123_example.jpg
+        var uniqueFileName = $"{DateTimeOffset.Now:yyyyMMdd_HHmmssfff}_{file.FileName}";
 
         var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", folderPath);
 
