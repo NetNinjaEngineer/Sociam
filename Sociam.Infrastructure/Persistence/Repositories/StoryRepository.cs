@@ -191,7 +191,7 @@ public sealed class StoryRepository(
     public async Task<PagedResult<StoryViewsResponseDto>> GetStoriesWithParamsForMeAsync(
         string currentUserId,
         string timeZoneId,
-        StoryQueryParameters? queryStoryQueryParameters) => await GetStoriesAsync(timeZoneId, null, queryStoryQueryParameters);
+        StoryQueryParameters? queryStoryQueryParameters) => await GetStoriesAsync(timeZoneId, s => s.UserId == currentUserId, queryStoryQueryParameters);
 
     public async Task<PagedResult<StoryViewsResponseDto>> GetExpiredStoriesAsync(
         string creatorId,
