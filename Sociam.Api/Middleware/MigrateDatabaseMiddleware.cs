@@ -13,9 +13,18 @@ public sealed class MigrateDatabaseMiddleware(RequestDelegate next)
 
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.Database.MigrateAsync();
+        if (dbContext.Database.GetPendingMigrations().Any())
+        {
+            await dbContext.Database.MigrateAsync();
+            await dbContext.SeedDatabaseAsync();
+        }
 
-        await dbContext.SeedDatabaseAsync();
+        if (!await dbContext.Database.CanConnectAsync() ||
+            !dbContext.Database.GetAppliedMigrations().Any())
+        {
+            await dbContext.Database.MigrateAsync();
+            await dbContext.SeedDatabaseAsync();
+        }
 
         await next(context);
     }

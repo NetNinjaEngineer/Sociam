@@ -253,7 +253,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Conversation", b =>
@@ -486,8 +486,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "702C7401-F83C-4684-9421-9AA74FC40050",
                             AccessFailedCount = 0,
                             Bio = "Software Developer and Tech Enthusiast.",
-                            ConcurrencyStamp = "b2c99d51-77e0-4a56-8640-9f05cc85b404",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 612, DateTimeKind.Unspecified).AddTicks(1149), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "432d545d-b45e-46ad-bcdc-554ff3ccd18d",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 436, DateTimeKind.Unspecified).AddTicks(8644), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(2002, 1, 1),
                             Email = "me5260287@gmail.com",
                             EmailConfirmed = true,
@@ -497,9 +497,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ME5260287@GMAIL.COM",
                             NormalizedUserName = "MOEHAB@2002",
-                            PasswordHash = "AQAAAAIAAYagAAAAELFtfwlwwgYv7t+V4TmanvV+NCRLXpZ83ywGUT78JeM6myNU6NKWCwS/yheXWcY7/w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH6uo4sbOHirQ3V9vcosdPy3p0vyLM856IOjiPpexMS3RvSQMfY4PjhqduGYXY7Gyw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f9d2bc2e-18e1-499d-94c2-eaf498b94fca",
+                            SecurityStamp = "e66b4aea-98a0-45af-8784-beb6ba6a81a7",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "Moehab@2002"
@@ -509,8 +509,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "3EB45CDA-F2EE-43E7-B9F1-D52562E05929",
                             AccessFailedCount = 0,
                             Bio = "Loves hiking and photography.",
-                            ConcurrencyStamp = "f77acfaf-9c16-4869-9d0e-17db532a05cd",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 713, DateTimeKind.Unspecified).AddTicks(5213), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "1ae6f082-45c9-4bd9-bdf4-57b1c146b83c",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 535, DateTimeKind.Unspecified).AddTicks(4952), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1990, 5, 15),
                             Email = "johndoe@example.com",
                             EmailConfirmed = true,
@@ -520,9 +520,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "JOHNDOE@EXAMPLE.COM",
                             NormalizedUserName = "JOHNDOE@123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJiJxyjfbVBSJGZJFwo4MQ3g3kmHGyLJVlzcpwf11KgHsbxjwrO52Z1lDH8CgtvZTQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECkwWpdlp704lvsZBW8cONS++cyLNNyTxzkyODJKoK6VppDwBOg8N3NG2HC6nWGDuA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0f196752-d57f-4674-b0ff-b78a877b7eb9",
+                            SecurityStamp = "5199cacf-1ab0-421b-9dcf-4c77cf00d1ee",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "JohnDoe@123"
@@ -532,8 +532,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "9818FAE0-A167-4808-A30D-BC7418A53CB0",
                             AccessFailedCount = 0,
                             Bio = "Passionate about art and design.",
-                            ConcurrencyStamp = "aa914b7e-de09-42c4-b06e-42c703f2a55a",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 808, DateTimeKind.Unspecified).AddTicks(2039), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "74133ec0-d091-4a55-93bd-14e9831829ac",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 627, DateTimeKind.Unspecified).AddTicks(2813), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1985, 8, 22),
                             Email = "janesmith@example.com",
                             EmailConfirmed = true,
@@ -543,9 +543,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "JANESMITH@EXAMPLE.COM",
                             NormalizedUserName = "JANESMITH@456",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIeEtYqbUNoNpWmO4LX1sUguv/WjH67kHq0lGbUeMFI+yxV8SKSfLnX+5mnWHCKOXg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECLdpQGQR9HR0q1IOnx/zpOIUxkw8zw+oEcxyhiXpzybOb9VTmXj6KS1n/AS+l8rsA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "eef4cf3f-6aaa-4dbf-a4ec-593d4b1b58c9",
+                            SecurityStamp = "ecd870bd-bb0c-42ac-8cc0-d3feab2e4d67",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "JaneSmith@456"
@@ -555,8 +555,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "FE2FB445-6562-49DD-B0A3-77E0A3A1C376",
                             AccessFailedCount = 0,
                             Bio = "Travel enthusiast and foodie.",
-                            ConcurrencyStamp = "67489bf9-369f-4156-b42c-6c26b28a9cc3",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 57, 901, DateTimeKind.Unspecified).AddTicks(9297), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "fad0a0c6-5e57-4714-af99-221ee6ecfc5f",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 720, DateTimeKind.Unspecified).AddTicks(2506), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1995, 3, 10),
                             Email = "alicej@example.com",
                             EmailConfirmed = true,
@@ -566,9 +566,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ALICEJ@EXAMPLE.COM",
                             NormalizedUserName = "ALICEJ@789",
-                            PasswordHash = "AQAAAAIAAYagAAAAEF9T6zXdBEB/aetyNPNGA681MpXXzYG8jUxHU8gRqClnlbTxSd83knUjyMRnlGipHw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFpiTJ/ahAJ74mP11mLFkylvGEIrd8HToXBLRYHyoXD6Uunh0FJDU1PWbWfc0dMQ5A==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "97e05a2b-ccff-4340-adac-f83091c34f9e",
+                            SecurityStamp = "2277a7f6-a222-4345-8bf8-88abda41d752",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "AliceJ@789"
@@ -578,8 +578,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "0821819C-64AE-4C73-96F2-4E607AA59D7E",
                             AccessFailedCount = 0,
                             Bio = "Tech entrepreneur and mentor.",
-                            ConcurrencyStamp = "6c7229bb-9c0e-42f4-a943-2610871bcf56",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 0, DateTimeKind.Unspecified).AddTicks(6211), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "2ef2c03b-dc05-4cf1-99ef-158b8e0c9969",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 809, DateTimeKind.Unspecified).AddTicks(6458), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1980, 12, 5),
                             Email = "bobbrown@example.com",
                             EmailConfirmed = true,
@@ -589,9 +589,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "BOBBROWN@EXAMPLE.COM",
                             NormalizedUserName = "BOBBROWN@101",
-                            PasswordHash = "AQAAAAIAAYagAAAAEODH27munkWAI+DiLdZH/ixp7rNgifFhJLZTm5aMie2poSt40h33faUHl67GrDZP1g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEML5DvJUVZ3QFHrXwXzg7bfUAyLqfP6b64k/ya7PP2H8haiY6SEyVgG1yjj0l8B54A==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d32e913e-fa13-47df-a0f9-8f3122e36c5d",
+                            SecurityStamp = "7a1c6888-63ad-48cb-8431-d680bfb09254",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "BobBrown@101"
@@ -601,8 +601,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "5B91855C-2D98-4E2B-B919-CDE322C9002D",
                             AccessFailedCount = 0,
                             Bio = "Fitness trainer and health coach.",
-                            ConcurrencyStamp = "327aeb98-2fdb-4933-8cc7-0556b3d00cfe",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 93, DateTimeKind.Unspecified).AddTicks(4455), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "2af191d4-335c-42c4-9c2d-67898a4f4675",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 900, DateTimeKind.Unspecified).AddTicks(8806), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1992, 7, 18),
                             Email = "emilyd@example.com",
                             EmailConfirmed = true,
@@ -612,9 +612,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "EMILYD@EXAMPLE.COM",
                             NormalizedUserName = "EMILYD@202",
-                            PasswordHash = "AQAAAAIAAYagAAAAED+u9mMW2NgOZu+Ygg2tn8y5JNqbKQFBFW+8NVgJs03lyOC3i8A00sLVAO3Yj1EEVA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFo/ZArw7JoEwp8NwiUJUq4nFUsPKLhCo532lt1t20FeJop1tJZJT+VZbQh2DmzSJA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "52136f26-aa7f-4950-90c3-7119e76634d6",
+                            SecurityStamp = "d36012bd-9e23-43d2-a725-cd9d97dd70ae",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "EmilyD@202"
@@ -624,8 +624,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "5326BB55-A26F-47FE-ABC4-9DF44F7B0333",
                             AccessFailedCount = 0,
                             Bio = "Musician and songwriter.",
-                            ConcurrencyStamp = "47cb1a72-6f4c-4365-8b95-ff9be5d75298",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 186, DateTimeKind.Unspecified).AddTicks(504), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "2fb1982d-b05a-432a-b3dc-4a21ce75ef1b",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 990, DateTimeKind.Unspecified).AddTicks(2238), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1988, 9, 25),
                             Email = "michaelw@example.com",
                             EmailConfirmed = true,
@@ -635,9 +635,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "MICHAELW@EXAMPLE.COM",
                             NormalizedUserName = "MICHAELW@303",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJwDmLZn8HqYxeSywn6fWo852uwjsu9JXWcHPRnORc9Kl0C9Gkzg1giv4Q0SmKk+1w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEgoAVu16vCw5TmNULO0O4PzJzm4Bd7DLhwbxHuHv0SJDOr+X8l8lyu0grCuQWmeqw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "1227f26d-bd84-4233-b7e7-19fcd0be1b31",
+                            SecurityStamp = "63b89f54-7af8-4b32-bf8b-317436ee363a",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "MichaelW@303"
@@ -647,8 +647,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "B3945AB7-1F46-4829-9DEA-6860E283582F",
                             AccessFailedCount = 0,
                             Bio = "Book lover and aspiring writer.",
-                            ConcurrencyStamp = "847c3acb-5170-4cce-a7c9-b02dfa54244b",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 282, DateTimeKind.Unspecified).AddTicks(1738), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "313965f1-c6ad-403e-b4a5-a5dbff829120",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 80, DateTimeKind.Unspecified).AddTicks(5499), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1998, 4, 30),
                             Email = "sarahm@example.com",
                             EmailConfirmed = true,
@@ -658,9 +658,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "SARAHM@EXAMPLE.COM",
                             NormalizedUserName = "SARAHM@404",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAwetCbo6Prdp3rddWRw/NHW/SHaRhrB8Pvk1CPRgm3Ud+6HsmgUNiZCjR8FHs0nhw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJKOlD8HThPosvvegMYDCFHbS5uypre34BXexJoo1p2IrwFSGktXjkF062hxno/4vQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c9629f3f-2959-444e-b24d-446bdc6c8516",
+                            SecurityStamp = "4c9bd332-1e1f-4a0a-8fca-6b0dbafe1643",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "SarahM@404"
@@ -670,8 +670,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "3944C201-0184-4F97-83A6-B6E4852C961F",
                             AccessFailedCount = 0,
                             Bio = "History buff and teacher.",
-                            ConcurrencyStamp = "379a3e35-3b82-484c-812b-0d60ee8ccefd",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 404, DateTimeKind.Unspecified).AddTicks(9851), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "3724f023-0d2d-4013-b2ec-e53f2273a1fb",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 170, DateTimeKind.Unspecified).AddTicks(2803), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1975, 11, 12),
                             Email = "davidm@example.com",
                             EmailConfirmed = true,
@@ -681,9 +681,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "DAVIDM@EXAMPLE.COM",
                             NormalizedUserName = "DAVIDM@505",
-                            PasswordHash = "AQAAAAIAAYagAAAAECG5ZJansHwd3jDhCkR40jW5ZqlRlNjHOic1rTKItiDHjoI/LcQR+KueGLHwcocyRg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIAn7cU8lN/wip0AfOKb9vhFBqSCa8SLcd94AC17H7bRP+RiF+6+F9MUw0FNLE9i3Q==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "a128a9a5-9b2e-4e5b-94d0-2fc48110b0fa",
+                            SecurityStamp = "1b8f3b85-58c1-4f54-8345-b1cfb0dfdf9e",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "DavidM@505"
@@ -693,8 +693,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "0A9232F3-BC6D-4610-AAFF-F1032831E847",
                             AccessFailedCount = 0,
                             Bio = "Nature lover and environmentalist.",
-                            ConcurrencyStamp = "a28da8db-fcc6-4d07-b85d-cfdc382187cf",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 500, DateTimeKind.Unspecified).AddTicks(8620), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "60147f15-9db7-49b2-9561-a8cd06f260d0",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 260, DateTimeKind.Unspecified).AddTicks(9140), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1990, 6, 20),
                             Email = "laurat@example.com",
                             EmailConfirmed = true,
@@ -704,9 +704,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "LAURAT@EXAMPLE.COM",
                             NormalizedUserName = "LAURAT@606",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHxurL2l4MGek49+K9fM/wf2SjFiRiKZVYmBrwoU5iC+wf0yNTQrTjBDnhtnalG/pA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMXs6jRvapBAVlv7dtw/5EK6XhWlC7ElhUZ9MvIjb1d7aIikjpHw6xTfoBZniV4wOg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c336980b-4911-4143-80cd-b08c45b948d3",
+                            SecurityStamp = "a791665a-374a-491d-b8ad-11f1c456518e",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "LauraT@606"
@@ -716,8 +716,8 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             Id = "049759F5-3AD8-46BF-89EE-AC51F3BEED88",
                             AccessFailedCount = 0,
                             Bio = "Gamer and tech enthusiast.",
-                            ConcurrencyStamp = "df41461b-300c-4576-bcb4-ee1d93914e32",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 13, 20, 17, 58, 599, DateTimeKind.Unspecified).AddTicks(8168), new TimeSpan(0, 2, 0, 0, 0)),
+                            ConcurrencyStamp = "a4d029b3-b29b-4935-8450-718543a56c19",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 353, DateTimeKind.Unspecified).AddTicks(2409), new TimeSpan(0, 2, 0, 0, 0)),
                             DateOfBirth = new DateOnly(1985, 2, 14),
                             Email = "chrisa@example.com",
                             EmailConfirmed = true,
@@ -727,9 +727,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "CHRISA@EXAMPLE.COM",
                             NormalizedUserName = "CHRISA@707",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBeCV4gggdYNijobGly63oAn7TTMTcP3n+gyItwm1OK30ffzzQf4ELezGLL17rO66Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJTWA8/QrwJgtCjvVP/lscvaJFh0pYZCTOgWdFYe1aU58lSO+b83bAhtUPwB4tfsDw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "a3f41fe4-bc8a-4dff-8a4b-ae027cdde175",
+                            SecurityStamp = "f141de03-7b6e-4420-a287-6e3bb55f37f7",
                             TimeZoneId = "Egypt Standard Time",
                             TwoFactorEnabled = false,
                             UserName = "ChrisA@707"
@@ -798,7 +798,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LiveStreams");
+                    b.ToTable("LiveStreams", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Message", b =>
@@ -852,7 +852,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.MessageMention", b =>
@@ -1061,7 +1061,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StoryId");
 
-                    b.ToTable("StoryComment");
+                    b.ToTable("StoryComment", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.StoryReaction", b =>
@@ -1089,7 +1089,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StoryId");
 
-                    b.ToTable("StoryReaction");
+                    b.ToTable("StoryReaction", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.StoryView", b =>
@@ -1143,7 +1143,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FollowerUserId");
 
-                    b.ToTable("UserFollowers");
+                    b.ToTable("UserFollowers", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.GroupConversation", b =>
@@ -1155,7 +1155,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupConversations");
+                    b.ToTable("GroupConversations", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.PrivateConversation", b =>
@@ -1175,7 +1175,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     b.HasIndex("SenderUserId", "ReceiverUserId")
                         .IsUnique();
 
-                    b.ToTable("PrivateConversations");
+                    b.ToTable("PrivateConversations", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.GroupNotification", b =>
@@ -1218,7 +1218,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("Sociam.Domain.Entities.Notification");
 
-                    b.ToTable("NetworkNotifications");
+                    b.ToTable("NetworkNotifications", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.PostNotification", b =>
@@ -1429,7 +1429,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("RefreshToken", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
