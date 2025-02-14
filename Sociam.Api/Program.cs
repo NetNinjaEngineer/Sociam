@@ -14,6 +14,7 @@ builder.Services
     .AddPersistenceDependecies(builder.Configuration)
     .AddApiDependencies(builder.Configuration, builder.WebHost);
 
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
