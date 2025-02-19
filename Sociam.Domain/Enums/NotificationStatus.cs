@@ -3,6 +3,5 @@
 public enum NotificationStatus
 {
     UnRead,
-    Read,
-    Deleted
+    Read
 }

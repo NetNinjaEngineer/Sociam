@@ -11,9 +11,8 @@ public abstract class BaseParams
     public string? SearchTerm
     {
         get => _searchTerm;
-        set => _searchTerm = value?.Trim().ToLowerInvariant();
+        set => _searchTerm = value?.Trim().ToLower();
     }
 
     public string? Sort { get; set; }
-    public bool EnablePaging { get; set; }
 }

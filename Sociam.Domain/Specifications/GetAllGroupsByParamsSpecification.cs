@@ -14,9 +14,6 @@ namespace Sociam.Domain.Specifications
 
                 (!@params.GroupPrivacy.HasValue || g.GroupPrivacy == @params.GroupPrivacy))
         {
-            if (@params.EnablePaging)
-                ApplyPaging(@params.Page, @params.PageSize);
-
             if (!string.IsNullOrEmpty(@params.Sort))
             {
                 switch (@params.Sort)
@@ -34,14 +31,14 @@ namespace Sociam.Domain.Specifications
                         break;
 
                     case "CreatedAtDESC":
-                        AddOrderByDescending(g => g.CreatedAt);
-                        break;
-
                     default:
                         AddOrderByDescending(g => g.CreatedAt);
                         break;
                 }
             }
+
+            if (@params.EnablePaging)
+                ApplyPaging(@params.Page, @params.PageSize);
         }
     }
 }

@@ -6,4 +6,5 @@ public sealed class GroupParams : BaseParams
 {
     public string? Name { get; set; }
     public GroupPrivacy? GroupPrivacy { get; set; }
+    public bool EnablePaging { get; set; }
 }

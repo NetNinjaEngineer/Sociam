@@ -2,6 +2,7 @@
 using Sociam.Domain.Entities.common;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Specifications;
+using Sociam.Domain.Utils;
 
 namespace Sociam.Infrastructure.Persistence.Repositories;
 public class GenericRepository<T>(ApplicationDbContext context) : IGenericRepository<T>

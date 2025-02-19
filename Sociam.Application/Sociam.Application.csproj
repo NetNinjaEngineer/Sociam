@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\Notifications\Queries\GetReadedNotfications\**" />
+    <Compile Remove="Features\Notifications\Queries\GetUnReadNotifications\**" />
+    <EmbeddedResource Remove="Features\Notifications\Queries\GetReadedNotfications\**" />
+    <EmbeddedResource Remove="Features\Notifications\Queries\GetUnReadNotifications\**" />
+    <None Remove="Features\Notifications\Queries\GetReadedNotfications\**" />
+    <None Remove="Features\Notifications\Queries\GetUnReadNotifications\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
@@ -26,10 +35,8 @@
   <ItemGroup>
     <Folder Include="Features\Notifications\Commands\MarkAsRead\" />
     <Folder Include="Features\Notifications\Commands\MarkAllAsRead\" />
-    <Folder Include="Features\Notifications\Queries\GetUnReadNotifications\" />
     <Folder Include="Features\Notifications\Queries\GetUnReadCount\" />
     <Folder Include="Features\Notifications\Queries\GetReadCount\" />
-    <Folder Include="Features\Notifications\Queries\GetReadedNotfications\" />
   </ItemGroup>
 
 </Project>

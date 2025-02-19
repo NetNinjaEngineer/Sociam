@@ -5,7 +5,9 @@ using Sociam.Application.Features.Notifications.Queries.GetNotification;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
+using Sociam.Domain.Utils;
 using System.Net;
 
 namespace Sociam.Services.Services;
@@ -30,15 +32,21 @@ public sealed class NotificationService(
         return Result<NotificationDto>.Success(mappedNotification);
     }
 
-    public async Task<Result<IReadOnlyList<NotificationDto>>> GetNotificationsAsync()
+    public async Task<Result<PagedResult<NotificationDto>>> GetNotificationsAsync(NotificationsSpecParams? @params)
     {
         var notifications = await unitOfWork.Repository<Notification>()!
         .GetAllWithSpecificationAsync(
-                specification: new GetNotificationSpecification(currentUser.Id));
+                specification: new GetNotificationSpecification(@params, currentUser.Id));
 
-        var mappedNotifications = mapper.Map<IReadOnlyList<NotificationDto>>(notifications,
+        var mappedNotifications = mapper.Map<IEnumerable<NotificationDto>>(notifications,
             options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
-        return Result<IReadOnlyList<NotificationDto>>.Success(mappedNotifications);
+        return Result<PagedResult<NotificationDto>>.Success(new PagedResult<NotificationDto>()
+        {
+            Page = @params?.Page,
+            PageSize = @params?.PageSize,
+            TotalCount = 0,
+            Items = mappedNotifications.ToList()
+        });
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sociam.Domain.Entities.common;
+using Sociam.Domain.Specifications;
 
-namespace Sociam.Domain.Specifications;
+namespace Sociam.Domain.Utils;
 
 public static class SpecificationQueryEvaluator
 {
