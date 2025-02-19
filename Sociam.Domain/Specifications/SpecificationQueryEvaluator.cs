@@ -11,8 +11,10 @@ public static class SpecificationQueryEvaluator
     {
         var inputQuery = query.AsQueryable();
 
-        if (specification.Includes.Count != 0)
-            inputQuery = specification.Includes.Aggregate(inputQuery, (currentQuery, includeExpression) => currentQuery.Include(includeExpression));
+        if (specification.IncludeExpressions.Count != 0)
+            inputQuery = specification.IncludeExpressions.Aggregate(
+                inputQuery,
+                (currentQuery, includeExpression) => includeExpression.AddInclude(currentQuery));
 
         if (specification.Criteria != null)
             inputQuery = inputQuery.Where(specification.Criteria);
