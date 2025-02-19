@@ -8,7 +8,5 @@ public sealed class StoryNotificationConfiguration : IEntityTypeConfiguration<St
     public void Configure(EntityTypeBuilder<StoryNotification> builder)
     {
         builder.HasIndex(x => x.StoryId);
-
-        builder.ToTable("StoryNotifications");
     }
 }

@@ -4,7 +4,7 @@ using Sociam.Domain.Enums;
 
 namespace Sociam.Domain.Entities;
 
-public abstract class Notification : BaseEntity
+public class Notification : BaseEntity
 {
     public required string RecipientId { get; set; }
     public required string ActorId { get; set; }
@@ -16,6 +16,4 @@ public abstract class Notification : BaseEntity
     public string? ActionUrl { get; set; }
     public ApplicationUser Recipient { get; set; } = null!;
     public ApplicationUser Actor { get; set; } = null!;
-
-    public abstract string GenerateNotificationText(string senderName);
 }

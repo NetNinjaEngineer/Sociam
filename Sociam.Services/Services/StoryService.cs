@@ -503,11 +503,11 @@ public sealed class StoryService(
             RecipientId = activeStory.UserId,
             Status = NotificationStatus.UnRead,
             Type = NotificationType.NewStoryReaction,
-            StoryId = activeStory.Id
+            StoryId = activeStory.Id,
+            Message = $"{currentUser.FullName} reatched to your story"
         };
 
         notification.ActionUrl = urlGenerator.GenerateUrl(notification);
-        notification.Message = notification.GenerateNotificationText(currentUser.FullName);
 
         unitOfWork.Repository<StoryNotification>()?.Create(notification);
 
@@ -517,7 +517,7 @@ public sealed class StoryService(
 
         await hubContext.Clients.User(activeStory.UserId).SendAsync(
             "NewReaction",
-            notification.GenerateNotificationText(currentUser.FullName),
+            notification.Message,
             storyReaction.ReactionType.ToString(),
             storyStatistics,
             notification);
@@ -594,10 +594,9 @@ public sealed class StoryService(
             Privacy = command.Privacy.ToString(),
             Status = NotificationStatus.UnRead,
             StoryId = command.StoryId,
-            Type = NotificationType.PrivacyChanged
+            Type = NotificationType.PrivacyChanged,
+            Message = $"Story privacy changed to {command.Privacy.ToString()}"
         };
-
-        notification.Message = notification.GenerateNotificationText(currentUser.FullName);
 
         unitOfWork.Repository<StoryNotification>()?.Create(notification);
 
@@ -648,10 +647,9 @@ public sealed class StoryService(
             RecipientId = activeStory.UserId,
             Status = NotificationStatus.UnRead,
             StoryId = activeStory.Id,
-            Type = NotificationType.NewStoryComment
+            Type = NotificationType.NewStoryComment,
+            Message = $"{currentUser.FullName} commented on your story"
         };
-
-        notification.Message = notification.GenerateNotificationText(currentUser.FullName);
 
         unitOfWork.Repository<StoryNotification>()?.Create(notification);
 
@@ -661,7 +659,7 @@ public sealed class StoryService(
 
         await hubContext.Clients.User(activeStory.UserId)
             .SendAsync("NewStoryComment",
-                notification.GenerateNotificationText(currentUser.FullName),
+                notification.Message,
                 notification);
 
         return Result<bool>.Success(true);

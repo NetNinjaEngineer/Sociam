@@ -200,40 +200,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GroupNotifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RecipientId = table.Column<string>(type: "text", nullable: false),
-                    ActorId = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    ActionUrl = table.Column<string>(type: "text", nullable: true),
-                    GroupId = table.Column<string>(type: "text", nullable: false),
-                    GroupName = table.Column<string>(type: "text", nullable: false),
-                    GroupRole = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GroupNotifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GroupNotifications_AspNetUsers_ActorId",
-                        column: x => x.ActorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GroupNotifications_AspNetUsers_RecipientId",
-                        column: x => x.RecipientId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -281,7 +247,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MediaNotifications",
+                name: "Notifications",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -293,84 +259,28 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     Message = table.Column<string>(type: "text", nullable: false),
                     ActionUrl = table.Column<string>(type: "text", nullable: true),
-                    MediaId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MediaNotificationType = table.Column<string>(type: "text", nullable: false)
+                    NKind = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    GroupId = table.Column<string>(type: "text", nullable: true),
+                    GroupName = table.Column<string>(type: "text", nullable: true),
+                    GroupRole = table.Column<string>(type: "text", nullable: true),
+                    MediaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    MediaNotificationType = table.Column<string>(type: "text", nullable: true),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PostContent = table.Column<string>(type: "text", nullable: true),
+                    StoryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Privacy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MediaNotifications", x => x.Id);
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MediaNotifications_AspNetUsers_ActorId",
+                        name: "FK_Notifications_AspNetUsers_ActorId",
                         column: x => x.ActorId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_MediaNotifications_AspNetUsers_RecipientId",
-                        column: x => x.RecipientId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "NetworkNotifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RecipientId = table.Column<string>(type: "text", nullable: false),
-                    ActorId = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    ActionUrl = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NetworkNotifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_NetworkNotifications_AspNetUsers_ActorId",
-                        column: x => x.ActorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_NetworkNotifications_AspNetUsers_RecipientId",
-                        column: x => x.RecipientId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PostNotifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RecipientId = table.Column<string>(type: "text", nullable: false),
-                    ActorId = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    ActionUrl = table.Column<string>(type: "text", nullable: true),
-                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PostContent = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PostNotifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PostNotifications_AspNetUsers_ActorId",
-                        column: x => x.ActorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_PostNotifications_AspNetUsers_RecipientId",
+                        name: "FK_Notifications_AspNetUsers_RecipientId",
                         column: x => x.RecipientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -450,39 +360,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "FK_Stories_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StoryNotifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RecipientId = table.Column<string>(type: "text", nullable: false),
-                    ActorId = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    ActionUrl = table.Column<string>(type: "text", nullable: true),
-                    StoryId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Privacy = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StoryNotifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StoryNotifications_AspNetUsers_ActorId",
-                        column: x => x.ActorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StoryNotifications_AspNetUsers_RecipientId",
-                        column: x => x.RecipientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -846,17 +723,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Bio", "Code", "CodeExpiration", "ConcurrencyStamp", "CoverPhotoUrl", "CreatedAt", "DateOfBirth", "Email", "EmailConfirmed", "FirstName", "Gender", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePictureUrl", "SecurityStamp", "TimeZoneId", "TwoFactorEnabled", "UpdatedAt", "UserName" },
                 values: new object[,]
                 {
-                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "a4d029b3-b29b-4935-8450-718543a56c19", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 353, DateTimeKind.Unspecified).AddTicks(2409), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEJTWA8/QrwJgtCjvVP/lscvaJFh0pYZCTOgWdFYe1aU58lSO+b83bAhtUPwB4tfsDw==", null, false, null, "f141de03-7b6e-4420-a287-6e3bb55f37f7", "Egypt Standard Time", false, null, "ChrisA@707" },
-                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "2ef2c03b-dc05-4cf1-99ef-158b8e0c9969", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 809, DateTimeKind.Unspecified).AddTicks(6458), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEML5DvJUVZ3QFHrXwXzg7bfUAyLqfP6b64k/ya7PP2H8haiY6SEyVgG1yjj0l8B54A==", null, false, null, "7a1c6888-63ad-48cb-8431-d680bfb09254", "Egypt Standard Time", false, null, "BobBrown@101" },
-                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "60147f15-9db7-49b2-9561-a8cd06f260d0", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 260, DateTimeKind.Unspecified).AddTicks(9140), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEMXs6jRvapBAVlv7dtw/5EK6XhWlC7ElhUZ9MvIjb1d7aIikjpHw6xTfoBZniV4wOg==", null, false, null, "a791665a-374a-491d-b8ad-11f1c456518e", "Egypt Standard Time", false, null, "LauraT@606" },
-                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "3724f023-0d2d-4013-b2ec-e53f2273a1fb", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 170, DateTimeKind.Unspecified).AddTicks(2803), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEIAn7cU8lN/wip0AfOKb9vhFBqSCa8SLcd94AC17H7bRP+RiF+6+F9MUw0FNLE9i3Q==", null, false, null, "1b8f3b85-58c1-4f54-8345-b1cfb0dfdf9e", "Egypt Standard Time", false, null, "DavidM@505" },
-                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "1ae6f082-45c9-4bd9-bdf4-57b1c146b83c", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 535, DateTimeKind.Unspecified).AddTicks(4952), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAECkwWpdlp704lvsZBW8cONS++cyLNNyTxzkyODJKoK6VppDwBOg8N3NG2HC6nWGDuA==", null, false, null, "5199cacf-1ab0-421b-9dcf-4c77cf00d1ee", "Egypt Standard Time", false, null, "JohnDoe@123" },
-                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "2fb1982d-b05a-432a-b3dc-4a21ce75ef1b", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 990, DateTimeKind.Unspecified).AddTicks(2238), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEEgoAVu16vCw5TmNULO0O4PzJzm4Bd7DLhwbxHuHv0SJDOr+X8l8lyu0grCuQWmeqw==", null, false, null, "63b89f54-7af8-4b32-bf8b-317436ee363a", "Egypt Standard Time", false, null, "MichaelW@303" },
-                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "2af191d4-335c-42c4-9c2d-67898a4f4675", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 900, DateTimeKind.Unspecified).AddTicks(8806), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEFo/ZArw7JoEwp8NwiUJUq4nFUsPKLhCo532lt1t20FeJop1tJZJT+VZbQh2DmzSJA==", null, false, null, "d36012bd-9e23-43d2-a725-cd9d97dd70ae", "Egypt Standard Time", false, null, "EmilyD@202" },
-                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "432d545d-b45e-46ad-bcdc-554ff3ccd18d", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 436, DateTimeKind.Unspecified).AddTicks(8644), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEH6uo4sbOHirQ3V9vcosdPy3p0vyLM856IOjiPpexMS3RvSQMfY4PjhqduGYXY7Gyw==", null, false, null, "e66b4aea-98a0-45af-8784-beb6ba6a81a7", "Egypt Standard Time", false, null, "Moehab@2002" },
-                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "74133ec0-d091-4a55-93bd-14e9831829ac", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 627, DateTimeKind.Unspecified).AddTicks(2813), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAECLdpQGQR9HR0q1IOnx/zpOIUxkw8zw+oEcxyhiXpzybOb9VTmXj6KS1n/AS+l8rsA==", null, false, null, "ecd870bd-bb0c-42ac-8cc0-d3feab2e4d67", "Egypt Standard Time", false, null, "JaneSmith@456" },
-                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "313965f1-c6ad-403e-b4a5-a5dbff829120", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 10, 80, DateTimeKind.Unspecified).AddTicks(5499), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEJKOlD8HThPosvvegMYDCFHbS5uypre34BXexJoo1p2IrwFSGktXjkF062hxno/4vQ==", null, false, null, "4c9bd332-1e1f-4a0a-8fca-6b0dbafe1643", "Egypt Standard Time", false, null, "SarahM@404" },
-                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "fad0a0c6-5e57-4714-af99-221ee6ecfc5f", null, new DateTimeOffset(new DateTime(2025, 2, 14, 22, 49, 9, 720, DateTimeKind.Unspecified).AddTicks(2506), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEFpiTJ/ahAJ74mP11mLFkylvGEIrd8HToXBLRYHyoXD6Uunh0FJDU1PWbWfc0dMQ5A==", null, false, null, "2277a7f6-a222-4345-8bf8-88abda41d752", "Egypt Standard Time", false, null, "AliceJ@789" }
+                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "9741982c-65ef-4c0b-be44-91c78c14fb05", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 684, DateTimeKind.Unspecified).AddTicks(607), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), "chrisa@example.com", true, "Chris", "Male", "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEIYQnHZP+PwuhzYpOwlt7dWD0C3EVlh6Gsb/hzcqXLPgVsRpayvoOpOuHG0BQH+Aig==", null, false, null, "23937311-1fc0-48f6-8ffa-e6226fc65ced", "Egypt Standard Time", false, null, "ChrisA@707" },
+                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "c4946cab-e7b4-42a6-9d84-1521b4e8ce9f", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 104, DateTimeKind.Unspecified).AddTicks(7905), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), "bobbrown@example.com", true, "Bob", "Male", "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEJjhYoSakjVMc0grOZuC+Cd3UirdP21bjCp91U5ovU6CeROHHy6YFcf3NYLoGCHUlw==", null, false, null, "3b96da95-f27a-4eb1-a71f-ba031d5c1c8b", "Egypt Standard Time", false, null, "BobBrown@101" },
+                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "e3b5487e-8e1e-4e46-bb08-f3944e70dfd4", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 589, DateTimeKind.Unspecified).AddTicks(6524), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), "laurat@example.com", true, "Laura", "Female", "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEH9fxfnsRaouePcRafQ6+tyvfZ2b2GsWrHrwP/Ypm+D34iM6u4FgGVkuqXKr9osL6A==", null, false, null, "c1cefd3a-356b-45a4-a276-e00b7b83a0c9", "Egypt Standard Time", false, null, "LauraT@606" },
+                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "7b4aa360-0b98-4bc5-930f-405862fe42c9", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 494, DateTimeKind.Unspecified).AddTicks(3583), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), "davidm@example.com", true, "David", "Male", "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEHIVpYRaE1AnRawTziIdk6a5tiW+cjdlIyDCAHYOiG4Jgjftk7QpTaXWNxE2mExhiA==", null, false, null, "ad654310-8475-46b7-833b-a42c4e0e9d3d", "Egypt Standard Time", false, null, "DavidM@505" },
+                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "2991dd4a-6a8c-4c77-b509-ba6a1d6a2fa8", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 9, 821, DateTimeKind.Unspecified).AddTicks(8810), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), "johndoe@example.com", true, "John", "Male", "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAENfwCD4f6aKpJihvskMuNth5XsAbsaRB+sWy/2+s+nvlgZTVFyvQLHSHd+JABBIt/A==", null, false, null, "6309680a-8e98-4121-a3c3-abc06d7b9809", "Egypt Standard Time", false, null, "JohnDoe@123" },
+                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "4f06d022-f423-4e9f-a8d3-5ef82d580228", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 292, DateTimeKind.Unspecified).AddTicks(2356), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), "michaelw@example.com", true, "Michael", "Male", "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEDlcFpQbqd6/44cxJXhPCgjZ56sDhGr0srrXWVpsJpBmqC6zkdoEMOUl4m5uByA2DQ==", null, false, null, "945e03ce-b33b-4a3e-8b74-b80ddc2bb17e", "Egypt Standard Time", false, null, "MichaelW@303" },
+                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "97fb5391-658a-41e4-87b7-1ad0855b092a", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 198, DateTimeKind.Unspecified).AddTicks(2003), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), "emilyd@example.com", true, "Emily", "Female", "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEAfclTn8OVr0XS8hGL3V4uh1T/eum8yejz5cUWozXgN5Cr+qmXgxpTPRtGz77TT5ZQ==", null, false, null, "316bcd7a-7739-4c84-8289-6e21cae905bd", "Egypt Standard Time", false, null, "EmilyD@202" },
+                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "fb2f594c-9cc6-4ed4-ab56-3e093df2c2f8", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 9, 722, DateTimeKind.Unspecified).AddTicks(6471), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), "me5260287@gmail.com", true, "Mohamed", "Male", "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEOmAeIwoHtwKB2AWiETekEH0Wc5+mT7SkAVA82do/yxrkZZfzcmW7z6HJz/i5eN9IA==", null, false, null, "08bb92bb-78c4-4d07-b2ec-f0efe07f8463", "Egypt Standard Time", false, null, "Moehab@2002" },
+                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "8b87d999-8923-4da4-a7b1-06ef65f982f9", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 9, 916, DateTimeKind.Unspecified).AddTicks(5398), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), "janesmith@example.com", true, "Jane", "Female", "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAENYxa1i6XTKjD4bp7nHDbCYHzqhWWWbFR6ZM91l2xDBY4IQIIKo1yvAfxLesEkCSyQ==", null, false, null, "87ccec65-c740-45c5-a09b-a5236c7bf4cd", "Egypt Standard Time", false, null, "JaneSmith@456" },
+                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "05b7d23e-5cda-4269-82ca-83aa5396e4db", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 399, DateTimeKind.Unspecified).AddTicks(9919), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), "sarahm@example.com", true, "Sarah", "Female", "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAELiYeJiuRpSaJsnbVoylsf3eRXdfymuWrmDWUTprzaDBug3VLPZzRIkvb0k7F0yERg==", null, false, null, "ab92593c-e316-493d-a8e5-7936328d2797", "Egypt Standard Time", false, null, "SarahM@404" },
+                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "d89b54b1-511a-47c1-a8ef-a36441b31f43", null, new DateTimeOffset(new DateTime(2025, 2, 19, 10, 40, 10, 12, DateTimeKind.Unspecified).AddTicks(2722), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), "alicej@example.com", true, "Alice", "Female", "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEPMuxlZ2bffGnH8kvVkry+NbNHVoGqf/UXwBsZ9luniSGUE86oQuPWvFnIFWbrLuGg==", null, false, null, "01d1a95f-b163-41a5-8635-4a81aadce04e", "Egypt Standard Time", false, null, "AliceJ@789" }
                 });
 
             migrationBuilder.InsertData(
@@ -950,21 +827,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GroupNotifications_ActorId",
-                table: "GroupNotifications",
-                column: "ActorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GroupNotifications_GroupId",
-                table: "GroupNotifications",
-                column: "GroupId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GroupNotifications_RecipientId",
-                table: "GroupNotifications",
-                column: "RecipientId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Groups_CreatedByUserId",
                 table: "Groups",
                 column: "CreatedByUserId");
@@ -983,21 +845,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "IX_LiveStreams_UserId",
                 table: "LiveStreams",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MediaNotifications_ActorId",
-                table: "MediaNotifications",
-                column: "ActorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MediaNotifications_MediaId",
-                table: "MediaNotifications",
-                column: "MediaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MediaNotifications_RecipientId",
-                table: "MediaNotifications",
-                column: "RecipientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MessageMentions_MentionedUserId",
@@ -1060,29 +907,34 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NetworkNotifications_ActorId",
-                table: "NetworkNotifications",
+                name: "IX_Notifications_ActorId",
+                table: "Notifications",
                 column: "ActorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NetworkNotifications_RecipientId",
-                table: "NetworkNotifications",
-                column: "RecipientId");
+                name: "IX_Notifications_GroupId",
+                table: "Notifications",
+                column: "GroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostNotifications_ActorId",
-                table: "PostNotifications",
-                column: "ActorId");
+                name: "IX_Notifications_MediaId",
+                table: "Notifications",
+                column: "MediaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostNotifications_PostId",
-                table: "PostNotifications",
+                name: "IX_Notifications_PostId",
+                table: "Notifications",
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostNotifications_RecipientId",
-                table: "PostNotifications",
+                name: "IX_Notifications_RecipientId",
+                table: "Notifications",
                 column: "RecipientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_StoryId",
+                table: "Notifications",
+                column: "StoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PrivateConversations_ReceiverUserId",
@@ -1108,21 +960,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_StoryComment_StoryId",
                 table: "StoryComment",
-                column: "StoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoryNotifications_ActorId",
-                table: "StoryNotifications",
-                column: "ActorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoryNotifications_RecipientId",
-                table: "StoryNotifications",
-                column: "RecipientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoryNotifications_StoryId",
-                table: "StoryNotifications",
                 column: "StoryId");
 
             migrationBuilder.CreateIndex(
@@ -1185,16 +1022,10 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "GroupMembers");
 
             migrationBuilder.DropTable(
-                name: "GroupNotifications");
-
-            migrationBuilder.DropTable(
                 name: "JoinGroupRequests");
 
             migrationBuilder.DropTable(
                 name: "LiveStreams");
-
-            migrationBuilder.DropTable(
-                name: "MediaNotifications");
 
             migrationBuilder.DropTable(
                 name: "MessageMentions");
@@ -1206,19 +1037,13 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "MessageReplies");
 
             migrationBuilder.DropTable(
-                name: "NetworkNotifications");
-
-            migrationBuilder.DropTable(
-                name: "PostNotifications");
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "StoryComment");
-
-            migrationBuilder.DropTable(
-                name: "StoryNotifications");
 
             migrationBuilder.DropTable(
                 name: "StoryReaction");

@@ -9,7 +9,5 @@ public sealed class PostNotificationConfiguration : IEntityTypeConfiguration<Pos
     public void Configure(EntityTypeBuilder<PostNotification> builder)
     {
         builder.HasIndex(x => x.PostId);
-
-        builder.ToTable("PostNotifications");
     }
 }

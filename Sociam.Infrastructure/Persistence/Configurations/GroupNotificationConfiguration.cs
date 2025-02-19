@@ -9,7 +9,5 @@ public sealed class GroupNotificationConfiguration : IEntityTypeConfiguration<Gr
     public void Configure(EntityTypeBuilder<GroupNotification> builder)
     {
         builder.HasIndex(x => x.GroupId);
-
-        builder.ToTable("GroupNotifications");
     }
 }

@@ -5,7 +5,7 @@ using Sociam.Domain.Enums;
 
 namespace Sociam.Infrastructure.Persistence.Configurations;
 
-public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notification>
+internal sealed class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 {
     public void Configure(EntityTypeBuilder<Notification> builder)
     {
@@ -39,6 +39,15 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 
-        builder.UseTpcMappingStrategy();
+        builder.HasDiscriminator<string>("NKind")
+            .HasValue<PostNotification>("post")
+            .HasValue<NetworkNotification>("network")
+            .HasValue<GroupNotification>("group")
+            .HasValue<MediaNotification>("media")
+            .HasValue<StoryNotification>("story");
+
+        builder.UseTphMappingStrategy();
+
+        builder.ToTable("Notifications");
     }
 }

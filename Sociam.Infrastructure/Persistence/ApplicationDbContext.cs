@@ -23,11 +23,7 @@ public sealed class ApplicationDbContext(
     public DbSet<MessageMention> MessageMentions { get; set; }
     public DbSet<MessageReply> MessageReplies { get; set; }
     public DbSet<JoinGroupRequest> JoinGroupRequests { get; set; }
-    public DbSet<PostNotification> PostNotifications => Set<PostNotification>();
-    public DbSet<MediaNotification> MediaNotifications => Set<MediaNotification>();
-    public DbSet<NetworkNotification> NetworkNotifications => Set<NetworkNotification>();
-    public DbSet<StoryNotification> StoryNotifications => Set<StoryNotification>();
-    public DbSet<GroupNotification> GroupNotifications => Set<GroupNotification>();
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -117,6 +117,8 @@ public static class DependencyInjection
 
         services.AddScoped<ICacheService, CacheService>();
 
+        services.AddScoped<INotificationService, NotificationService>();
+
         return services;
     }
 }

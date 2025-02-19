@@ -15,7 +15,5 @@ public sealed class MediaNotificationConfiguration : IEntityTypeConfiguration<Me
             .HasConversion(
                 x => x.ToString(),
                 x => Enum.Parse<MediaNotificationType>(x));
-
-        builder.ToTable("MediaNotifications");
     }
 }
