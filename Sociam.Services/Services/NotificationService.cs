@@ -24,8 +24,21 @@ public sealed class NotificationService(
         if (notification == null)
             return Result<NotificationDto>.Failure(HttpStatusCode.NotFound);
 
-        var mappedNotification = mapper.Map<NotificationDto>(notification);
+        var mappedNotification = mapper.Map<NotificationDto>(notification,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
         return Result<NotificationDto>.Success(mappedNotification);
+    }
+
+    public async Task<Result<IReadOnlyList<NotificationDto>>> GetNotificationsAsync()
+    {
+        var notifications = await unitOfWork.Repository<Notification>()!
+        .GetAllWithSpecificationAsync(
+                specification: new GetNotificationSpecification(currentUser.Id));
+
+        var mappedNotifications = mapper.Map<IReadOnlyList<NotificationDto>>(notifications,
+            options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
+
+        return Result<IReadOnlyList<NotificationDto>>.Success(mappedNotifications);
     }
 }

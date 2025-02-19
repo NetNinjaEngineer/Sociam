@@ -4,6 +4,7 @@ namespace Sociam.Application.DTOs.Notification;
 
 public sealed class NotificationDto
 {
+    public Guid Id { get; set; }
     public string RecipientId { get; set; } = null!;
     public string SenderId { get; set; } = null!;
     public NotificationType Type { get; set; }

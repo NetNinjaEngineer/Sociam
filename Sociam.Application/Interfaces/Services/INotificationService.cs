@@ -7,4 +7,5 @@ namespace Sociam.Application.Interfaces.Services;
 public interface INotificationService
 {
     Task<Result<NotificationDto>> GetNotificationAsync(GetNotificationQuery query);
+    Task<Result<IReadOnlyList<NotificationDto>>> GetNotificationsAsync();
 }

@@ -9,6 +9,7 @@ public sealed class NotificationProfile : Profile
     public NotificationProfile()
     {
         CreateMap<Notification, NotificationDto>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.NKind, options => options.Ignore())
             .ForMember(dest => dest.SenderId, options => options.MapFrom(src => src.ActorId))
             .ForMember(dest => dest.SenderName,
@@ -19,7 +20,9 @@ public sealed class NotificationProfile : Profile
             .Include<GroupNotification, NotificationDto>()
             .Include<NetworkNotification, NotificationDto>()
             .Include<MediaNotification, NotificationDto>()
-            .Include<StoryNotification, NotificationDto>();
+            .Include<StoryNotification, NotificationDto>()
+            .ForMember(dest => dest.CreatedAt, options => options.MapFrom<>())
+            .ForMember(dest => dest.ReadAt, options => options.MapFrom<>());
 
 
         CreateMap<PostNotification, NotificationDto>()
