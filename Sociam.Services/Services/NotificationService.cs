@@ -43,12 +43,15 @@ public sealed class NotificationService(
         var mappedNotifications = mapper.Map<IEnumerable<NotificationDto>>(notifications,
             options => options.Items["TimeZoneId"] = currentUser.TimeZoneId);
 
+        var specification = new GetNotificationsFilterationCountSpecification(@params, currentUser.Id);
+        var totalCount = await unitOfWork.NotificationRepository.GetCountWithSpecificationAsync(specification);
+
         return Result<PagedResult<NotificationDto>>.Success(
             new PagedResult<NotificationDto>()
             {
                 Page = @params?.Page,
                 PageSize = @params?.PageSize,
-                TotalCount = 0,
+                TotalCount = totalCount,
                 Items = mappedNotifications.ToList()
             });
     }
