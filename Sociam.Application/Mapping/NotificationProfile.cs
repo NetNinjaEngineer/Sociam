@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Sociam.Application.DTOs.Notification;
+using Sociam.Application.Resolvers;
 using Sociam.Domain.Entities;
 
 namespace Sociam.Application.Mapping;
@@ -21,8 +22,8 @@ public sealed class NotificationProfile : Profile
             .Include<NetworkNotification, NotificationDto>()
             .Include<MediaNotification, NotificationDto>()
             .Include<StoryNotification, NotificationDto>()
-            .ForMember(dest => dest.CreatedAt, options => options.MapFrom<>())
-            .ForMember(dest => dest.ReadAt, options => options.MapFrom<>());
+            .ForMember(dest => dest.CreatedAt, options => options.MapFrom<NotificationCreatedAtValueResolver>())
+            .ForMember(dest => dest.ReadAt, options => options.MapFrom<NotificationReadAtValueResolver>());
 
 
         CreateMap<PostNotification, NotificationDto>()
