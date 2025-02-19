@@ -52,14 +52,18 @@ public class NotificationsController(IMediator mediator) : ApiBaseController(med
 
     [HttpPut("{id:guid}/mark-as-read")]
     [ProducesResponseType<Result<bool>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> MarkAsReadAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new MarkAsReadCommand { NotificationId = id }));
 
     [HttpDelete("{id:guid}")]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteNotificationAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new DeleteOneCommand { NotificationId = id }));
 
     [HttpDelete]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteAllNotificationsAsync()
         => CustomResult(await Mediator.Send(new DeleteAllCommand()));
 
