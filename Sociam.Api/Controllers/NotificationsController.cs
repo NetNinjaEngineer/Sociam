@@ -7,6 +7,8 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Notification;
 using Sociam.Application.Features.Notifications.Queries.GetNotification;
 using Sociam.Application.Features.Notifications.Queries.GetNotifications;
+using Sociam.Application.Features.Notifications.Queries.GetReadCount;
+using Sociam.Application.Features.Notifications.Queries.GetUnReadCount;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Utils;
 
@@ -26,4 +28,15 @@ public class NotificationsController(IMediator mediator) : ApiBaseController(med
     [ProducesResponseType<Result<NotificationDto>>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetNotificationAsync([FromRoute] Guid id)
         => CustomResult(await Mediator.Send(new GetNotificationQuery { Id = id }));
+
+
+    [HttpGet("me/unread-count")]
+    [ProducesResponseType<Result<NotificationDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUnReadNotificationCountAsync()
+        => CustomResult(await Mediator.Send(new GetUnReadCountQuery()));
+
+    [HttpGet("me/read-count")]
+    [ProducesResponseType<Result<NotificationDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetReadNotificationCountAsync()
+        => CustomResult(await Mediator.Send(new GetReadCountQuery()));
 }

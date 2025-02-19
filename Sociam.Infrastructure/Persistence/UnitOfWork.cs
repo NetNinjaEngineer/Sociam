@@ -20,6 +20,7 @@ public sealed class UnitOfWork(
     public IPrivateConversationRepository ConversationRepository => new PrivateConversationRepository(context);
     public IStoryViewRepository StoryViewRepository => new StoryViewRepository(context, userManager);
     public IStoryRepository StoryRepository => new StoryRepository(context, configuration);
+    public INotificationRepository NotificationRepository => new NotificationRepository(context);
 
     public IGroupMemberRepository GroupMemberRepository => new GroupMemberRepository(context);
 

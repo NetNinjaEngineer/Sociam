@@ -35,8 +35,6 @@
   <ItemGroup>
     <Folder Include="Features\Notifications\Commands\MarkAsRead\" />
     <Folder Include="Features\Notifications\Commands\MarkAllAsRead\" />
-    <Folder Include="Features\Notifications\Queries\GetUnReadCount\" />
-    <Folder Include="Features\Notifications\Queries\GetReadCount\" />
   </ItemGroup>
 
 </Project>

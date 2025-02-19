@@ -49,4 +49,10 @@ public sealed class NotificationService(
             Items = mappedNotifications.ToList()
         });
     }
+
+    public async Task<Result<long>> GetUnReadNotificationsCountAsync()
+        => Result<long>.Success(await unitOfWork.NotificationRepository.GetUnReadNotificationsCountAsync(currentUser.Id));
+
+    public async Task<Result<long>> GetReadNotificationsCountAsync()
+        => Result<long>.Success(await unitOfWork.NotificationRepository.GetReadNotificationsCountAsync(currentUser.Id));
 }

@@ -10,4 +10,6 @@ public interface INotificationService
 {
     Task<Result<NotificationDto>> GetNotificationAsync(GetNotificationQuery query);
     Task<Result<PagedResult<NotificationDto>>> GetNotificationsAsync(NotificationsSpecParams? @params);
+    Task<Result<long>> GetUnReadNotificationsCountAsync();
+    Task<Result<long>> GetReadNotificationsCountAsync();
 }
