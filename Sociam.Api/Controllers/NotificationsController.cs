@@ -5,6 +5,10 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Notification;
+using Sociam.Application.Features.Notifications.Commands.DeleteAll;
+using Sociam.Application.Features.Notifications.Commands.DeleteOne;
+using Sociam.Application.Features.Notifications.Commands.MarkAllAsRead;
+using Sociam.Application.Features.Notifications.Commands.MarkAsRead;
 using Sociam.Application.Features.Notifications.Queries.GetNotification;
 using Sociam.Application.Features.Notifications.Queries.GetNotifications;
 using Sociam.Application.Features.Notifications.Queries.GetReadCount;
@@ -30,13 +34,33 @@ public class NotificationsController(IMediator mediator) : ApiBaseController(med
         => CustomResult(await Mediator.Send(new GetNotificationQuery { Id = id }));
 
 
-    [HttpGet("me/unread-count")]
+    [HttpGet("unread-count")]
     [ProducesResponseType<Result<NotificationDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUnReadNotificationCountAsync()
         => CustomResult(await Mediator.Send(new GetUnReadCountQuery()));
 
-    [HttpGet("me/read-count")]
+    [HttpGet("read-count")]
     [ProducesResponseType<Result<NotificationDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetReadNotificationCountAsync()
         => CustomResult(await Mediator.Send(new GetReadCountQuery()));
+
+
+    [HttpPut("markAll-as-read")]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MarkAllAsReadAsync()
+        => CustomResult(await Mediator.Send(new MarkAllAsReadCommand()));
+
+    [HttpPut("{id:guid}/mark-as-read")]
+    [ProducesResponseType<Result<bool>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MarkAsReadAsync([FromRoute] Guid id)
+        => CustomResult(await Mediator.Send(new MarkAsReadCommand { NotificationId = id }));
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteNotificationAsync([FromRoute] Guid id)
+        => CustomResult(await Mediator.Send(new DeleteOneCommand { NotificationId = id }));
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAllNotificationsAsync()
+        => CustomResult(await Mediator.Send(new DeleteAllCommand()));
+
 }

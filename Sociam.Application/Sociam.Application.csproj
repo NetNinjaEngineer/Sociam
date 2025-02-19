@@ -31,10 +31,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Sociam.Domain\Sociam.Domain.csproj" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="Features\Notifications\Commands\MarkAsRead\" />
-    <Folder Include="Features\Notifications\Commands\MarkAllAsRead\" />
-  </ItemGroup>
 
 </Project>
