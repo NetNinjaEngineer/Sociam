@@ -23,4 +23,5 @@ public sealed class NotificationDto
     public string? GroupId { get; set; }
     public string? GroupName { get; set; }
     public string? GroupRole { get; set; }
+    public string? NKind { get; set; }
 }
