@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http.Features;
+using Scalar.AspNetCore;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
 using Sociam.Api.WorkerServices;
@@ -84,6 +85,12 @@ builder.Services.AddSwaggerDocumentation();
 var app = builder.Build();
 
 app.UseSwaggerDocumentation();
+
+app.MapScalarApiReference(options =>
+{
+    options.WithOpenApiRoutePattern("/swagger/v1/swagger.json");
+    options.WithApiKeyAuthentication(c => c.Token = builder.Configuration.GetValue<string>("ApiKey"));
+});
 
 app.UseHttpsRedirection();
 

@@ -83,7 +83,7 @@ public static class SwaggerExtensions
     public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app)
     {
         app.UseSwagger();
-        app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Sociam v1"); });
+        app.UseSwaggerUI();
         return app;
     }
 }
