@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Sociam.Application.DTOs.Users;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
@@ -8,7 +9,10 @@ namespace Sociam.Application.Extensions;
 
 public static class UserManagerExtensions
 {
-    public static async Task<ProfileDto?> GetUserProfileAsync(this UserManager<ApplicationUser> userManager, string userId)
+    public static async Task<ProfileDto?> GetUserProfileAsync(
+        this UserManager<ApplicationUser> userManager,
+        string userId,
+        IConfiguration configuration)
     {
         var userProfile = await userManager.Users
             .AsNoTracking()
@@ -25,14 +29,16 @@ public static class UserManagerExtensions
                 LastName = user.LastName,
                 DateOfBirth = user.DateOfBirth,
                 Gender = user.Gender,
-                ProfilePictureUrl = user.ProfilePictureUrl,
-                CoverPhotoUrl = user.CoverPhotoUrl,
+                ProfilePictureUrl = !string.IsNullOrEmpty(user.ProfilePictureUrl) ?
+                    $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.ProfilePictureUrl}" : null,
+                CoverPhotoUrl = !string.IsNullOrEmpty(user.CoverPhotoUrl) ?
+                    $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.CoverPhotoUrl}" : null,
                 Bio = user.Bio,
                 JoinedAt = user.CreatedAt,
                 TimeZoneId = user.TimeZoneId,
                 FollowingCount = user.Following.LongCount(),
                 FollowersCount = user.Followers.LongCount(),
-                FriendRequestsCount = user.FriendshipsReceived.LongCount(fr => fr.FriendshipStatus != FriendshipStatus.Accepted),
+                FriendRequestsCount = user.FriendshipsReceived.LongCount(fr => fr.FriendshipStatus == FriendshipStatus.Pending),
                 FriendRequestsSentCount = user.FriendshipsRequested.LongCount(fr => fr.FriendshipStatus != FriendshipStatus.Accepted),
                 FriendsCount = user.FriendshipsReceived.LongCount(fr => fr.FriendshipStatus == FriendshipStatus.Accepted) +
                                user.FriendshipsRequested.LongCount(fr => fr.FriendshipStatus == FriendshipStatus.Accepted)
