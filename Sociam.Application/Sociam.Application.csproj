@@ -31,5 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Sociam.Domain\Sociam.Domain.csproj" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="Features\Users\Commands\ChangeAccountPassword\" />
+    <Folder Include="Features\Users\Commands\VerifyChangeEmail\" />
+  </ItemGroup>
 
 </Project>

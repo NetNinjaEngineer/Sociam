@@ -5,13 +5,17 @@ using Microsoft.Extensions.Configuration;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
 using Sociam.Application.Extensions;
+using Sociam.Application.Features.Users.Commands.ChangeAccountEmail;
 using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
+using Sociam.Application.Interfaces.Services.Models;
 using Sociam.Domain.Entities.Identity;
+using System.Buffers.Text;
 using System.Net;
+using System.Text;
 
 namespace Sociam.Services.Services;
 
@@ -20,7 +24,8 @@ public sealed class UserService(
     ICurrentUser currentUser,
     UserManager<ApplicationUser> userManager,
     IFileService fileService,
-    IConfiguration configuration) : IUserService
+    IConfiguration configuration,
+    IMailService mailService) : IUserService
 {
     public async Task<Result<ProfileDto?>> GetUserProfileAsync()
     {
@@ -97,5 +102,57 @@ public sealed class UserService(
         await userManager.UpdateAsync(existedUser);
 
         return Result<string>.Success($"{configuration["BaseApiUrl"]}/Uploads/Images/{existedUser.CoverPhotoUrl}");
+    }
+
+    public async Task<Result<bool>> ChangeAccountEmailAsync(ChangeAccountEmailCommand command)
+    {
+        var existedUser = await userManager.FindByIdAsync(currentUser.Id);
+
+        if (existedUser == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UserNotExists);
+
+        var isCorrectPassword = await userManager.CheckPasswordAsync(existedUser, command.OldEmailPassword);
+
+        if (!isCorrectPassword)
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.WrongPassword);
+
+        var validator = new ChangeAccountEmailCommandValidator();
+
+        await validator.ValidateAndThrowAsync(command);
+
+        // Check if the new email already exists in the database
+        var existingUserWithEmail = await userManager.FindByEmailAsync(command.NewEmail);
+        if (existingUserWithEmail != null && existingUserWithEmail.Id != existedUser.Id)
+        {
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, "The email is already in use by another account.");
+        }
+
+        var emailResult = await userManager.SetEmailAsync(existedUser, command.NewEmail);
+
+        if (!emailResult.Succeeded)
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, emailResult.Errors.First().Description);
+
+        var token = await userManager.GenerateUserTokenAsync(existedUser, "Email", "Change account email");
+
+        existedUser.Code = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(token));
+        existedUser.CodeExpiration =
+            DateTimeOffset.UtcNow.AddMinutes(Convert.ToDouble(configuration["AuthCodeExpirationInMinutes"]));
+
+        await userManager.UpdateAsync(existedUser);
+
+        await mailService.SendEmailAsync(new EmailMessage
+        {
+            Message = $@"
+              <h1>Verify Your Email</h1>
+              <p>Hello {existedUser.FirstName ?? existedUser.UserName},</p>
+              <p>Use this code to change your email:</p>
+              <div class='code'>{token}</div>
+              <p>It expires in {configuration["AuthCodeExpirationInMinutes"]} minutes.</p>
+              <div class='footer'>Sociam Team</div>",
+            To = command.NewEmail,
+            Subject = "Verify Change Email"
+        });
+
+        return Result<bool>.Success(true);
     }
 }
