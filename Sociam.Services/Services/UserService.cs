@@ -9,11 +9,11 @@ using Sociam.Application.Features.Users.Commands.ChangeAccountEmail;
 using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
+using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
 using Sociam.Domain.Entities.Identity;
-using System.Buffers.Text;
 using System.Net;
 using System.Text;
 
@@ -134,9 +134,10 @@ public sealed class UserService(
 
         var token = await userManager.GenerateUserTokenAsync(existedUser, "Email", "Change account email");
 
-        existedUser.Code = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(token));
+        existedUser.Code = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
         existedUser.CodeExpiration =
             DateTimeOffset.UtcNow.AddMinutes(Convert.ToDouble(configuration["AuthCodeExpirationInMinutes"]));
+        existedUser.EmailConfirmed = false;
 
         await userManager.UpdateAsync(existedUser);
 
@@ -154,5 +155,27 @@ public sealed class UserService(
         });
 
         return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<string>> VerifyChangeAccountEmailAsync(VerifyChangeEmailCommand command)
+    {
+        var validator = new VerifyChangeEmailCommandValidator();
+
+        await validator.ValidateAndThrowAsync(command);
+
+        var existedUser = await userManager.FindByIdAsync(currentUser.Id);
+        if (existedUser == null)
+            return Result<string>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UserNotExists);
+        if (existedUser.Code == null || existedUser.CodeExpiration == null)
+            return Result<string>.Failure(HttpStatusCode.BadRequest, "The code is invalid.");
+        if (existedUser.CodeExpiration < DateTimeOffset.UtcNow)
+            return Result<string>.Failure(HttpStatusCode.BadRequest, "The code has expired.");
+        if (Encoding.UTF8.GetString(Convert.FromBase64String(existedUser.Code)) != command.Code)
+            return Result<string>.Failure(HttpStatusCode.BadRequest, "The code is invalid.");
+        existedUser.EmailConfirmed = true;
+        existedUser.Code = null;
+        existedUser.CodeExpiration = null;
+        await userManager.UpdateAsync(existedUser);
+        return Result<string>.Success("Your email has been changed successfully.");
     }
 }

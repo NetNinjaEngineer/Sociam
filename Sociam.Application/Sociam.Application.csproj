@@ -34,7 +34,6 @@
 	
   <ItemGroup>
     <Folder Include="Features\Users\Commands\ChangeAccountPassword\" />
-    <Folder Include="Features\Users\Commands\VerifyChangeEmail\" />
   </ItemGroup>
 
 </Project>

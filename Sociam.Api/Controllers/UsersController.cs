@@ -5,9 +5,11 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
+using Sociam.Application.Features.Users.Commands.ChangeAccountEmail;
 using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
+using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
 using Sociam.Application.Features.Users.Queries.GetUserProfile;
 using Sociam.Application.Helpers;
 
@@ -43,5 +45,19 @@ public class UsersController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateUserCoverAsync([FromForm] UpdateCoverCommand command)
+        => CustomResult(await Mediator.Send(command));
+
+    [HttpPatch("me/change-account-email")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ChangeAccountEmailAsync([FromBody] ChangeAccountEmailCommand command)
+        => CustomResult(await Mediator.Send(command));
+
+    [HttpPatch("me/verify-change-account-email")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> VerifyChangeAccountEmailAsync([FromBody] VerifyChangeEmailCommand command)
         => CustomResult(await Mediator.Send(command));
 }

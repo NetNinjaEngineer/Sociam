@@ -6,6 +6,7 @@ public sealed record ProfileDto
 {
     public string Id { get; init; } = "";
     public string UserName { get; init; } = "";
+    public string Email { get; init; } = null!;
     public string? FirstName { get; init; } = null;
     public string? LastName { get; init; } = null;
     public DateOnly DateOfBirth { get; init; } = default;

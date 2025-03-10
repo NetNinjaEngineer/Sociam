@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Sociam.Application.DTOs.Users;
+using Sociam.Application.Helpers;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 
@@ -28,13 +29,14 @@ public static class UserManagerExtensions
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 DateOfBirth = user.DateOfBirth,
+                Email = user.Email!,
                 Gender = user.Gender,
                 ProfilePictureUrl = !string.IsNullOrEmpty(user.ProfilePictureUrl) ?
                     $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.ProfilePictureUrl}" : null,
                 CoverPhotoUrl = !string.IsNullOrEmpty(user.CoverPhotoUrl) ?
                     $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.CoverPhotoUrl}" : null,
                 Bio = user.Bio,
-                JoinedAt = user.CreatedAt,
+                JoinedAt = user.CreatedAt.ConvertToUserLocalTimeZone(user.TimeZoneId),
                 TimeZoneId = user.TimeZoneId,
                 FollowingCount = user.Following.LongCount(),
                 FollowersCount = user.Followers.LongCount(),
