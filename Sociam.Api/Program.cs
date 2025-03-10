@@ -66,9 +66,9 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy", builder =>
+    options.AddPolicy("AllowAll", policyBuilder =>
     {
-        builder.AllowAnyHeader()
+        policyBuilder.AllowAnyHeader()
             .AllowAnyMethod()
             .AllowAnyOrigin();
     });
@@ -96,7 +96,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseCors("CorsPolicy");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 
