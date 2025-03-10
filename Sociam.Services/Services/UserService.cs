@@ -6,6 +6,7 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
 using Sociam.Application.Extensions;
 using Sociam.Application.Features.Users.Commands.ChangeAccountEmail;
+using Sociam.Application.Features.Users.Commands.ChangeAccountPassword;
 using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
@@ -109,7 +110,7 @@ public sealed class UserService(
         var existedUser = await userManager.FindByIdAsync(currentUser.Id);
 
         if (existedUser == null)
-            return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UserNotExists);
+            return Result<bool>.Failure(HttpStatusCode.Unauthorized);
 
         var isCorrectPassword = await userManager.CheckPasswordAsync(existedUser, command.OldEmailPassword);
 
@@ -165,7 +166,7 @@ public sealed class UserService(
 
         var existedUser = await userManager.FindByIdAsync(currentUser.Id);
         if (existedUser == null)
-            return Result<string>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UserNotExists);
+            return Result<string>.Failure(HttpStatusCode.Unauthorized);
         if (existedUser.Code == null || existedUser.CodeExpiration == null)
             return Result<string>.Failure(HttpStatusCode.BadRequest, "The code is invalid.");
         if (existedUser.CodeExpiration < DateTimeOffset.UtcNow)
@@ -177,5 +178,26 @@ public sealed class UserService(
         existedUser.CodeExpiration = null;
         await userManager.UpdateAsync(existedUser);
         return Result<string>.Success("Your email has been changed successfully.");
+    }
+
+    public async Task<Result<bool>> ChangeAccountPasswordAsync(ChangeAccountPasswordCommand command)
+    {
+        var validator = new ChangeAccountPasswordCommandValidator();
+
+        await validator.ValidateAndThrowAsync(command);
+
+        var existedUser = await userManager.FindByIdAsync(currentUser.Id);
+        if (existedUser == null)
+            return Result<bool>.Failure(HttpStatusCode.Unauthorized);
+
+        var isCorrectPassword = await userManager.CheckPasswordAsync(existedUser, command.OldPassword);
+        if (!isCorrectPassword)
+            return Result<bool>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.WrongPassword);
+
+        var passwordResult = await userManager.ChangePasswordAsync(existedUser, command.OldPassword, command.NewPassword);
+
+        return !passwordResult.Succeeded ?
+            Result<bool>.Failure(HttpStatusCode.BadRequest, passwordResult.Errors.First().Description) :
+            Result<bool>.Success(true);
     }
 }

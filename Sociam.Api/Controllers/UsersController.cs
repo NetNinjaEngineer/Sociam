@@ -6,6 +6,7 @@ using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
 using Sociam.Application.Features.Users.Commands.ChangeAccountEmail;
+using Sociam.Application.Features.Users.Commands.ChangeAccountPassword;
 using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
@@ -49,15 +50,22 @@ public class UsersController(IMediator mediator) : ApiBaseController(mediator)
 
     [HttpPatch("me/change-account-email")]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> ChangeAccountEmailAsync([FromBody] ChangeAccountEmailCommand command)
         => CustomResult(await Mediator.Send(command));
 
     [HttpPatch("me/verify-change-account-email")]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> VerifyChangeAccountEmailAsync([FromBody] VerifyChangeEmailCommand command)
+        => CustomResult(await Mediator.Send(command));
+
+    [HttpPatch("me/change-password")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ChangeAccountPasswordAsync([FromBody] ChangeAccountPasswordCommand command)
         => CustomResult(await Mediator.Send(command));
 }
