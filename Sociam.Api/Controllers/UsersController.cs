@@ -5,6 +5,7 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
+using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Features.Users.Queries.GetUserProfile;
 using Sociam.Application.Helpers;
 
@@ -19,4 +20,10 @@ public class UsersController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<ProfileDto?>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserProfileAsync()
         => CustomResult(await Mediator.Send(new GetUserProfileQuery()));
+
+    [HttpPut("me")]
+    [ProducesResponseType(typeof(Result<ProfileDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<ProfileDto>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateUserProfileAsync([FromBody] UpdateUserProfileCommand command)
+        => CustomResult(await Mediator.Send(command));
 }

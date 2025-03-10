@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Sociam.Application.DTOs.Users;
+using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Domain.Entities.Identity;
 
 namespace Sociam.Application.Mapping;
@@ -10,5 +11,8 @@ public sealed class UserProfile : Profile
     {
         CreateMap<ApplicationUser, UserProfileDto>()
             .ForMember(dest => dest.JoinedAt, options => options.MapFrom(src => src.CreatedAt));
+
+        CreateMap<UpdateUserProfileCommand, ApplicationUser>();
+
     }
 }
