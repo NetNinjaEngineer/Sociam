@@ -42,7 +42,9 @@ public sealed class TokenService(
             new Claim(CustomClaims.FullName, $"{user.FirstName} {user.LastName}".Trim()),
             new Claim(CustomClaims.DateOfBirth, user.DateOfBirth.ToString("yyyy-MM-dd")),
             new Claim(CustomClaims.Gender, user.Gender.ToString()),
-            new Claim(CustomClaims.ProfilePictureUrl, $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.ProfilePictureUrl}"),
+            new Claim(CustomClaims.ProfilePictureUrl,
+                !string.IsNullOrEmpty(user.ProfilePictureUrl) ?
+                    $"{configuration["BaseApiUrl"]}/Uploads/Images/{user.ProfilePictureUrl}": ""),
             new Claim(CustomClaims.CreatedAt, user.CreatedAt.ToString("O")),
             new Claim(CustomClaims.Bio, user.Bio ?? string.Empty),
             new Claim(CustomClaims.Uid, user.Id),

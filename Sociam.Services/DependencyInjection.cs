@@ -119,6 +119,8 @@ public static class DependencyInjection
 
         services.AddScoped<INotificationService, NotificationService>();
 
+        services.AddScoped<IUserService, UserService>();
+
         return services;
     }
 }
