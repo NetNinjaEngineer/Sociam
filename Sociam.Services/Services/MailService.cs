@@ -78,56 +78,56 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
 
         mimeMessage.To.Add(new MailboxAddress(toEmail, toEmail));
         bodyBuilder.HtmlBody = $@"<html>
-                            <head>
-                              <style>
-                                body {{
-                                  font-family: 'Helvetica Neue', Arial, sans-serif;
-                                  margin: 0;
-                                  padding: 0;
-                                  background-color: #f7f7f7;
-                                }}
-                                .container {{
-                                  max-width: 600px;
-                                  margin: 40px auto;
-                                  padding: 30px;
-                                  background-color: white;
-                                  border-radius: 8px;
-                                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                                }}
-                                h1 {{
-                                  color: #4CAF50;
-                                  font-size: 28px;
-                                  margin-top: 0;
-                                }}
-                                p {{
-                                  font-size: 16px;
-                                  line-height: 1.6;
-                                  color: #333;
-                                  margin-bottom: 20px;
-                                }}
-                                .code {{
-                                  background-color: #f2f2f2;
-                                  padding: 20px;
-                                  font-size: 36px;
-                                  font-weight: bold;
-                                  color: #4CAF50;
-                                  text-align: center;
-                                  border-radius: 6px;
-                                  margin-bottom: 30px;
-                                }}
-                                .footer {{
-                                  font-size: 14px;
-                                  color: #666;
-                                  text-align: center;
-                                }}
-                              </style>
-                            </head>
-                            <body>
-                              <div class=""container"">
-                                {htmlMessage}
-                              </div>
-                            </body>
-                            </html>";
+  <head>
+    <style>
+      body {{
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+      }}
+      .container {{
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }}
+      h1 {{
+        color: #4CAF50;
+        font-size: 28px;
+        margin-top: 0;
+      }}
+      p {{
+        font-size: 16px;
+        line-height: 1.6;
+        color: #333;
+        margin-bottom: 20px;
+      }}
+      .code {{
+        background-color: #f2f2f2;
+        padding: 20px;
+        font-size: 36px;
+        font-weight: bold;
+        color: #4CAF50;
+        text-align: center;
+        border-radius: 6px;
+        margin-bottom: 30px;
+      }}
+      .footer {{
+        font-size: 14px;
+        color: #666;
+        text-align: center;
+      }}
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      {htmlMessage}
+    </div>
+  </body>
+</html>";
 
         mimeMessage.Body = bodyBuilder.ToMessageBody();
 
@@ -161,56 +161,57 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
                 mimeMessage.To.Add(new MailboxAddress(toEmail, toEmail));
 
         bodyBuilder.HtmlBody = $@"<html>
-                            <head>
-                              <style>
-                                body {{
-                                  font-family: 'Helvetica Neue', Arial, sans-serif;
-                                  margin: 0;
-                                  padding: 0;
-                                  background-color: #f7f7f7;
-                                }}
-                                .container {{
-                                  max-width: 600px;
-                                  margin: 40px auto;
-                                  padding: 30px;
-                                  background-color: white;
-                                  border-radius: 8px;
-                                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                                }}
-                                h1 {{
-                                  color: #4CAF50;
-                                  font-size: 28px;
-                                  margin-top: 0;
-                                }}
-                                p {{
-                                  font-size: 16px;
-                                  line-height: 1.6;
-                                  color: #333;
-                                  margin-bottom: 20px;
-                                }}
-                                .code {{
-                                  background-color: #f2f2f2;
-                                  padding: 20px;
-                                  font-size: 36px;
-                                  font-weight: bold;
-                                  color: #4CAF50;
-                                  text-align: center;
-                                  border-radius: 6px;
-                                  margin-bottom: 30px;
-                                }}
-                                .footer {{
-                                  font-size: 14px;
-                                  color: #666;
-                                  text-align: center;
-                                }}
-                              </style>
-                            </head>
-                            <body>
-                              <div class=""container"">
-                                {htmlMessage}
-                              </div>
-                            </body>
-                            </html>"; ;
+  <head>
+    <style>
+      body {{
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+      }}
+      .container {{
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }}
+      h1 {{
+        color: #4CAF50;
+        font-size: 28px;
+        margin-top: 0;
+      }}
+      p {{
+        font-size: 16px;
+        line-height: 1.6;
+        color: #333;
+        margin-bottom: 20px;
+      }}
+      .code {{
+        background-color: #f2f2f2;
+        padding: 20px;
+        font-size: 36px;
+        font-weight: bold;
+        color: #4CAF50;
+        text-align: center;
+        border-radius: 6px;
+        margin-bottom: 30px;
+      }}
+      .footer {{
+        font-size: 14px;
+        color: #666;
+        text-align: center;
+      }}
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      {htmlMessage}
+    </div>
+  </body>
+</html>";
+
 
         if (attachments?.Count > 0)
         {
@@ -235,56 +236,56 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
         mimeMessage.To.Add(new MailboxAddress(toEmail, toEmail));
         mimeMessage.Subject = subject;
         bodyBuilder.HtmlBody = $@"<html>
-                            <head>
-                              <style>
-                                body {{
-                                  font-family: 'Helvetica Neue', Arial, sans-serif;
-                                  margin: 0;
-                                  padding: 0;
-                                  background-color: #f7f7f7;
-                                }}
-                                .container {{
-                                  max-width: 600px;
-                                  margin: 40px auto;
-                                  padding: 30px;
-                                  background-color: white;
-                                  border-radius: 8px;
-                                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                                }}
-                                h1 {{
-                                  color: #4CAF50;
-                                  font-size: 28px;
-                                  margin-top: 0;
-                                }}
-                                p {{
-                                  font-size: 16px;
-                                  line-height: 1.6;
-                                  color: #333;
-                                  margin-bottom: 20px;
-                                }}
-                                .code {{
-                                  background-color: #f2f2f2;
-                                  padding: 20px;
-                                  font-size: 36px;
-                                  font-weight: bold;
-                                  color: #4CAF50;
-                                  text-align: center;
-                                  border-radius: 6px;
-                                  margin-bottom: 30px;
-                                }}
-                                .footer {{
-                                  font-size: 14px;
-                                  color: #666;
-                                  text-align: center;
-                                }}
-                              </style>
-                            </head>
-                            <body>
-                              <div class=""container"">
-                                {htmlMessage}
-                              </div>
-                            </body>
-                            </html>"; ;
+  <head>
+    <style>
+      body {{
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+      }}
+      .container {{
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }}
+      h1 {{
+        color: #4CAF50;
+        font-size: 28px;
+        margin-top: 0;
+      }}
+      p {{
+        font-size: 16px;
+        line-height: 1.6;
+        color: #333;
+        margin-bottom: 20px;
+      }}
+      .code {{
+        background-color: #f2f2f2;
+        padding: 20px;
+        font-size: 36px;
+        font-weight: bold;
+        color: #4CAF50;
+        text-align: center;
+        border-radius: 6px;
+        margin-bottom: 30px;
+      }}
+      .footer {{
+        font-size: 14px;
+        color: #666;
+        text-align: center;
+      }}
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      {htmlMessage}
+    </div>
+  </body>
+</html>";
 
         if (attachments?.Count > 0)
         {

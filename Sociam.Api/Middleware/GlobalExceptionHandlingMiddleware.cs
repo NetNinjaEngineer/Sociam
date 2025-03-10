@@ -25,6 +25,8 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
     {
         var errorResponse = new GlobalErrorResponse();
 
+        var env = httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
+
         switch (error)
         {
             case ValidationException validationException:
@@ -35,7 +37,7 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
                     .Select(e => $"{e.PropertyName}: {e.ErrorMessage}");
                 break;
 
-            case UnauthorizedAccessException unauthorizedException:
+            case UnauthorizedAccessException:
                 httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 errorResponse.Type = "Unauthorized";
                 errorResponse.Message = "You are not authorized to perform this action.";
@@ -57,7 +59,7 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
                 httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
                 errorResponse.Type = "Database_Error";
                 errorResponse.Message = "A database error occurred while processing your request.";
-                errorResponse.Detail = dbUpdateException.InnerException?.Message;
+                errorResponse.Detail = env.IsDevelopment() ? dbUpdateException.InnerException?.Message : null;
 
                 break;
 
@@ -65,14 +67,14 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
                 httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 errorResponse.Type = "Google_Authentication_Error";
                 errorResponse.Message = "Invalid jwt";
-                errorResponse.Detail = invalidJwtException.Message;
+                errorResponse.Detail = env.IsDevelopment() ? invalidJwtException.Message : null;
                 break;
 
             default:
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 errorResponse.Type = "Internal_Server_Error";
                 errorResponse.Message = "An unexpected error occurred while processing your request.";
-                errorResponse.Detail = error?.Message;
+                errorResponse.Detail = env.IsDevelopment() ? error?.Message : null;
                 break;
         }
         httpContext.Response.ContentType = "application/json";

@@ -33,6 +33,7 @@ public static class DomainErrors
     {
         public const string UserNotExists = "User is not exist.";
         public const string UserUnauthorized = "You are not authenticated";
+        public const string WrongPassword = "Wrong Password !!!";
 
         public const string UnableToCreateAccount =
             "Some errors happened when creating your account, please try again !!";
