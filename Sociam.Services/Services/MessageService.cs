@@ -12,6 +12,7 @@ using Sociam.Application.Features.Conversations.Queries.GetUserConversation;
 using Sociam.Application.Features.Messages.Commands.DeleteMessageInConversation;
 using Sociam.Application.Features.Messages.Commands.MarkMessageAsRead;
 using Sociam.Application.Features.Messages.Commands.ReplyToMessage;
+using Sociam.Application.Features.Messages.Commands.ReplyToReplyMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentUser;
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
@@ -51,19 +52,18 @@ public sealed class MessageService(
     public async Task<Result<bool>> DeleteMessageInConversationAsync(DeleteMessageInConversationCommand command)
     {
         var existedConversation = await unitOfWork.ConversationRepository.GetByIdAsync(command.ConversationId);
-        if (existedConversation != null)
-        {
-            var specification = new GetExistedMessageSpecification(command.MessageId, command.ConversationId);
-            var existedMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(specification);
-            if (existedMessage == null)
-                return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Messages.MessageNotFound);
-            unitOfWork.MessageRepository.Delete(existedMessage);
-            await unitOfWork.SaveChangesAsync();
-            return Result<bool>.Success(true, AppConstants.Messages.MessageDeleted);
-        }
+        if (existedConversation == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Conversation.ConversationNotExisted, command.ConversationId.ToString()));
 
-        return Result<bool>.Failure(HttpStatusCode.NotFound,
-            string.Format(DomainErrors.Conversation.ConversationNotExisted, command.ConversationId.ToString()));
+        var specification = new GetExistedMessageSpecification(command.MessageId, command.ConversationId);
+        var existedMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(specification);
+        if (existedMessage == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Messages.MessageNotFound);
+        unitOfWork.MessageRepository.Delete(existedMessage);
+        await unitOfWork.SaveChangesAsync();
+        return Result<bool>.Success(true, AppConstants.Messages.MessageDeleted);
+
     }
 
     public async Task<Result<bool>> EditMessageAsync(Guid messageId, string newContent)
@@ -108,19 +108,10 @@ public sealed class MessageService(
         if (existedMessage == null)
             return Result<MessageDto>.Failure(HttpStatusCode.NotFound);
 
-        if (existedMessage.PrivateConversation is not null)
-        {
-            //var mappedMessage = mapper.Map<MessageDto>(existedMessage);
-            //mappedMessage.SenderName = $"{sender!.FirstName} {sender.LastName}";
-            //mappedMessage.ReceiverName = $"{receiver!.FirstName} {receiver.LastName}";
+        var mappedMessage = MessageDto.FromEntity(existedMessage);
 
-            var mappedMessage = MessageDto.FromEntity(existedMessage);
+        return Result<MessageDto>.Success(mappedMessage);
 
-            return Result<MessageDto>.Success(mappedMessage);
-
-        }
-
-        return Result<MessageDto>.Failure(HttpStatusCode.NotFound, "There is no conversation existed.");
     }
 
     public async Task<Result<IEnumerable<MessageDto>>> GetMessagesByDateRangeAsync(GetMessagesByDateRangeQuery query)
@@ -167,16 +158,15 @@ public sealed class MessageService(
     public async Task<Result<bool>> MarkMessageAsReadAsync(MarkMessageAsReadCommand command)
     {
         var existedMessage = await unitOfWork.MessageRepository.GetByIdAsync(command.MessageId);
-        if (existedMessage is not null)
-        {
-            existedMessage.MessageStatus = MessageStatus.Read;
-            existedMessage.ReadedAt = DateTimeOffset.UtcNow;
-            unitOfWork.MessageRepository.Update(existedMessage);
-            await unitOfWork.SaveChangesAsync();
-            return Result<bool>.Success(true, successMessage: AppConstants.Messages.MessageStatusUpdated);
-        }
+        if (existedMessage is null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Messages.MessageNotFound);
 
-        return Result<bool>.Failure(HttpStatusCode.NotFound, DomainErrors.Messages.MessageNotFound);
+        existedMessage.MessageStatus = MessageStatus.Read;
+        existedMessage.ReadedAt = DateTimeOffset.UtcNow;
+        unitOfWork.MessageRepository.Update(existedMessage);
+        await unitOfWork.SaveChangesAsync();
+        return Result<bool>.Success(true, successMessage: AppConstants.Messages.MessageStatusUpdated);
+
     }
 
     public async Task<Result<MessageReplyDto>> ReplyToPrivateMessageAsync(ReplyToMessageCommand command)
@@ -206,14 +196,101 @@ public sealed class MessageService(
 
         await unitOfWork.SaveChangesAsync();
 
-        await hubContext.Clients.User(existedMessage.PrivateConversation!.ReceiverUserId)
-                .ReceiveReplyToMessage(existedMessage.PrivateConversationId!.Value, existedMessage.Id, reply.Id);
+        switch (existedMessage.Conversation)
+        {
+            case PrivateConversation privateConversation:
+                var receiverUserId = privateConversation.ReceiverUserId;
+                if (receiverUserId != null && receiverUserId != currentUser.Id)
+                    await hubContext.Clients.User(receiverUserId)
+                        .ReceiveReplyToMessage(
+                            existedMessage.ConversationId,
+                            existedMessage.Id,
+                            reply.Id);
+                break;
+
+            case GroupConversation groupConversation:
+                var groupMemberIds = await unitOfWork.GroupMemberRepository.GetGroupMembersIdsAsync(groupConversation.GroupId, currentUser.Id);
+                if (groupMemberIds.Any())
+                    await hubContext.Clients.Users(groupMemberIds)
+                        .ReceiveReplyToMessage(
+                            existedMessage.ConversationId,
+                            existedMessage.Id,
+                            reply.Id);
+                break;
+        }
 
         var specification = new GetSpecificReplyWithRelatedEntitiesSpecification(reply.Id);
         var replyWithRelatedEntities = await unitOfWork.Repository<MessageReply>()!.GetBySpecificationAsync(specification);
 
         var mappedReply = MessageReplyDto.FromEntity(replyWithRelatedEntities!);
 
+        return Result<MessageReplyDto>.Success(mappedReply);
+    }
+
+    public async Task<Result<MessageReplyDto>> ReplyToReplyMessageAsync(ReplyToReplyMessageCommand command)
+    {
+        var replyToReplyValidator = new ReplyToReplyMessageCommandValidator();
+        await replyToReplyValidator.ValidateAndThrowAsync(command);
+
+        // Check if the parent reply exists
+        var parentSpec = new GetSpecificReplyWithRelatedEntitiesSpecification(command.ParentReplyId);
+        var parentReply = await unitOfWork.Repository<MessageReply>()?.GetBySpecificationAsync(parentSpec)!;
+
+        if (parentReply == null)
+            return Result<MessageReplyDto>.Failure(HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Replies.ReplyNotFound, command.ParentReplyId));
+
+        var reply = new MessageReply
+        {
+            Id = Guid.NewGuid(),
+            Content = command.Content,
+            OriginalMessageId = parentReply.OriginalMessageId,
+            ParentReplyId = command.ParentReplyId,
+            ReplyStatus = ReplyStatus.Active,
+            RepliedById = currentUser.Id,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        unitOfWork.Repository<MessageReply>()?.Create(reply);
+
+        await unitOfWork.SaveChangesAsync();
+
+        var originalMessageSpec = new GetExistedMessageSpecification(parentReply.OriginalMessageId);
+        var originalMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(originalMessageSpec);
+
+        if (originalMessage != null)
+        {
+            switch (originalMessage.Conversation)
+            {
+                case PrivateConversation privateConversation:
+                    var receiverUserId = privateConversation.ReceiverUserId;
+                    if (receiverUserId != null && receiverUserId != currentUser.Id)
+                        await hubContext.Clients.User(receiverUserId)
+                            .ReceiveReplyToMessage(
+                                originalMessage.ConversationId,
+                                originalMessage.Id,
+                                reply.Id);
+                    break;
+
+                case GroupConversation groupConversation:
+                    // Get all group members except the current user
+                    var groupMemberIds = await unitOfWork.GroupMemberRepository.GetGroupMembersIdsAsync(groupConversation.GroupId, currentUser.Id);
+
+                    if (groupMemberIds.Any())
+                        await hubContext.Clients.Users(groupMemberIds)
+                            .ReceiveReplyToMessage(
+                                originalMessage.ConversationId,
+                                originalMessage.Id,
+                                reply.Id);
+                    break;
+            }
+        }
+
+        var replySpec = new GetSpecificReplyWithRelatedEntitiesSpecification(reply.Id);
+        var replyWithRelatedEntities = await unitOfWork.Repository<MessageReply>()!
+            .GetBySpecificationAsync(replySpec);
+
+        var mappedReply = MessageReplyDto.FromEntity(replyWithRelatedEntities!);
         return Result<MessageReplyDto>.Success(mappedReply);
     }
 
@@ -253,9 +330,8 @@ public sealed class MessageService(
             Id = Guid.NewGuid(),
             Content = command.Content,
             MessageStatus = MessageStatus.Sent,
-            PrivateConversationId = conversation.Id,
-            SenderId = command.SenderId,
-            ReceiverId = command.ReceiverId
+            ConversationId = conversation.Id,
+            SenderId = command.SenderId
         };
 
 
@@ -287,11 +363,12 @@ public sealed class MessageService(
 
         var messageResult = MessageDto.Create(
             string.Concat(sender.FirstName, " ", sender.LastName),
-            string.Concat(receiver.FirstName, " ", receiver.LastName),
+            sender.Id,
+            message.ConversationId,
             MessageStatus.Sent,
             message.Content,
-            message.Attachments?.Count > 0 ? mapper.Map<List<AttachmentDto>>(message.Attachments) : [],
-            message.CreatedAt, null);
+            message.Attachments.Count > 0 ? mapper.Map<List<AttachmentDto>>(message.Attachments) : [],
+            null);
 
         await hubContext.Clients.User(command.ReceiverId).ReceivePrivateMessage(messageResult);
 
@@ -325,9 +402,8 @@ public sealed class MessageService(
             Id = Guid.NewGuid(),
             Content = command.Content,
             MessageStatus = MessageStatus.Sent,
-            PrivateConversationId = conversation.Id,
-            SenderId = currentUser.Id,
-            ReceiverId = command.ReceiverId
+            ConversationId = conversation.Id,
+            SenderId = currentUser.Id
         };
 
         if (command.Attachments?.Count() > 0)
@@ -358,11 +434,12 @@ public sealed class MessageService(
 
         var messageResult = MessageDto.Create(
             string.Concat(sender.FirstName, " ", sender.LastName),
-            string.Concat(receiver.FirstName, " ", receiver.LastName),
+            message.SenderId,
+            message.ConversationId,
             MessageStatus.Sent,
             message.Content,
-            message.Attachments?.Count > 0 ? mapper.Map<List<AttachmentDto>>(message.Attachments) : [],
-            message.CreatedAt, null);
+            message.Attachments.Count > 0 ? mapper.Map<List<AttachmentDto>>(message.Attachments) : [],
+            null);
 
         await hubContext.Clients.User(command.ReceiverId).ReceivePrivateMessage(messageResult);
 

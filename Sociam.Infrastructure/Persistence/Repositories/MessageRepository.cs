@@ -9,12 +9,35 @@ public sealed class MessageRepository(ApplicationDbContext context) :
 {
     public async Task<Conversation?> GetConversationMessagesAsync(Guid conversationId)
     {
-        var conversation = await context.PrivateConversations
-            .Include(conversation => conversation.SenderUser)
-            .Include(conversation => conversation.ReceiverUser)
+        var conversation = await context.Conversations
             .Include(conversation => conversation.Messages)
             .ThenInclude(message => message.Attachments)
+            .Include(c => c.Messages).ThenInclude(m => m.Reactions)
+            .Include(c => c.Messages).ThenInclude(m => m.Sender)
+            .Include(c => c.Messages).ThenInclude(m => m.Replies)
+            .Include(c => c.Messages).ThenInclude(m => m.Mentions)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
+
+        if (conversation == null)
+            return null;
+
+        switch (conversation)
+        {
+            case PrivateConversation pc:
+                await context.Entry(pc)
+                    .Reference(p => p.SenderUser)
+                    .LoadAsync();
+                await context.Entry(pc)
+                    .Reference(p => p.ReceiverUser)
+                    .LoadAsync();
+                break;
+
+            case GroupConversation gc:
+                await context.Entry(gc)
+                    .Reference(g => g.Group)
+                    .LoadAsync();
+                break;
+        }
 
         return conversation;
     }
@@ -37,17 +60,17 @@ public sealed class MessageRepository(ApplicationDbContext context) :
 
         var messages = await context.Messages
             .AsNoTracking()
-            .Where(message => message.PrivateConversation != null)
             .Include(message => message.Attachments)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.SenderUser)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.ReceiverUser)
+            .Include(message => message.Reactions)
+            .Include(message => message.Mentions)
+            .Include(message => message.Replies)
+            .Include(message => message.Conversation)
             .Where(message =>
                 DateOnly.FromDateTime(message.CreatedAt.Date) >= startDate &&
                 DateOnly.FromDateTime(message.CreatedAt.Date) <= endDate &&
-                (!conversationId.HasValue || message.PrivateConversationId == conversationId))
+                (!conversationId.HasValue || message.ConversationId == conversationId))
             .ToListAsync();
+
 
         return messages;
     }
@@ -59,66 +82,95 @@ public sealed class MessageRepository(ApplicationDbContext context) :
         if (size < 1) size = 10;
         if (size > 50) size = 50;
 
-        var pagedConversationMessages = await context.PrivateConversations
+        var pagedConversationMessages = await context.Conversations
             .Include(
                 c => c.Messages
                 .OrderByDescending(m => m.CreatedAt)
                 .Skip((page - 1) * size)
                 .Take(size))
             .ThenInclude(m => m.Attachments)
-            .Include(c => c.SenderUser)
-            .Include(c => c.ReceiverUser)
+            .Include(c => c.Messages).ThenInclude(m => m.Reactions)
+            .Include(c => c.Messages).ThenInclude(m => m.Sender)
+            .Include(c => c.Messages).ThenInclude(m => m.Replies)
+            .Include(c => c.Messages).ThenInclude(m => m.Mentions)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
+
+        if (pagedConversationMessages == null)
+            return null;
+
+        switch (pagedConversationMessages)
+        {
+            case PrivateConversation pc:
+                await context.Entry(pc)
+                    .Reference(p => p.SenderUser)
+                    .LoadAsync();
+                await context.Entry(pc)
+                    .Reference(p => p.ReceiverUser)
+                    .LoadAsync();
+                break;
+
+            case GroupConversation gc:
+                await context.Entry(gc)
+                    .Reference(g => g.Group)
+                    .LoadAsync();
+                break;
+        }
 
         return pagedConversationMessages;
     }
 
-    public async Task<IEnumerable<Message>> GetUnreadMessagesAsync(string userId)
+    public async Task<IEnumerable<Message>> GetUnreadMessagesAsync(string userId, Guid? groupId = null)
     {
         var unreadMessages = await context.Messages
             .AsNoTracking()
-            .Join(context.PrivateConversations,
-                message => message.PrivateConversationId,
-                conversation => conversation.Id,
-                (message, conversation) => new { Message = message, Conversation = conversation })
-            .Join(context.Users,
-                conversationMessage => conversationMessage.Conversation.SenderUserId,
-                user => user.Id,
-                (conversationMessage, user) => new { User = user, ConvMessage = conversationMessage })
-            .Where(message =>
-                message.ConvMessage.Conversation.SenderUserId == userId || message.ConvMessage.Conversation.ReceiverUserId == userId)
-            .Where(message => message.ConvMessage.Message.MessageStatus == MessageStatus.Delivered)
+            .Include(message => message.Reactions)
+            .Include(message => message.Mentions)
+            .Include(message => message.Replies)
+            .Include(m => m.Conversation)
+            .Include(m => m.Sender)
+            .Include(m => m.Attachments)
+            .Where(m =>
+                m.MessageStatus == MessageStatus.Sent &&
+                m.MessageStatus != MessageStatus.Failed &&
+                m.SenderId != userId &&
+                (
+                    (m.Conversation is PrivateConversation &&
+                     ((PrivateConversation)m.Conversation).ReceiverUserId == userId &&
+                     groupId == null)
+                    ||
+                    (m.Conversation is GroupConversation &&
+                     context.GroupMembers.Any(gm =>
+                         gm.GroupId == ((GroupConversation)m.Conversation).GroupId &&
+                         gm.UserId == userId) &&
+                     (groupId == null || ((GroupConversation)m.Conversation).GroupId == groupId))
+                ))
             .ToListAsync();
 
-        var messages = await context.Messages
-            .AsNoTracking()
-            .Where(m => m.PrivateConversation != null)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.SenderUser)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.ReceiverUser)
-            .Include(message => message.Attachments)
-            .Where(message =>
-                message.MessageStatus == MessageStatus.Sent &&
-                message.PrivateConversation!.ReceiverUserId == userId)
-            .ToListAsync();
-
-        return messages;
+        return unreadMessages;
     }
 
-    public async Task<int> GetUnreadMessagesCountAsync(string userId)
+    public async Task<int> GetUnreadMessagesCountAsync(string userId, Guid? groupId = null)
     {
         return await context.Messages
             .AsNoTracking()
-            .Where(message => message.PrivateConversation != null)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.SenderUser)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.ReceiverUser)
-            .Where(message =>
-                message.PrivateConversation!.ReceiverUserId == userId)
-            .Where(message =>
-                message.MessageStatus == MessageStatus.Sent)
+            .Include(message => message.Reactions)
+            .Include(message => message.Mentions)
+            .Include(message => message.Replies)
+            .Where(m =>
+                m.MessageStatus == MessageStatus.Sent &&
+                m.MessageStatus != MessageStatus.Failed &&
+                m.SenderId != userId &&
+                (
+                    (m.Conversation is PrivateConversation &&
+                     ((PrivateConversation)m.Conversation).ReceiverUserId == userId &&
+                     groupId == null)
+                    ||
+                    (m.Conversation is GroupConversation &&
+                     context.GroupMembers.Any(gm =>
+                         gm.GroupId == ((GroupConversation)m.Conversation).GroupId &&
+                         gm.UserId == userId) &&
+                     (groupId == null || ((GroupConversation)m.Conversation).GroupId == groupId))
+                ))
             .CountAsync();
     }
 
@@ -126,15 +178,15 @@ public sealed class MessageRepository(ApplicationDbContext context) :
         string searchTerm, Guid? conversationId = null)
         => await context.Messages
             .AsNoTracking()
-            .Where(message => message.PrivateConversation != null)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.SenderUser)
-            .Include(message => message.PrivateConversation)
-            .ThenInclude(conversation => conversation!.ReceiverUser)
-            .Include(message => message.Attachments)
-            .Where(message =>
-                !string.IsNullOrEmpty(message.Content) &&
-                message.Content!.ToLower().Contains(searchTerm.ToLower()) &&
-                (!conversationId.HasValue || message.PrivateConversationId == conversationId))
+            .Include(message => message.Reactions)
+            .Include(message => message.Mentions)
+            .Include(message => message.Replies)
+            .Include(m => m.Conversation)
+            .ThenInclude(c => c as PrivateConversation)
+            .Include(m => m.Attachments)
+            .Where(m => !string.IsNullOrEmpty(m.Content) &&
+                        m.Content.ToLower().Contains(searchTerm.ToLower()) &&
+                        (conversationId == null || m.ConversationId == conversationId) &&
+                        (m.Conversation is PrivateConversation || m.Conversation is GroupConversation))
             .ToListAsync();
 }

@@ -7,6 +7,7 @@ using Sociam.Application.Features.Conversations.Queries.GetUserConversation;
 using Sociam.Application.Features.Messages.Commands.DeleteMessageInConversation;
 using Sociam.Application.Features.Messages.Commands.MarkMessageAsRead;
 using Sociam.Application.Features.Messages.Commands.ReplyToMessage;
+using Sociam.Application.Features.Messages.Commands.ReplyToReplyMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentUser;
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
@@ -38,6 +39,7 @@ public interface IMessageService
     Task<Result<IEnumerable<MessageDto>>> GetMessagesByDateRangeAsync(GetMessagesByDateRangeQuery query);
 
     Task<Result<MessageReplyDto>> ReplyToPrivateMessageAsync(ReplyToMessageCommand command);
+    Task<Result<MessageReplyDto>> ReplyToReplyMessageAsync(ReplyToReplyMessageCommand command);
 
 
     //// Message Interaction Features

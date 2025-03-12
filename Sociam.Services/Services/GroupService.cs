@@ -312,7 +312,6 @@ public sealed class GroupService(
                 string.Format(DomainErrors.Group.GroupNotExisted, command.GroupId));
 
         var existedGroupConversation = new ExistedGroupConversationSpecification(
-            groupId: command.GroupId,
             groupConversationId: command.GroupConversationId);
 
         var existedConversation = await unitOfWork.Repository<GroupConversation>()?
@@ -330,10 +329,9 @@ public sealed class GroupService(
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            GroupConversationId = command.GroupConversationId,
+            ConversationId = command.GroupConversationId,
             Content = command.Content,
             SenderId = currentUser.Id,
-            ReceiverId = existedGroup.CreatedByUserId,
             MessageStatus = MessageStatus.Sent
         };
 

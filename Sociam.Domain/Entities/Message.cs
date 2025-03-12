@@ -6,10 +6,8 @@ namespace Sociam.Domain.Entities;
 
 public sealed class Message : BaseEntity
 {
-    public Guid? PrivateConversationId { get; set; }
-    public PrivateConversation? PrivateConversation { get; set; }
-    public Guid? GroupConversationId { get; set; }
-    public GroupConversation? GroupConversation { get; set; }
+    public Guid ConversationId { get; set; }
+    public Conversation Conversation { get; set; } = null!;
     public string? Content { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
@@ -23,6 +21,4 @@ public sealed class Message : BaseEntity
     public ICollection<MessageReply> Replies { get; set; } = [];
     public string SenderId { get; set; } = null!;
     public ApplicationUser Sender { get; set; } = null!;
-    public string ReceiverId { get; set; } = null!;
-    public ApplicationUser Receiver { get; set; } = null!;
 }

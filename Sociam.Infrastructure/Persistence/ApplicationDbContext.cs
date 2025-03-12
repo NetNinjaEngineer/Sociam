@@ -10,8 +10,7 @@ public sealed class ApplicationDbContext(
 {
     public DbSet<Friendship> Friendships { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
-    public DbSet<PrivateConversation> PrivateConversations { get; set; }
-    public DbSet<GroupConversation> GroupConversations { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<GroupMember> GroupMembers { get; set; }
     public DbSet<Message> Messages { get; set; }

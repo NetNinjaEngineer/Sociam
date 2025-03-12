@@ -29,7 +29,7 @@ public class ConversationsController(IMediator mediator) : ApiBaseController(med
         => CustomResult(await Mediator.Send(command));
 
 
-    [HttpGet("private/messages")]
+    [HttpGet("messages")]
     [ProducesResponseType(typeof(Result<ConversationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<ConversationDto>>> GetConversationMessagesAsync([FromQuery] Guid conversationId)
@@ -38,7 +38,7 @@ public class ConversationsController(IMediator mediator) : ApiBaseController(med
         return CustomResult(await Mediator.Send(conversationQuery));
     }
 
-    [HttpGet("private/messages/paged")]
+    [HttpGet("messages/paged")]
     [ProducesResponseType(typeof(Result<ConversationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<ConversationDto>>> GetPagedConversationMessagesAsync(
@@ -57,7 +57,7 @@ public class ConversationsController(IMediator mediator) : ApiBaseController(med
     public async Task<ActionResult<Result<ConversationDto>>> GetConversationBetweenAsync(
         [FromQuery] GetConversationQuery query) => CustomResult(await Mediator.Send(query));
 
-    [HttpDelete]
+    [HttpDelete("private")]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<bool>>> DeleteConversationAsync(

@@ -18,10 +18,5 @@ public sealed class PrivateConversationConfiguration : IEntityTypeConfiguration<
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(pc => new { pc.SenderUserId, pc.ReceiverUserId }).IsUnique();
-
-        builder.HasMany(pc => pc.Messages)
-           .WithOne(m => m.PrivateConversation)
-           .HasForeignKey(m => m.PrivateConversationId)
-           .OnDelete(DeleteBehavior.Restrict);
     }
 }

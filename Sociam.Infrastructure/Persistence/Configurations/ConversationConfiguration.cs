@@ -10,6 +10,8 @@ internal sealed class ConversationConfiguration : IEntityTypeConfiguration<Conve
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id).ValueGeneratedNever();
 
-        builder.UseTpcMappingStrategy();
+        builder.HasDiscriminator<string>("ConversationType")
+            .HasValue<PrivateConversation>("Private")
+            .HasValue<GroupConversation>("Group");
     }
 }

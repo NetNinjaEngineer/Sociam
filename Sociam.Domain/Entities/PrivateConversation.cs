@@ -4,10 +4,8 @@ namespace Sociam.Domain.Entities;
 
 public sealed class PrivateConversation : Conversation
 {
-    public string SenderUserId { get; set; } = null!;
-    public string ReceiverUserId { get; set; } = null!;
+    public string SenderUserId { get; set; }
+    public string ReceiverUserId { get; set; }
     public ApplicationUser SenderUser { get; set; } = null!;
     public ApplicationUser ReceiverUser { get; set; } = null!;
-    public ICollection<Message> Messages { get; set; } = [];
-
 }

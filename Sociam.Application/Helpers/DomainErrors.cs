@@ -4,6 +4,10 @@ public static class DomainErrors
     public const string FileUploadFailed = "Unable to upload the media.";
     public const string FailedToDeleteMedia = "Failed to delete the media, try again later !!!";
 
+    public static class Replies
+    {
+        public const string ReplyNotFound = "Reply '{0}' not found.";
+    }
     public static class Following
     {
         public const string CanNotFollowYourself = "You can not follow yourself";

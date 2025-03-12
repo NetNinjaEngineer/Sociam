@@ -11,6 +11,7 @@ using Sociam.Application.Features.Messages.Commands.DeleteMessageInConversation;
 using Sociam.Application.Features.Messages.Commands.EditMessage;
 using Sociam.Application.Features.Messages.Commands.MarkMessageAsRead;
 using Sociam.Application.Features.Messages.Commands.ReplyToMessage;
+using Sociam.Application.Features.Messages.Commands.ReplyToReplyMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessage;
 using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentUser;
 using Sociam.Application.Features.Messages.Queries.GetAll;
@@ -52,7 +53,7 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
         return CustomResult(await Mediator.Send(command));
     }
 
-    [HttpGet("private/details")]
+    [HttpGet("details")]
     [ProducesResponseType(typeof(Result<MessageDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<MessageDto>>> GetMessageByIdAsync([FromQuery] Guid messageId)
@@ -61,7 +62,7 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
         return CustomResult(await Mediator.Send(getMessageQuery));
     }
 
-    [HttpPut("private/mark-as-read")]
+    [HttpPut("mark-as-read")]
     public async Task<ActionResult<Result<bool>>> MarkMessageAsReadAsync(
         [FromQuery] MarkMessageAsReadCommand command)
         => CustomResult(await Mediator.Send(command));
@@ -77,22 +78,22 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
         [FromQuery] Guid messageId)
         => CustomResult(await Mediator.Send(new DeleteMessageCommand { MessageId = messageId }));
 
-    [HttpGet("private/unread-count")]
+    [HttpGet("unread-count")]
     [ProducesResponseType(typeof(Result<int>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<int>>> GetUnreadMessagesCountAsync([FromQuery] GetUnreadMessagesCountQuery query)
         => CustomResult(await Mediator.Send(query));
 
-    [HttpGet("private/by-date-range")]
+    [HttpGet("by-date-range")]
     [ProducesResponseType(typeof(Result<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<MessageDto>>>> GetMessagesByDateRangeAsync([FromQuery] GetMessagesByDateRangeQuery query)
         => CustomResult(await Mediator.Send(query));
 
-    [HttpGet("private/unread-messages")]
+    [HttpGet("unread-messages")]
     [ProducesResponseType(typeof(Result<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<MessageDto>>>> GetUnreadMessagesAsync([FromQuery] GetUnreadMessagesQuery query)
         => CustomResult(await Mediator.Send(query));
 
-    [HttpGet("private/search")]
+    [HttpGet("search")]
     [ProducesResponseType(typeof(Result<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<IEnumerable<MessageDto>>>> SearchMessagesAsync([FromQuery] SearchMessagesQuery query)
         => CustomResult(await Mediator.Send(query));
@@ -106,14 +107,23 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
     public async Task<IActionResult> GetAllMessagesAsync([FromQuery] GetAllQuery query)
         => CustomResult(await Mediator.Send(query));
 
-    [HttpPost("private/{messageId}/reply")]
+    [HttpPost("{messageId}/reply")]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToPrivateMessageAsync(
+    public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToMessageAsync(
         [FromRoute] Guid messageId,
         [FromQuery] string content)
     {
         var command = new ReplyToMessageCommand { MessageId = messageId, Content = content };
+        return CustomResult(await Mediator.Send(command));
+    }
+
+    [HttpPost("reply-to-reply-message")]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToReplyMessageAsync(
+        [FromBody] ReplyToReplyMessageCommand command)
+    {
         return CustomResult(await Mediator.Send(command));
     }
 }

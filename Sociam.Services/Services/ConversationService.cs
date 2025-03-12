@@ -37,14 +37,12 @@ public sealed class ConversationService(
     public async Task<Result<bool>> DeleteConversationAsync(DeleteConversationCommand deleteConversationCommand)
     {
         var existedConversation = await unitOfWork.ConversationRepository.GetByIdAsync(deleteConversationCommand.ConversationId);
-        if (existedConversation is not null)
-        {
-            unitOfWork.ConversationRepository.Delete(existedConversation);
-            await unitOfWork.SaveChangesAsync();
-            return Result<bool>.Success(true, AppConstants.Conversation.ConversationDeleted);
-        }
+        if (existedConversation is null) return Result<bool>.Failure(HttpStatusCode.NotFound);
 
-        return Result<bool>.Failure(HttpStatusCode.NotFound);
+        unitOfWork.ConversationRepository.Delete(existedConversation);
+        await unitOfWork.SaveChangesAsync();
+        return Result<bool>.Success(true, AppConstants.Conversation.ConversationDeleted);
+
     }
 
     public async Task<Result<ConversationDto>> GetConversationBetweenAsync(

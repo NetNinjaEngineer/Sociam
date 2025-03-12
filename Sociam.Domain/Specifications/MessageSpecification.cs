@@ -6,6 +6,6 @@ public sealed class MessageSpecification : BaseSpecification<Message>
     public MessageSpecification()
     {
         AddIncludes(m => m.Attachments);
-        AddIncludes(m => m.PrivateConversation!);
+        AddIncludes(m => m.Conversation);
     }
 }
