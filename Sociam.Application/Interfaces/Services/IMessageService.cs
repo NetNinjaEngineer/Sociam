@@ -13,6 +13,7 @@ using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentU
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessages;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessagesCount;
+using Sociam.Application.Features.Messages.Queries.LoadSubReplies;
 using Sociam.Application.Features.Messages.Queries.SearchMessages;
 
 namespace Sociam.Application.Interfaces.Services;
@@ -40,6 +41,7 @@ public interface IMessageService
 
     Task<Result<MessageReplyDto>> ReplyToPrivateMessageAsync(ReplyToMessageCommand command);
     Task<Result<MessageReplyDto>> ReplyToReplyMessageAsync(ReplyToReplyMessageCommand command);
+    Task<Result<IReadOnlyList<MessageReplyDto>>> RetrieveChildRepliesAsync(LoadSubRepliesQuery query);
 
 
     //// Message Interaction Features

@@ -18,6 +18,7 @@ using Sociam.Application.Features.Messages.Commands.SendPrivateMessageByCurrentU
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessages;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessagesCount;
+using Sociam.Application.Features.Messages.Queries.LoadSubReplies;
 using Sociam.Application.Features.Messages.Queries.SearchMessages;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -31,6 +32,8 @@ using Sociam.Domain.Specifications;
 using System.Net;
 
 namespace Sociam.Services.Services;
+
+// TODO: Needs to authorization logic
 public sealed class MessageService(
     UserManager<ApplicationUser> userManager,
     IUnitOfWork unitOfWork,
@@ -232,6 +235,10 @@ public sealed class MessageService(
         var replyToReplyValidator = new ReplyToReplyMessageCommandValidator();
         await replyToReplyValidator.ValidateAndThrowAsync(command);
 
+        // check is the original message is existed or not
+        var originalMessageSpec = new GetExistedMessageSpecification(command.MessageId);
+        var originalMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(originalMessageSpec);
+
         // Check if the parent reply exists
         var parentSpec = new GetSpecificReplyWithRelatedEntitiesSpecification(command.ParentReplyId);
         var parentReply = await unitOfWork.Repository<MessageReply>()?.GetBySpecificationAsync(parentSpec)!;
@@ -254,9 +261,6 @@ public sealed class MessageService(
         unitOfWork.Repository<MessageReply>()?.Create(reply);
 
         await unitOfWork.SaveChangesAsync();
-
-        var originalMessageSpec = new GetExistedMessageSpecification(parentReply.OriginalMessageId);
-        var originalMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(originalMessageSpec);
 
         if (originalMessage != null)
         {
@@ -292,6 +296,32 @@ public sealed class MessageService(
 
         var mappedReply = MessageReplyDto.FromEntity(replyWithRelatedEntities!);
         return Result<MessageReplyDto>.Success(mappedReply);
+    }
+
+    public async Task<Result<IReadOnlyList<MessageReplyDto>>> RetrieveChildRepliesAsync(LoadSubRepliesQuery query)
+    {
+        // check is the original message is existed or not
+        var originalMessageSpec = new GetExistedMessageSpecification(query.MessageId);
+        var originalMessage = await unitOfWork.MessageRepository.GetBySpecificationAsync(originalMessageSpec);
+
+        if (originalMessage == null)
+            return Result<IReadOnlyList<MessageReplyDto>>.Failure(HttpStatusCode.NotFound);
+
+        // Check if the parent reply exists
+        var parentSpec = new GetSpecificReplyWithRelatedEntitiesSpecification(query.ParentReplyId);
+        var parentReply = await unitOfWork.Repository<MessageReply>()?.GetBySpecificationAsync(parentSpec)!;
+
+        if (parentReply == null)
+            return Result<IReadOnlyList<MessageReplyDto>>.Failure(HttpStatusCode.NotFound,
+                string.Format(DomainErrors.Replies.ReplyNotFound, query.ParentReplyId));
+
+        var childReplySpec = new GetChildRepliesSpecification(query.ParentReplyId);
+
+        var replies = await unitOfWork.Repository<MessageReply>()?.GetAllWithSpecificationAsync(childReplySpec)!;
+
+        var mappedReplies = mapper.Map<IReadOnlyList<MessageReplyDto>>(replies);
+
+        return Result<IReadOnlyList<MessageReplyDto>>.Success(mappedReplies);
     }
 
     public async Task<Result<IEnumerable<MessageDto>>> SearchMessagesAsync(SearchMessagesQuery searchMessagesQuery)

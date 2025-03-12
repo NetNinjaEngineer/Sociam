@@ -19,6 +19,7 @@ using Sociam.Application.Features.Messages.Queries.GetMessageById;
 using Sociam.Application.Features.Messages.Queries.GetMessagesByDateRange;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessages;
 using Sociam.Application.Features.Messages.Queries.GetUnreadMessagesCount;
+using Sociam.Application.Features.Messages.Queries.LoadSubReplies;
 using Sociam.Application.Features.Messages.Queries.SearchMessages;
 using Sociam.Application.Helpers;
 
@@ -107,7 +108,7 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
     public async Task<IActionResult> GetAllMessagesAsync([FromQuery] GetAllQuery query)
         => CustomResult(await Mediator.Send(query));
 
-    [HttpPost("{messageId}/reply")]
+    [HttpPost("{messageId:guid}/reply")]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToMessageAsync(
@@ -118,12 +119,23 @@ public class MessagesController(IMediator mediator) : ApiBaseController(mediator
         return CustomResult(await Mediator.Send(command));
     }
 
-    [HttpPost("reply-to-reply-message")]
+    [HttpPost("{messageId:guid}/{parentReplyId:guid}")]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<MessageReplyDto>>> ReplyToReplyMessageAsync(
-        [FromBody] ReplyToReplyMessageCommand command)
+        [FromRoute] Guid messageId, [FromRoute] Guid parentReplyId, [FromQuery] string content)
     {
+        var command = new ReplyToReplyMessageCommand { Content = content, ParentReplyId = parentReplyId, MessageId = messageId };
+        return CustomResult(await Mediator.Send(command));
+    }
+
+    [HttpGet("{messageId:guid}/{parentReplyId:guid}/child-replies")]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<MessageReplyDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<IReadOnlyList<MessageReplyDto>>>> GetChildMessageRepliesAsync(
+        [FromRoute] Guid messageId, [FromRoute] Guid parentReplyId)
+    {
+        var command = new LoadSubRepliesQuery { ParentReplyId = parentReplyId, MessageId = messageId };
         return CustomResult(await Mediator.Send(command));
     }
 }
