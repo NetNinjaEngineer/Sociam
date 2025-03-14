@@ -175,6 +175,50 @@ Stay in the loop with what’s happening:
   `PUT /api/v1/notifications/{id}/mark-as-read`  
   Mark a single notification (`id`) as read when you’re ready.
 
+### Role Management
+
+Need to manage user roles and permissions? Here’s how admins can handle it:
+
+* **Get All Roles**  
+  `GET /api/v1/roles/getAllRoles`  
+  See a list of all roles in the system.
+
+* **Get Claims for a Role**  
+   `GET /api/v1/roles/getRoleClaims`  
+  Check the permissions (claims) tied to a specific role.
+
+* **Get Claims for a User**  
+  `GET /api/v1/roles/getUserClaims`  
+  See the permissions (claims) assigned to a specific user.
+
+* **Get Roles for a User**  
+  `GET /api/v1/roles/getUserRoles`  
+  Find out which roles a user has.
+
+* **Add a Claim to a Role**  
+  `POST /api/v1/roles/addClaimToRole`  
+  Add a new permission (claim) to a role.
+
+* **Assign a Claim to a User**  
+  `POST /api/v1/roles/assignClaimToUser`  
+  Give a specific permission (claim) to a user.
+
+* **Assign a Role to a User**  
+  `POST /api/v1/roles/assignRoleToUser`  
+  Assign a role to a user to update their access level.
+
+* **Create a New Role**  
+  `POST /api/v1/roles/createRole`  
+  Create a new role for your platform.
+
+* **Delete a Role**  
+  `POST /api/v1/roles/deleteRole`  
+  Remove a role that’s no longer needed.
+
+* **Edit a Role**  
+  `POST /api/v1/roles/editRole`  
+  Update the details of an existing role.
+
 ## Installation & Setup
 
 1. Clone the repository:
