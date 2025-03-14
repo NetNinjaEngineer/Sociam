@@ -10,6 +10,7 @@ using Sociam.Application.Interfaces.Services.Models;
 using System.Net;
 
 namespace Sociam.Services.Services;
+
 public sealed class FileService : IFileService
 {
     private readonly IHttpContextAccessor _contextAccessor;
@@ -25,19 +26,18 @@ public sealed class FileService : IFileService
         _configuration = configuration;
         var cloudinarySettings = cloudinaryOptions.Value;
 
-        var account = new Account(
-            cloudinarySettings.CloudName,
-            cloudinarySettings.ApiKey,
-            cloudinarySettings.ApiSecret);
-
-        _cloudinary = new Cloudinary(account);
-        _cloudinary.Api.Secure = true;
-        _cloudinary.Api.Timeout = 120000;
-
+        _cloudinary = new Cloudinary(
+            new Account(
+                cloudinarySettings.CloudName,
+                cloudinarySettings.ApiKey,
+                cloudinarySettings.ApiSecret))
+        {
+            Api = { Secure = true, Timeout = 300000 }
+        };
     }
 
-    public async Task<(bool uploaded, string? fileName)> UploadFileAsync(
-        IFormFile? file, string folderPath)
+
+    public async Task<(bool uploaded, string? fileName)> UploadFileAsync(IFormFile? file, string folderPath)
     {
         if (file is null || file.Length == 0)
             return (false, null);
@@ -57,8 +57,7 @@ public sealed class FileService : IFileService
         return (true, uniqueFileName);
     }
 
-    public async Task<IEnumerable<FileUploadResult>> UploadFilesParallelAsync(
-      IEnumerable<IFormFile> files, string? folderName = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FileUploadResult>> UploadFilesParallelAsync(IEnumerable<IFormFile> files, string? folderName = null, CancellationToken cancellationToken = default)
     {
         var formFiles = files.ToList();
 
@@ -162,132 +161,64 @@ public sealed class FileService : IFileService
 
     public async Task<Result<CloudinaryUploadResult>> CloudinaryUploadSingleFileAsync(IFormFile file)
     {
-        var isValid = ValidateFile(file);
+        if (file.Length == 0)
+            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Invalid or empty file.");
 
-        if (!isValid)
-            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Invalid file format.");
-
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        var fileType = GetFileType(fileExtension);
-
-        using var stream = file.OpenReadStream();
-        const int chunkSize = 20 * 1024 * 1024;
-        UploadResult uploadResult;
-
-        switch (fileType)
+        var fileType = GetFileType(Path.GetExtension(file.FileName).ToLower());
+        var folder = fileType switch
         {
-            case FileType.Image:
-                var imageParams = new ImageUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Folder = "images",
-                    UseFilename = true,
-                    UniqueFilename = true
-                };
+            FileType.Image => "images",
+            FileType.Video => "videos",
+            _ => "other"
+        };
 
-                uploadResult = file.Length > 10 * 1024 * 1024
-                    ? await _cloudinary.UploadLargeAsync(imageParams, chunkSize, CancellationToken.None)
-                    : await _cloudinary.UploadAsync(imageParams, CancellationToken.None);
-                break;
+        await using var stream = file.OpenReadStream();
+        var uploadParams = fileType switch
+        {
+            FileType.Image => new ImageUploadParams { File = new FileDescription(file.FileName, stream), Folder = folder, UseFilename = true, UniqueFilename = true },
+            FileType.Video => new VideoUploadParams { File = new FileDescription(file.FileName, stream), Folder = folder, UseFilename = true, UniqueFilename = true, EagerAsync = true },
+            _ => new RawUploadParams { File = new FileDescription(file.FileName, stream), Folder = folder, UseFilename = true, UniqueFilename = true }
+        };
 
-            case FileType.Video:
-                var videoParams = new VideoUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Folder = "videos",
-                    UseFilename = true,
-                    UniqueFilename = true,
-                    EagerAsync = true
-                };
-
-                uploadResult = uploadResult = file.Length > 10 * 1024 * 1024
-                    ? await _cloudinary.UploadLargeAsync(videoParams, chunkSize, CancellationToken.None)
-                    : await _cloudinary.UploadAsync(videoParams, CancellationToken.None);
-                break;
-
-            case FileType.Document:
-            case FileType.Text:
-            case FileType.Audio:
-                var rawParams = new RawUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Folder = "other",
-                    UseFilename = true,
-                    UniqueFilename = true
-                };
-
-                uploadResult = file.Length > 10 * 1024 * 1024
-                    ? await _cloudinary.UploadLargeAsync(rawParams, chunkSize, CancellationToken.None)
-                    : await _cloudinary.UploadAsync(rawParams);
-
-                break;
-
-            default:
-                return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Unsupported file type");
-        }
+        var uploadResult = file.Length > 10 * 1024 * 1024
+            ? await _cloudinary.UploadLargeAsync(uploadParams, 20 * 1024 * 1024)
+            : await _cloudinary.UploadAsync(uploadParams);
 
         if (uploadResult.Error != null)
-            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.InternalServerError,
-                $"Upload failed: {uploadResult.Error.Message}");
+            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.InternalServerError, $"Upload failed: {uploadResult.Error.Message}");
 
-        return Result<CloudinaryUploadResult>.Success(
-            new CloudinaryUploadResult
-            {
-                PublicId = uploadResult.PublicId,
-                Url = uploadResult.SecureUrl.ToString(),
-                AssetId = uploadResult.AssetId
-            });
+        return Result<CloudinaryUploadResult>.Success(new CloudinaryUploadResult
+        {
+            PublicId = uploadResult.PublicId,
+            Url = uploadResult.SecureUrl.ToString(),
+            AssetId = uploadResult.AssetId
+        });
     }
 
-    private static bool ValidateFile(IFormFile file)
+    public async Task<Result<List<CloudinaryUploadResult>>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files)
     {
-        if (file is null || file.Length == 0)
-            return false;
+        if (files.Count == 0)
+            return Result<List<CloudinaryUploadResult>>.Failure(HttpStatusCode.BadRequest, "No files to upload.");
 
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        var uploadTasks = files.Select(CloudinaryUploadSingleFileAsync);
+        var results = await Task.WhenAll(uploadTasks);
 
-        var isAudio = FileFormats.AllowedAudioFormats.Contains(fileExtension);
-        var isDocument = FileFormats.AllowedDocumentFormats.Contains(fileExtension);
-        var isImage = FileFormats.AllowedImageFormats.Contains(fileExtension);
-        var isText = FileFormats.AllowedTextFormats.Contains(fileExtension);
-        var isVideo = FileFormats.AllowedVideoFormats.Contains(fileExtension);
-
-        return isAudio || isDocument || isImage || isText || isVideo;
-    }
-
-    public async Task<Result<string>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files)
-    {
-        throw new NotImplementedException();
-    }
-
-    private static FileType GetFileType(string fileExtension)
-    {
-        if (string.IsNullOrEmpty(fileExtension))
-            throw new ArgumentException("File extension cannot be null or empty", nameof(fileExtension));
-
-        if (FileFormats.AllowedVideoFormats.Contains(fileExtension))
-            return FileType.Video;
-
-        if (FileFormats.AllowedImageFormats.Contains(fileExtension))
-            return FileType.Image;
-
-        if (FileFormats.AllowedDocumentFormats.Contains(fileExtension))
-            return FileType.Document;
-
-        if (FileFormats.AllowedTextFormats.Contains(fileExtension))
-            return FileType.Text;
-
-        if (FileFormats.AllowedAudioFormats.Contains(fileExtension))
-            return FileType.Audio;
-
-        throw new NotSupportedException($"File extension '{fileExtension}' is not supported");
+        return Result<List<CloudinaryUploadResult>>.Success(results.Where(r => r.IsSuccess).Select(r => r.Value).ToList());
     }
 
     public async Task<Result<object>> GetResourceAsync(string assetId)
     {
         var result = await _cloudinary.GetResourceByAssetIdAsync(assetId);
-        if (result.Error != null)
-            return Result<object>.Failure(HttpStatusCode.NotFound);
-        return Result<object>.Success(result);
+        return result.Error != null ? Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
+    }
+
+    private static FileType GetFileType(string fileExtension)
+    {
+        return FileFormats.AllowedImageFormats.Contains(fileExtension) ? FileType.Image
+             : FileFormats.AllowedVideoFormats.Contains(fileExtension) ? FileType.Video
+             : FileFormats.AllowedDocumentFormats.Contains(fileExtension) ? FileType.Document
+             : FileFormats.AllowedTextFormats.Contains(fileExtension) ? FileType.Text
+             : FileFormats.AllowedAudioFormats.Contains(fileExtension) ? FileType.Audio
+             : throw new NotSupportedException($"Unsupported file type: {fileExtension}");
     }
 }

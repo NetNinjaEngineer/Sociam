@@ -9,6 +9,6 @@ public interface IFileService
     Task<IEnumerable<FileUploadResult>> UploadFilesParallelAsync(IEnumerable<IFormFile> files, string? folderName = null, CancellationToken cancellationToken = default);
     bool DeleteFileFromPath(string filePath, string locationFolder);
     Task<Result<CloudinaryUploadResult>> CloudinaryUploadSingleFileAsync(IFormFile file);
-    Task<Result<string>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files);
-    Task<Result<object>> GetResourceAsync(string resourceName);
+    Task<Result<List<CloudinaryUploadResult>>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files);
+    Task<Result<object>> GetResourceAsync(string assetId);
 }

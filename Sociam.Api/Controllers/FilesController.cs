@@ -8,27 +8,32 @@ namespace Sociam.Api.Controllers;
 [ApiController]
 public class FilesController(IFileService service) : ControllerBase
 {
-    [Route("cloudinary/upload")]
-    [HttpPost]
-    public async Task<IActionResult> CloudinaryUploadFileAsync(IFormFile file)
+    [HttpPost("cloudinary/upload")]
+    public async Task<IActionResult> UploadFileToCloudinaryAsync(IFormFile file)
     {
         var result = await service.CloudinaryUploadSingleFileAsync(file);
-        return Ok(result);
+
+        return result.IsFailure ? BadRequest(result) : Ok(result);
     }
 
-    [Route("server/upload-multiple")]
-    [HttpPost]
-    public async Task<IActionResult> UploadMultipleWithParallelAsync(
-        string? folderName, [FromForm] List<IFormFile> files)
+    [HttpPost("cloudinary/upload-multiple")]
+    public async Task<IActionResult> UploadMultipleFilesToCloudinaryAsync([FromForm] IFormFileCollection files)
+    {
+        var result = await service.CloudinaryUploadMultipleFilesAsync(files);
+        return result.IsFailure ? BadRequest(result) : Ok(result);
+    }
+
+    [HttpPost("server/upload-multiple")]
+    public async Task<IActionResult> UploadFilesToServerAsync([FromQuery] string? folderName, [FromForm] List<IFormFile> files)
     {
         var result = await service.UploadFilesParallelAsync(files, folderName);
         return Ok(result);
     }
 
-    [HttpGet("get-resource")]
-    public async Task<IActionResult> GetResourceAsync(string assetId)
+    [HttpGet("get-resource/{assetId}")]
+    public async Task<IActionResult> GetCloudinaryResourceAsync(string assetId)
     {
-        var results = await service.GetResourceAsync(assetId);
-        return Ok(results);
+        var result = await service.GetResourceAsync(assetId);
+        return Ok(result);
     }
 }
