@@ -262,7 +262,7 @@ Need to manage user roles and permissions? Here’s how admins can handle it:
             "Password": "yourpasswordfromgoogleapppasswords"
          }
       },
-      "ApiKey": "66Wo86U1CazeW9TROml0TzMc59S1DIuT0KLi8KfP",
+      "ApiKey": "",
       "AuthCodeExpirationInMinutes": 3,
       "BaseApiUrl": "https://localhost:7042",
       "FullbackUrl": "http://localhost:5237",
