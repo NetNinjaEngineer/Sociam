@@ -282,4 +282,12 @@ public sealed class FileService : IFileService
 
         throw new NotSupportedException($"File extension '{fileExtension}' is not supported");
     }
+
+    public async Task<Result<object>> GetResourceAsync(string assetId)
+    {
+        var result = await _cloudinary.GetResourceByAssetIdAsync(assetId);
+        if (result.Error != null)
+            return Result<object>.Failure(HttpStatusCode.NotFound);
+        return Result<object>.Success(result);
+    }
 }
