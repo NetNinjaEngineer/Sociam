@@ -6,21 +6,24 @@ Sociam API is a dynamic and scalable social media platform that enables real-tim
 
 * **ASP.NET Core 9** - Backend framework.
 * **Entity Framework Core** - ORM for data access.
-* **MS SQL Server** - Database management.
+* **PostgreSQL** - Database management.
 * **SignalR** - Real-time communication.
 * **JWT Authentication** - Secure API authentication.
 * **Identity Framework** - User management and authentication.
 * **AutoMapper** - Object mapping for DTOs.
+* **FluentValidation** - Validation framework for models.
+* **QRCoder** - QR code generation library.
 
 ## Architecture
 
 Sociam API follows a clean and scalable architecture:
 
 * **API Layer**: Handles HTTP requests and responses.
-* **Application Layer**: Implements business logic and use cases.
+* **Application Layer**:  Implements CQRS (Command and Query Responsibility Segregation) to separate business logic and use cases.
 * **Domain Layer**: Defines core entities and domain logic.
 * **Infrastructure Layer**: Provides data access and external integrations.
 * **Persistence Layer**: Implements repository and unit of work patterns for database operations.
+* **Services Layer**: Contains business logic and encapsulates complex operations to keep the application layer clean.
 
 ## Features
 
