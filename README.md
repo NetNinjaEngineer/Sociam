@@ -1,7 +1,9 @@
 # Sociam API
+
 Sociam API is a dynamic and scalable social media platform that enables real-time messaging, group interactions, notifications, and seamless social connections. Designed with modern technologies, it delivers fast, efficient communication and an engaging user experience.
 
 ## Technologies
+
 * **ASP.NET Core 9** - Backend framework.
 * **Entity Framework Core** - ORM for data access.
 * **MS SQL Server** - Database management.
@@ -11,6 +13,7 @@ Sociam API is a dynamic and scalable social media platform that enables real-tim
 * **AutoMapper** - Object mapping for DTOs.
 
 ## Architecture
+
 Sociam API follows a clean and scalable architecture:
 
 * **API Layer**: Handles HTTP requests and responses.
@@ -21,32 +24,52 @@ Sociam API follows a clean and scalable architecture:
 
 ## Features
 
-### User Management
+### Authentication
+
+* User Registeration and Login (Including facebook and google login)
+* Confirm User Account
+* Token Management (Refresh - Revoke - Validate)
+* Password Recovery (Forget and Reset)
+* Two Factor Authentication 2FA (enable - confirm - verify - disable)
+* Multi Factor Authentication MFA (enable - verify - login)
 * Register and authenticate users.
-* Profile management (avatar, cover, bio, etc.).
-* Follow and unfollow users.
+
+### User Management
+
+* Get user profile
+* Update user profile information
+* Update user avatar profile
+* Update user cover profile
+* Change account email (change - verify change)
+* Change account password
 
 ### Messaging & Groups
+
 * Real-time messaging between users.
 * Group creation and user invitations.
 * Fetch message threads and replies.
 
 ### Posts & Stories
+
 * Create, edit, and delete posts.
 * Like and comment on posts.
 * View and interact with stories.
 
 ### Notifications
+
 * Push notifications for messages and interactions.
 * Event-driven notification system.
 
 ## Installation & Setup
 
 1. Clone the repository:
+
    ```sh
-   git clone https://github.com/your-repo/sociam-api.git
+   git clone https://github.com/NetNinjaEngineer/Sociam.git
    ```
+
 2. Configure `appsettings.json`:
+
    ```json
    {
      "ConnectionStrings": {
@@ -61,18 +84,33 @@ Sociam API follows a clean and scalable architecture:
       }
    }
    ```
-3. Run database migrations:
+
+3. Add the initial migration
+   Open Package Manager Console (PMC).
+   Select Sociam.Infrastructure as the default project.
+   Run the following command:
+
    ```sh
-   dotnet ef database update
+   add-migration Initial -o Persistence/Migrations
    ```
-4. Start the application:
+
+4. Run database migrations:
+
+   ```sh
+   Update-Database
+   ```
+
+5. Start the application:
+
    ```sh
    dotnet run
    ```
 
 ## API Endpoints
+
 Sociam API follows RESTful conventions. You can explore the API using Swagger:
 [Swagger UI](https://sociam.runasp.net/swagger/index.html)
 
 ## Contact
+
 For any inquiries or issues, please contact the repository owner @NetNinjaEngineer.
