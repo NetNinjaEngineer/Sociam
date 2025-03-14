@@ -50,13 +50,15 @@ Sociam API follows a clean and scalable architecture:
    ```json
    {
      "ConnectionStrings": {
-       "DefaultConnection": "YourConnectionStringHere"
-     },
-     "Jwt": {
-       "Key": "YourJwtKeyHere",
-       "Issuer": "YourIssuer",
-       "Audience": "YourAudience"
-     }
+        "DefaultConnection": "",
+        "PostgresConnection": ""
+      },
+      "JwtSettings": {
+        "Key": "",
+        "Audience": "",
+        "Issuer": "",
+        "ExpirationInDays": 1
+      }
    }
    ```
 3. Run database migrations:
