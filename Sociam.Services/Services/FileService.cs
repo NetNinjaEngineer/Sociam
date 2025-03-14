@@ -163,6 +163,7 @@ public sealed class FileService : IFileService
     public async Task<Result<CloudinaryUploadResult>> CloudinaryUploadSingleFileAsync(IFormFile file)
     {
         var isValid = ValidateFile(file);
+
         if (!isValid)
             return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Invalid file format.");
 
@@ -229,12 +230,29 @@ public sealed class FileService : IFileService
             return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.InternalServerError,
                 $"Upload failed: {uploadResult.Error.Message}");
 
-        return Result<CloudinaryUploadResult>.Success(new CloudinaryUploadResult
-        {
-            PublicId = uploadResult.PublicId,
-            Url = uploadResult.SecureUrl.ToString(),
-            AssetId = uploadResult.AssetId
-        });
+        return Result<CloudinaryUploadResult>.Success(
+            new CloudinaryUploadResult
+            {
+                PublicId = uploadResult.PublicId,
+                Url = uploadResult.SecureUrl.ToString(),
+                AssetId = uploadResult.AssetId
+            });
+    }
+
+    private static bool ValidateFile(IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return false;
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+
+        var isAudio = FileFormats.AllowedAudioFormats.Contains(fileExtension);
+        var isDocument = FileFormats.AllowedDocumentFormats.Contains(fileExtension);
+        var isImage = FileFormats.AllowedImageFormats.Contains(fileExtension);
+        var isText = FileFormats.AllowedTextFormats.Contains(fileExtension);
+        var isVideo = FileFormats.AllowedVideoFormats.Contains(fileExtension);
+
+        return isAudio || isDocument || isImage || isText || isVideo;
     }
 
     public async Task<Result<string>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files)
