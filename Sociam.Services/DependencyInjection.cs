@@ -121,6 +121,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUserService, UserService>();
 
+        services.Configure<CloudinarySettings>(configuration.GetSection(nameof(CloudinarySettings)));
+
         return services;
     }
 }

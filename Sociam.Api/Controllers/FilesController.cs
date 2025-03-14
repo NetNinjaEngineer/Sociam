@@ -6,14 +6,30 @@ namespace Sociam.Api.Controllers;
 [ApiVersion(1.0)]
 [Route("api/v{version:apiVersion}/files")]
 [ApiController]
-public class FilesController(IFileService fileService) : ControllerBase
+public class FilesController(IFileService service) : ControllerBase
 {
-    [HttpPost("upload-multiple-files")]
-    public async Task<IActionResult> UploadMultipleWithParallelAsync(
-        string? folderName,
-        [FromForm] List<IFormFile> files)
+    [Route("cloudinary/upload")]
+    [HttpPost]
+    public async Task<IActionResult> CloudinaryUploadFileAsync(IFormFile file)
     {
-        var results = await fileService.UploadFilesParallelAsync(files, folderName);
-        return Ok(results);
+        var result = await service.CloudinaryUploadSingleFileAsync(file);
+        return Ok(result);
+    }
+
+    [Route("server/upload-multiple")]
+    [HttpPost]
+    public async Task<IActionResult> UploadMultipleWithParallelAsync(
+        string? folderName, [FromForm] List<IFormFile> files)
+    {
+        var result = await service.UploadFilesParallelAsync(files, folderName);
+        return Ok(result);
+    }
+
+    [HttpGet("get-resource")]
+    public async Task<IActionResult> GetResourceAsync(string resourceName)
+    {
+        var result = await service.GetResourceAsync(resourceName);
+
+        return Ok(result);
     }
 }

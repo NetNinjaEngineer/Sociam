@@ -1,14 +1,41 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Sociam.Application.Bases;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
+using System.Net;
 
 namespace Sociam.Services.Services;
-public sealed class FileService(
-    IConfiguration configuration,
-    IHttpContextAccessor contextAccessor) : IFileService
+public sealed class FileService : IFileService
 {
+    private readonly IHttpContextAccessor _contextAccessor;
+    private readonly IConfiguration _configuration;
+    private readonly Cloudinary _cloudinary;
+
+    public FileService(
+        IHttpContextAccessor contextAccessor,
+        IConfiguration configuration,
+        IOptions<CloudinarySettings> cloudinaryOptions)
+    {
+        _contextAccessor = contextAccessor;
+        _configuration = configuration;
+        var cloudinarySettings = cloudinaryOptions.Value;
+
+        var account = new Account(
+            cloudinarySettings.CloudName,
+            cloudinarySettings.ApiKey,
+            cloudinarySettings.ApiSecret);
+
+        _cloudinary = new Cloudinary(account);
+        _cloudinary.Api.Secure = true;
+        _cloudinary.Api.Timeout = 120000;
+
+    }
+
     public async Task<(bool uploaded, string? fileName)> UploadFileAsync(
         IFormFile? file, string folderPath)
     {
@@ -31,9 +58,7 @@ public sealed class FileService(
     }
 
     public async Task<IEnumerable<FileUploadResult>> UploadFilesParallelAsync(
-      IEnumerable<IFormFile> files,
-      string? folderName = null,
-      CancellationToken cancellationToken = default)
+      IEnumerable<IFormFile> files, string? folderName = null, CancellationToken cancellationToken = default)
     {
         var formFiles = files.ToList();
 
@@ -93,9 +118,9 @@ public sealed class FileService(
                         SavedFileName = uniqueFileName,
                         Size = file.Length,
                         Type = GetFileType(fileExtension),
-                        Url = contextAccessor.HttpContext!.Request.IsHttps ?
-                            $"{configuration["BaseApiUrl"]}/{locationPath}/{uniqueFileName}" :
-                            $"{configuration["FullbackUrl"]}/{locationPath}/{uniqueFileName}"
+                        Url = _contextAccessor.HttpContext!.Request.IsHttps ?
+                            $"{_configuration["BaseApiUrl"]}/{locationPath}/{uniqueFileName}" :
+                            $"{_configuration["FullbackUrl"]}/{locationPath}/{uniqueFileName}"
                     };
                 }
                 catch (Exception)
@@ -135,6 +160,88 @@ public sealed class FileService(
 
     }
 
+    public async Task<Result<CloudinaryUploadResult>> CloudinaryUploadSingleFileAsync(IFormFile file)
+    {
+        var isValid = ValidateFile(file);
+        if (!isValid)
+            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Invalid file format.");
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        var fileType = GetFileType(fileExtension);
+
+        using var stream = file.OpenReadStream();
+        const int chunkSize = 20 * 1024 * 1024;
+        UploadResult uploadResult;
+
+        switch (fileType)
+        {
+            case FileType.Image:
+                var imageParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = "images",
+                    UseFilename = true,
+                    UniqueFilename = true
+                };
+
+                uploadResult = file.Length > 10 * 1024 * 1024
+                    ? await _cloudinary.UploadLargeAsync(imageParams, chunkSize, CancellationToken.None)
+                    : await _cloudinary.UploadAsync(imageParams, CancellationToken.None);
+                break;
+
+            case FileType.Video:
+                var videoParams = new VideoUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = "videos",
+                    UseFilename = true,
+                    UniqueFilename = true,
+                    EagerAsync = true
+                };
+
+                uploadResult = uploadResult = file.Length > 10 * 1024 * 1024
+                    ? await _cloudinary.UploadLargeAsync(videoParams, chunkSize, CancellationToken.None)
+                    : await _cloudinary.UploadAsync(videoParams, CancellationToken.None);
+                break;
+
+            case FileType.Document:
+            case FileType.Text:
+            case FileType.Audio:
+                var rawParams = new RawUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = "other",
+                    UseFilename = true,
+                    UniqueFilename = true
+                };
+
+                uploadResult = file.Length > 10 * 1024 * 1024
+                    ? await _cloudinary.UploadLargeAsync(rawParams, chunkSize, CancellationToken.None)
+                    : await _cloudinary.UploadAsync(rawParams);
+
+                break;
+
+            default:
+                return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.BadRequest, "Unsupported file type");
+        }
+
+        if (uploadResult.Error != null)
+            return Result<CloudinaryUploadResult>.Failure(HttpStatusCode.InternalServerError,
+                $"Upload failed: {uploadResult.Error.Message}");
+
+        return Result<CloudinaryUploadResult>.Success(new CloudinaryUploadResult
+        {
+            PublicId = uploadResult.PublicId,
+            Url = uploadResult.SecureUrl.ToString(),
+            AssetId = uploadResult.AssetId
+        });
+    }
+
+    public async Task<Result<string>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files)
+    {
+        throw new NotImplementedException();
+    }
+
 
     private static FileType GetFileType(string fileExtension)
     {
@@ -157,5 +264,30 @@ public sealed class FileService(
             return FileType.Audio;
 
         throw new NotSupportedException($"File extension '{fileExtension}' is not supported");
+    }
+
+    private static bool ValidateFile(IFormFile? file)
+    {
+        if (file is null || file.Length == 0)
+            return false;
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+
+        var isImage = FileFormats.AllowedImageFormats.Contains(fileExtension);
+        var isVideo = FileFormats.AllowedVideoFormats.Contains(fileExtension);
+        var isDocument = FileFormats.AllowedDocumentFormats.Contains(fileExtension);
+        var isText = FileFormats.AllowedTextFormats.Contains(fileExtension);
+        var isAudio = FileFormats.AllowedAudioFormats.Contains(fileExtension);
+
+
+        return isImage || isVideo || isAudio || isDocument || isText;
+    }
+
+    public async Task<Result<object>> GetResourceAsync(string assetId)
+    {
+        var resource = await _cloudinary.GetResourceByAssetIdAsync(assetId);
+        if (resource.Error != null)
+            return Result<object>.Failure(HttpStatusCode.NotFound);
+        return Result<object>.Success(resource);
     }
 }
