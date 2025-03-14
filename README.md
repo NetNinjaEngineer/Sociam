@@ -40,6 +40,7 @@ Let’s get you signed up and logged in securely:
 * Add extra security with Two-Factor Authentication (2FA): enable it, confirm, verify, or disable it as needed.
 * Go even further with Multi-Factor Authentication (MFA): enable it, verify, and log in safely.
 * Register and authenticate users smoothly to kick off their Sociam journey.
+* **API Key Authentication**: Access to the API is secured with an API key, ensuring only authorized users can make requests.
 
 ### User Management
 
@@ -231,17 +232,53 @@ Need to manage user roles and permissions? Here’s how admins can handle it:
 
    ```json
    {
-     "ConnectionStrings": {
-        "DefaultConnection": "",
-        "PostgresConnection": ""
+
+      "ConnectionStrings": {
+         "DefaultConnection": "",
+         "PostgresConnection": ""
       },
       "JwtSettings": {
-        "Key": "",
-        "Audience": "",
-        "Issuer": "",
-        "ExpirationInDays": 1
+         "Key": "yoursecretkey",
+         "Audience": "https://localhost:7042",
+         "Issuer": "https://localhost:7042",
+         "ExpirationInDays": 1
+      },
+      "Authentication": {
+         "GoogleOptions": {
+            "ClientId": "",
+            "ClientSecret": ""
+         },
+         "FacebookOptions": {
+            "AppId": "",
+            "AppSecret": ""
+         }
+      },
+      "SmtpSettings": {
+         "Gmail": {
+            "SenderName": "Sociam",
+            "SenderEmail": "Your email",
+            "Host": "smtp.gmail.com",
+            "Port": 587,
+            "Password": "yourpasswordfromgoogleapppasswords"
+         }
+      },
+      "ApiKey": "66Wo86U1CazeW9TROml0TzMc59S1DIuT0KLi8KfP",
+      "AuthCodeExpirationInMinutes": 3,
+      "BaseApiUrl": "https://localhost:7042",
+      "FullbackUrl": "http://localhost:5237",
+      "FormOptionsSize": "1073741824",
+      "StoryExpirationCheckIntervalDays": 1,
+      "CacheExpirationInMinutes": 1,
+      "IpInfoOptions": {
+         "BaseUrl": "https://ipinfo.io",
+         "Token": "yourtoken"
+      },
+      "IpGeoLocationOptions": {
+         "BaseUrl": "https://api.ipgeolocation.io",
+         "ApiKey": "yourapikey"
       }
    }
+
    ```
 
 3. Add the initial migration
@@ -269,6 +306,12 @@ Need to manage user roles and permissions? Here’s how admins can handle it:
 
 Sociam API follows RESTful conventions. You can explore the API using Swagger:
 [Swagger UI](https://sociam.runasp.net/swagger/index.html)
+
+**Note on API Key Authentication**: The Sociam API is secured with API key authentication. To access the endpoints, you must include your API key in the request header. Add the X-API-Key header with your API key (configured in appsettings.json) to authenticate your requests. For example:
+
+```sh
+curl -H "X-API-Key: your-api-key-here" https://sociam.runasp.net/api/v1/auth/register
+```
 
 ## Contact
 
