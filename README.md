@@ -86,9 +86,9 @@ Sociam API follows a clean and scalable architecture:
    ```
 
 3. Add the initial migration
-   Open Package Manager Console (PMC).
-   Select Sociam.Infrastructure as the default project.
-   Run the following command:
+   * Open Package Manager Console (PMC).
+   * Select Sociam.Infrastructure as the default project.
+   * Run the following command:
 
    ```sh
    add-migration Initial -o Persistence/Migrations
