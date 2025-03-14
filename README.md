@@ -29,28 +29,98 @@ Sociam API follows a clean and scalable architecture:
 
 ### Authentication
 
-* User Registeration and Login (Including facebook and google login)
-* Confirm User Account
-* Token Management (Refresh - Revoke - Validate)
-* Password Recovery (Forget and Reset)
-* Two Factor Authentication 2FA (enable - confirm - verify - disable)
-* Multi Factor Authentication MFA (enable - verify - login)
+* User registeration and login.
+* Facebook login.
+* Google login.
+* Confirm User Account.
+* Token Management (Refresh - Revoke - Validate).
+* Password Recovery (Forget and Reset).
+* Two Factor Authentication 2FA (enable - confirm - verify - disable).
+* Multi Factor Authentication MFA (enable - verify - login).
 * Register and authenticate users.
 
 ### User Management
 
-* Get user profile
-* Update user profile information
-* Update user avatar profile
-* Update user cover profile
-* Change account email (change - verify change)
-* Change account password
+* Get user profile.
+* Update user profile information.
+* Update user avatar profile.
+* Update user cover profile.
+* Change account email (change - verify change).
+* Change account password.
 
-### Messaging & Groups
+### Conversation
+
+* Start private conversation.
+* Get conversation messages (private and group).
+* Get paged conversation messages (private and group).
+* Get private conversation for specific user.
+* Get a conversation between two users.
+* Delete a private conversation.
+* Start a group conversation.
+
+### Messaging
 
 * Real-time messaging between users.
-* Group creation and user invitations.
-* Fetch message threads and replies.
+* Send private message to user.
+* Get the details of message.
+* Mark message as read.
+* Edit existing message.
+* Delete a private message between two users.
+* Get unread messages count for the authenticated user.
+* Get the messages by date range or by specific conversation.
+* Get unread messages for the authenticated users.
+* Search messages.
+* Delete a private message in private conversation.
+* Get all messages by fields (data shaping).
+* Reply to user message either is a private or in a existing group.
+* Reply to specific message reply.
+* Get the replies tree for message (parent and child replies).
+
+### Groups
+
+- **Create a Group**  
+  `POST /api/v1/groups`  
+  Allows users to create a new group.
+
+- **Retrieve All Groups**  
+  `GET /api/v1/groups`  
+  Fetches a list of all groups.
+
+- **Retrieve Groups by Specific Criteria**  
+  `GET /api/v1/groups/by`  
+  Retrieves groups based on specific criteria (e.g., filters or search parameters).
+
+- **Retrieve a Specific Group**  
+  `GET /api/v1/groups/{groupID}`  
+  Fetches details of a specific group using its `groupID`.
+
+- **View Group Information**  
+  `GET /api/v1/groups/view`  
+  Provides a view of group-related information.
+
+- **Add a User to a Group**  
+  `POST /api/v1/groups/{groupID}/users/{userID}`  
+  Adds a specific user (`userID`) to a group (`groupID`).
+
+- **Join a Group as a Member**  
+  `POST /api/v1/groups/{id}/members/join`  
+  Allows a user to join a group as a member using the group `id`.
+
+- **Remove a Member from a Group**  
+  `DELETE /api/v1/groups/{groupID}/members/{memberID}`  
+  Removes a member (`memberID`) from a group (`groupID`).
+
+- **Update a Member's Role**  
+  `PUT /api/v1/groups/{groupID}/members/{memberID}/role`  
+  Updates the role of a member (`memberID`) in a group (`groupID`).
+
+- **Manage Group Requests**  
+  `PUT /api/v1/groups/{groupID}/requests/{requestID}`  
+  Handles group requests (approving or rejecting a request to join) identified by `requestID` within a group (`groupID`).
+
+- **Send a Message in a Group Conversation**  
+  `POST /api/v1/groups/{groupID}/conversations/{conversationID}/messages`  
+  Allows users to send a message in a specific conversation (`conversationID`) within a group (`groupID`).
 
 ### Posts & Stories
 
