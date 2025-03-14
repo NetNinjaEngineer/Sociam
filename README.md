@@ -27,150 +27,153 @@ Sociam API follows a clean and scalable architecture:
 
 ## Features
 
-Here�s a rundown of what Sociam API can do for you! Whether you�re building a social app or just exploring, these features make it easy to create a vibrant, connected community.
+Here’s a rundown of what Sociam API can do for you! Whether you’re building a social app or just exploring, these features make it easy to create a vibrant, connected community.
 
 ### Authentication
-Let�s get you signed up and logged in securely:
 
-- Sign up and log in with ease, or use your Facebook or Google account to jump right in.
-- Confirm your account to get started.
-- Manage your tokens (refresh, revoke, or validate) to keep your sessions secure.
-- Forgot your password? No worries—we’ve got a recovery process to reset it.
-- Add extra security with Two-Factor Authentication (2FA): enable it, confirm, verify, or disable it as needed.
-- Go even further with Multi-Factor Authentication (MFA): enable it, verify, and log in safely.
-- Register and authenticate users smoothly to kick off their Sociam journey.
+Let’s get you signed up and logged in securely:
+
+* Sign up and log in with ease, or use your Facebook or Google account to jump right in.
+* Confirm your account to get started.
+* Manage your tokens (refresh, revoke, or validate) to keep your sessions secure.
+* Forgot your password? No worries—we’ve got a recovery process to reset it.
+* Add extra security with Two-Factor Authentication (2FA): enable it, confirm, verify, or disable it as needed.
+* Go even further with Multi-Factor Authentication (MFA): enable it, verify, and log in safely.
+* Register and authenticate users smoothly to kick off their Sociam journey.
 
 ### User Management
-Your profile, your rules�here�s how you can manage it:
 
-- Check out your user profile anytime.
-- Update your profile info to keep it fresh.
-- Change your avatar or cover photo to show off your style.
-- Switch up your email (we�ll verify the change for security).
-- Update your password whenever you need to.
+Your profile, your rules—here’s how you can manage it:
+
+* Check out your user profile anytime.
+* Update your profile info to keep it fresh.
+* Change your avatar or cover photo to show off your style.
+* Switch up your email (we’ll verify the change for security).
+* Update your password whenever you need to.
 
 ### Conversation
-Start chatting with friends or groups�it�s super simple:
 
-- Kick off a private conversation with someone.
-- Grab all the messages from a private chat or group conversation.
-- Need to scroll through messages? Get them paged for easier browsing (works for both private and group chats).
-- Find a private conversation with a specific user.
-- Pull up the chat history between two users.
-- Done with a private chat? You can delete it.
-- Create a group conversation to bring everyone together.
+Start chatting with friends or groups—it’s super simple:
+
+* Kick off a private conversation with someone.
+* Grab all the messages from a private chat or group conversation.
+* Need to scroll through messages? Get them paged for easier browsing (works for both private and group chats).
+* Find a private conversation with a specific user.
+* Pull up the chat history between two users.
+* Done with a private chat? You can delete it.
+* Create a group conversation to bring everyone together.
 
 ### Messaging
-Messaging is where the magic happens�stay connected in real time:
 
-- Chat with friends instantly using real-time messaging.
-- Send a private message to someone directly.
-- Check the details of any message.
-- Mark a message as read so you don�t lose track.
-- Made a typo? Edit your message to fix it.
-- Delete a private message between you and another user.
-- See how many unread messages you�ve got.
-- Grab messages from a specific date range or conversation.
-- Check out all your unread messages.
-- Search through your messages to find what you need.
-- Delete a message in a private chat.
-- Get messages with specific details (data shaping lets you pick what you need).
-- Reply to a message, whether it�s in a private chat or a group.
-- Reply to a specific reply to keep the conversation flowing.
-- See the full reply thread for a message (parents and child replies included).
+Messaging is where the magic happens—stay connected in real time:
+
+* Chat with friends instantly using real-time messaging.
+* Send a private message to someone directly.
+* Check the details of any message.
+* Mark a message as read so you don’t lose track.
+* Made a typo? Edit your message to fix it.
+* Delete a private message between you and another user.
+* See how many unread messages you’ve got.
+* Grab messages from a specific date range or conversation.
+* Check out all your unread messages.
+* Search through your messages to find what you need.
+* Delete a message in a private chat.
+* Get messages with specific details (data shaping lets you pick what you need).
+* Reply to a message, whether it’s in a private chat or a group.
+* Reply to a specific reply to keep the conversation flowing.
+* See the full reply thread for a message (parents and child replies included).
 
 ### Groups
+
 Create and manage groups to bring people together:
 
-- **Create a Group**  
+* **Create a Group**  
   `POST /api/v1/groups`  
   Start a new group for your friends, team, or community.
 
-- **Retrieve All Groups**  
+* **Retrieve All Groups**  
   `GET /api/v1/groups`  
   See a list of all the groups on Sociam.
 
-- **Retrieve Groups by Specific Criteria**  
+* **Retrieve Groups by Specific Criteria**  
   `GET /api/v1/groups/by`  
-  Find groups that match what you�re looking for (like a search or filter).
+  Find groups that match what you’re looking for (like a search or filter).
 
-- **Retrieve a Specific Group**  
+* **Retrieve a Specific Group**  
   `GET /api/v1/groups/{groupID}`  
   Check out the details of a specific group using its `groupID`.
 
-- **View Group Information**  
+* **View Group Information**  
   `GET /api/v1/groups/view`  
   Get a quick summary or overview of a group.
 
-* Get user profile
-* Update user profile information
-* Update user avatar profile
-* Update user cover profile
-* Change account email (change - verify change)
-* Change account password
+* **Add a User to a Group**  
+  `POST /api/v1/groups/{groupID}/users/{userID}`  
+  Invite someone (`userID`) to join a group (`groupID`).
 
-### Messaging & Groups
+* **Join a Group as a Member**  
+  `POST /api/v1/groups/{id}/members/join`  
+  Jump into a group as a member using the group `id`.
 
-* Real-time messaging between users.
-* Group creation and user invitations.
-* Fetch message threads and replies.
+* **Remove a Member from a Group**  
+  `DELETE /api/v1/groups/{groupID}/members/{memberID}`  
+  Remove a member (`memberID`) from a group (`groupID`) if needed.
 
-- **Update a Member's Role**  
+* **Update a Member's Role**  
   `PUT /api/v1/groups/{groupID}/members/{memberID}/role`  
-  Change a member�s role (like making them an admin) in a group.
+  Change a member’s role (like making them an admin) in a group.
 
-- **Manage Group Requests**  
+* **Manage Group Requests**  
   `PUT /api/v1/groups/{groupID}/requests/{requestID}`  
   Approve or reject a request to join a group (`requestID`) for a group (`groupID`).
 
-- **Send a Message in a Group Conversation**  
+* **Send a Message in a Group Conversation**  
   `POST /api/v1/groups/{groupID}/conversations/{conversationID}/messages`  
   Send a message in a group chat (`conversationID`) within a group (`groupID`).
 
 ### Posts & Stories
+
 Share your thoughts and moments with the world:
 
-- Create, edit, or delete posts to share what�s on your mind.
-- Like and comment on posts to show some love.
-- Post stories and interact with others� stories to keep the vibe going.
+* Create, edit, or delete posts to share what’s on your mind.
+* Like and comment on posts to show some love.
+* Post stories and interact with others’ stories to keep the vibe going.
 
 ### Notifications
-Stay in the loop with what�s happening:
 
-- **Get Your Notifications**  
+Stay in the loop with what’s happening:
+
+* **Get Your Notifications**  
   `GET /api/v1/notifications`  
   See all the notifications waiting for you.
 
-- **Delete All Notifications**  
+* **Delete All Notifications**  
   `DELETE /api/v1/notifications`  
   Clear out all your notifications in one go.
 
-- **Get a Specific Notification**  
+* **Get a Specific Notification**  
   `GET /api/v1/notifications/{id}`  
   Check the details of a single notification using its `id`.
 
-- **Delete a Specific Notification**  
+* **Delete a Specific Notification**  
   `DELETE /api/v1/notifications/{id}`  
-  Remove a single notification (`id`) you don�t need anymore.
+  Remove a single notification (`id`) you don’t need anymore.
 
-- **Check Unread Notification Count**  
+* **Check Unread Notification Count**  
   `GET /api/v1/notifications/unread-count`  
-  Find out how many unread notifications you�ve got.
+  Find out how many unread notifications you’ve got.
 
-- **Check Read Notification Count**  
+* **Check Read Notification Count**  
   `GET /api/v1/notifications/read-count`  
-  See how many notifications you�ve already read.
+  See how many notifications you’ve already read.
 
-- **Mark All Notifications as Read**  
+* **Mark All Notifications as Read**  
   `PUT /api/v1/notifications/markAll-as-read`  
   Mark all your notifications as read to clear the slate.
 
-- **Mark a Specific Notification as Read**  
+* **Mark a Specific Notification as Read**  
   `PUT /api/v1/notifications/{id}/mark-as-read`  
-  Mark a single notification (`id`) as read when you�re ready.
-
-- Get push notifications for messages and interactions so you never miss a beat.
-- Our event-driven system keeps notifications flowing smoothly.
+  Mark a single notification (`id`) as read when you’re ready.
 
 ## Installation & Setup
 
