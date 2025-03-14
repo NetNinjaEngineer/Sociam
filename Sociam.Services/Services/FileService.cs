@@ -242,7 +242,6 @@ public sealed class FileService : IFileService
         throw new NotImplementedException();
     }
 
-
     private static FileType GetFileType(string fileExtension)
     {
         if (string.IsNullOrEmpty(fileExtension))
@@ -264,30 +263,5 @@ public sealed class FileService : IFileService
             return FileType.Audio;
 
         throw new NotSupportedException($"File extension '{fileExtension}' is not supported");
-    }
-
-    private static bool ValidateFile(IFormFile? file)
-    {
-        if (file is null || file.Length == 0)
-            return false;
-
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
-
-        var isImage = FileFormats.AllowedImageFormats.Contains(fileExtension);
-        var isVideo = FileFormats.AllowedVideoFormats.Contains(fileExtension);
-        var isDocument = FileFormats.AllowedDocumentFormats.Contains(fileExtension);
-        var isText = FileFormats.AllowedTextFormats.Contains(fileExtension);
-        var isAudio = FileFormats.AllowedAudioFormats.Contains(fileExtension);
-
-
-        return isImage || isVideo || isAudio || isDocument || isText;
-    }
-
-    public async Task<Result<object>> GetResourceAsync(string assetId)
-    {
-        var resource = await _cloudinary.GetResourceByAssetIdAsync(assetId);
-        if (resource.Error != null)
-            return Result<object>.Failure(HttpStatusCode.NotFound);
-        return Result<object>.Success(resource);
     }
 }

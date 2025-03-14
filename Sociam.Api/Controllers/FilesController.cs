@@ -28,8 +28,7 @@ public class FilesController(IFileService service) : ControllerBase
     [HttpGet("get-resource")]
     public async Task<IActionResult> GetResourceAsync(string resourceName)
     {
-        var result = await service.GetResourceAsync(resourceName);
-
-        return Ok(result);
+        var results = await fileService.UploadFilesParallelAsync(files, folderName);
+        return Ok(results);
     }
 }
