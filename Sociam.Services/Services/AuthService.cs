@@ -670,7 +670,8 @@ public sealed class AuthService(
     public async Task<Result<SignInResponseDto>> LoginAsync(LoginUserCommand command)
 
     {
-        var loggedInUser = await userManager.FindByEmailAsync(command.Email);
+        var loggedInUser = await userManager.Users.Include(u => u.TrustedDevices)
+            .FirstOrDefaultAsync(u => u.Email == command.Email);
 
         if (loggedInUser is null)
             return Result<SignInResponseDto>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UnkownUser);
@@ -711,9 +712,48 @@ public sealed class AuthService(
             return Result<SignInResponseDto>.Failure(
                 HttpStatusCode.Unauthorized, DomainErrors.Users.InvalidCredientials);
 
+        // check is the user device is trusted by sending it a code to its email 
+        // and validate this codes and expiry and check is the user is has trusted device or not
+
+        var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
+        var currentIpAddress = contextAccessor.HttpContext!.Connection.RemoteIpAddress!.ToString();
+        var userIPInfo = await ipInfoApi.GetIpInfoAsync(currentIpAddress, _ipInfo.Token);
+        var currentUserLocation = userIPInfo?.Loc;
+        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId);
+
+        if (trustedDevice == null ||
+            loggedInUser.LastKnownIp != currentIpAddress ||
+            loggedInUser.LastKnownLocation != currentUserLocation)
+        {
+            // Generate the verification code and send it to his mail
+
+            var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
+            loggedInUser.DeviceVerificationCode = verificationCode;
+            loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMonths(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
+
+            await userManager.UpdateAsync(loggedInUser);
+
+            await mailService.SendEmailAsync(new EmailMessage
+            {
+                Subject = "New Device Verification",
+                To = loggedInUser.Email!,
+                Message = $"A new login attempt was detected from {currentUserLocation}. Your verification " +
+                $"code is: {verificationCode}"
+            });
+
+            return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
+        }
+
         var response = await CreateLoginResponseAsync(userManager, loggedInUser);
         return Result<SignInResponseDto>.Success(response);
 
+    }
+
+    private static string GenerateDeviceId(HttpContext httpContext)
+    {
+        var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+        var computedHash = SHA256.HashData(Encoding.UTF8.GetBytes(userAgent));
+        return Convert.ToBase64String(computedHash);
     }
 
     private async Task<SignInResponseDto> CreateLoginResponseAsync(

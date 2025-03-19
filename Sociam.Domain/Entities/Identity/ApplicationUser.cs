@@ -15,7 +15,11 @@ public sealed class ApplicationUser : IdentityUser
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? Code { get; set; }
     public DateTimeOffset? CodeExpiration { get; set; }
+    public string? DeviceVerificationCode { get; set; }
+    public DateTimeOffset? DeviceVerificationExpiry { get; set; }
     public string TimeZoneId { get; set; } = string.Empty;
+    public string? LastKnownIp { get; set; }
+    public string? LastKnownLocation { get; set; }
     public List<RefreshToken>? RefreshTokens { get; set; }
     public ICollection<LiveStream> LiveStreams { get; set; } = [];
     public ICollection<Story> Stories { get; set; } = [];
