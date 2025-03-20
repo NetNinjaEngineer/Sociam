@@ -87,7 +87,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 LastName = "Ehab",
                 UserName = "memo@2002",
                 Email = "melhelaly43@gmail.com",
-                EmailConfirmed = false,
+                EmailConfirmed = true,
                 NormalizedEmail = "melhelaly43@gmail.com".ToUpper(),
                 NormalizedUserName = "memo@2002".ToUpper(),
                 PasswordHash = passwordHasher.HashPassword(null!, "P@ssw1234"),

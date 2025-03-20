@@ -2,6 +2,7 @@
 using FluentValidation;
 using Humanizer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Users;
@@ -204,7 +205,10 @@ public sealed class UserService(
 
     public async Task<Result<IReadOnlyList<TrustedDeviceDto>>> GetUserTrustedDevicesAsync()
     {
-        var authenticatedUser = await userManager.FindByIdAsync(currentUser.Id);
+        var authenticatedUser = await userManager.Users
+            .Include(u => u.TrustedDevices)
+            .FirstOrDefaultAsync(u => u.Id == currentUser.Id);
+
         if (authenticatedUser == null)
             return Result<IReadOnlyList<TrustedDeviceDto>>.Failure(HttpStatusCode.Unauthorized);
 
