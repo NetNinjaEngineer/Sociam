@@ -15,6 +15,7 @@ using Sociam.Application.Features.Auth.Commands.SendConfirmEmailCode;
 using Sociam.Application.Features.Auth.Commands.SignInGoogle;
 using Sociam.Application.Features.Auth.Commands.ValidateToken;
 using Sociam.Application.Features.Auth.Commands.Verify2FaCode;
+using Sociam.Application.Features.Auth.Commands.VerifyDevice;
 using Sociam.Application.Features.Auth.Commands.VerifyMfa;
 using Sociam.Application.Features.Auth.Commands.VerifyMfaLogin;
 using Sociam.Application.Features.Auth.Queries.GetAccessToken;
@@ -42,4 +43,5 @@ public interface IAuthService
     Task<Result<SignInResponseDto>> VerifyMfaLoginAsync(VerifyMfaLoginCommand command);
 
     Task<Result<string>> GetAccessTokenAsync(GetAccessTokenQuery query);
+    Task<Result<SignInResponseDto>> VerifyDeviceAsync(VerifyDeviceCommand request);
 }

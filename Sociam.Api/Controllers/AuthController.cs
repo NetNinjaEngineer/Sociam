@@ -21,6 +21,7 @@ using Sociam.Application.Features.Auth.Commands.SendConfirmEmailCode;
 using Sociam.Application.Features.Auth.Commands.SignInGoogle;
 using Sociam.Application.Features.Auth.Commands.ValidateToken;
 using Sociam.Application.Features.Auth.Commands.Verify2FaCode;
+using Sociam.Application.Features.Auth.Commands.VerifyDevice;
 using Sociam.Application.Features.Auth.Commands.VerifyMfa;
 using Sociam.Application.Features.Auth.Commands.VerifyMfaLogin;
 using Sociam.Application.Features.Auth.Queries.GetAccessToken;
@@ -159,4 +160,10 @@ public class AuthController(IMediator mediator) : ApiBaseController(mediator)
     [HttpGet("access-token")]
     public async Task<ActionResult<Result<string>>> GetAccessTokenAsync()
         => CustomResult(await Mediator.Send(new GetAccessTokenQuery()));
+
+    [HttpPost("verify-device")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(Result<SignInResponseDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<SignInResponseDto>>> VerifyDeviceAsync([FromBody] VerifyDeviceCommand command)
+        => CustomResult(await Mediator.Send(command));
 }
