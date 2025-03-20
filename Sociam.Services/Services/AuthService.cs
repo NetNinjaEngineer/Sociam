@@ -731,6 +731,8 @@ public sealed class AuthService(
             var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
             loggedInUser.DeviceVerificationCode = verificationCode;
             loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
+            loggedInUser.LastKnownIp = currentIpAddress;
+            loggedInUser.LastKnownLocation = currentUserLocation;
 
             await userManager.UpdateAsync(loggedInUser);
 
