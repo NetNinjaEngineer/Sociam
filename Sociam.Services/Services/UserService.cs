@@ -222,7 +222,10 @@ public sealed class UserService(
                 d.IsActive,
                 d.CreatedAt.ConvertToUserLocalTimeZone(authenticatedUser.TimeZoneId).ToString("MMM d, yyyy, hh:mm tt"),
                 d.DeviceName,
-                d.LastLogin.Humanize())).ToList();
+                d.LastLogin.Humanize(),
+                d.Model,
+                d.Brand,
+                d.ExpiryDate.ConvertToUserLocalTimeZone(authenticatedUser.TimeZoneId))).ToList();
 
         return Result<IReadOnlyList<TrustedDeviceDto>>.Success(trustedDevices);
     }

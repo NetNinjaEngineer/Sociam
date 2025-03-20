@@ -8,4 +8,7 @@ public sealed record TrustedDeviceDto(
     bool IsActive,
     string FirstLogin,
     string Device,
-    string LastActive);
+    string LastActive,
+    string Model,
+    string Brand,
+    DateTimeOffset ExpiresAt);
