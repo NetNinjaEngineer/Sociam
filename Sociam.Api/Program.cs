@@ -106,6 +106,8 @@ builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
+app.UseApiMiddlewares();
+
 app.UseSwaggerDocumentation();
 
 app.MapScalarApiReference(options =>
@@ -123,8 +125,6 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-app.UseApiMiddlewares();
 
 app.MapControllers();
 
