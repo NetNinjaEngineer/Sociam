@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Humanizer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Sociam.Application.Bases;
@@ -199,5 +200,26 @@ public sealed class UserService(
         return !passwordResult.Succeeded ?
             Result<bool>.Failure(HttpStatusCode.BadRequest, passwordResult.Errors.First().Description) :
             Result<bool>.Success(true);
+    }
+
+    public async Task<Result<IReadOnlyList<TrustedDeviceDto>>> GetUserTrustedDevicesAsync()
+    {
+        var authenticatedUser = await userManager.FindByIdAsync(currentUser.Id);
+        if (authenticatedUser == null)
+            return Result<IReadOnlyList<TrustedDeviceDto>>.Failure(HttpStatusCode.Unauthorized);
+
+        var trustedDevices = authenticatedUser.TrustedDevices.Select(d =>
+            new TrustedDeviceDto(
+                d.Id,
+                $"{d.BrowserName} {d.BrowserVersion}",
+                $"{d.OsName} {d.OsVersion} {d.OsPlatform}",
+                d.IpAddress,
+                d.Location,
+                d.IsActive,
+                d.CreatedAt.ConvertToUserLocalTimeZone(authenticatedUser.TimeZoneId).ToString("MMM d, yyyy, hh:mm tt"),
+                d.DeviceName,
+                d.LastLogin.Humanize())).ToList();
+
+        return Result<IReadOnlyList<TrustedDeviceDto>>.Success(trustedDevices);
     }
 }

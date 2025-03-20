@@ -720,7 +720,7 @@ public sealed class AuthService(
         var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
         var currentIpAddress = GetCurrentIp();
         string? currentUserLocation = await GetUserLocationAsync(currentIpAddress);
-        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId);
+        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
 
         if (trustedDevice == null ||
             loggedInUser.LastKnownIp != currentIpAddress ||
@@ -999,8 +999,12 @@ public sealed class AuthService(
         var ip = GetCurrentIp();
 
         var osInfo = deviceDetector.GetOs();
+        var browserInfo = deviceDetector.GetBrowserClient();
 
-        user.TrustedDevices.Add(new TrustedDevice
+        foreach (var device in user.TrustedDevices)
+            device.IsActive = false;
+
+        var trustedDevice = new TrustedDevice
         {
             Id = Guid.NewGuid(),
             DeviceId = GenerateDeviceId(contextAccessor.HttpContext!),
@@ -1013,11 +1017,14 @@ public sealed class AuthService(
             DeviceName = deviceDetector.GetDeviceName(),
             Brand = deviceDetector.GetBrandName(),
             Model = deviceDetector.GetModel(),
-            UserAgent = contextAccessor.HttpContext!.Request.Headers.UserAgent.ToString(),
             OsName = osInfo.Match.Name,
             OsPlatform = osInfo.Match.Platform,
             OsVersion = osInfo.Match.Version,
-        });
+            BrowserName = browserInfo.Match.Name,
+            BrowserVersion = browserInfo.Match.Version
+        };
+
+        user.TrustedDevices.Add(trustedDevice);
 
         user.LastKnownIp = ip;
         user.LastKnownLocation = await GetUserLocationAsync(ip);

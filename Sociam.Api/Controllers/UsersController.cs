@@ -11,6 +11,7 @@ using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
+using Sociam.Application.Features.Users.Queries.GetTrustedDevices;
 using Sociam.Application.Features.Users.Queries.GetUserProfile;
 using Sociam.Application.Helpers;
 
@@ -68,4 +69,10 @@ public class UsersController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> ChangeAccountPasswordAsync([FromBody] ChangeAccountPasswordCommand command)
         => CustomResult(await Mediator.Send(command));
+
+    [HttpGet("me/trusted-devices")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetUserTrustedDevicesAsync()
+        => CustomResult(await Mediator.Send(new GetTrustedDevicesQuery()));
 }
