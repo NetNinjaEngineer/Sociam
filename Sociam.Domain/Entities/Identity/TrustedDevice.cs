@@ -7,9 +7,16 @@ public sealed class TrustedDevice
     public bool IsActive { get; set; }
     public string Location { get; set; } = null!;
     public string IpAddress { get; set; } = null!;
-    public string UserAgent { get; set; } = null!;
-    public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.UtcNow;
+    public string Brand { get; set; } = null!;
+    public string Model { get; set; } = null!;
+    public string OsPlatform { get; set; } = null!;
+    public string OsName { get; set; } = null!;
+    public string OsVersion { get; set; } = null!;
     public DateTimeOffset ExpiryDate { get; set; }
+    public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public string BrowserName { get; set; } = null!;
+    public string BrowserVersion { get; set; } = null!;
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
 }

@@ -18,4 +18,5 @@ public interface IUserService
     Task<Result<bool>> ChangeAccountEmailAsync(ChangeAccountEmailCommand command);
     Task<Result<string>> VerifyChangeAccountEmailAsync(VerifyChangeEmailCommand command);
     Task<Result<bool>> ChangeAccountPasswordAsync(ChangeAccountPasswordCommand command);
+    Task<Result<IReadOnlyList<TrustedDeviceDto>>> GetUserTrustedDevicesAsync();
 }

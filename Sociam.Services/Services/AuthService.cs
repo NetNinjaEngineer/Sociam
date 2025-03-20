@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DeviceDetectorNET;
 using FluentValidation;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,7 @@ using Sociam.Application.Features.Auth.Commands.SendConfirmEmailCode;
 using Sociam.Application.Features.Auth.Commands.SignInGoogle;
 using Sociam.Application.Features.Auth.Commands.ValidateToken;
 using Sociam.Application.Features.Auth.Commands.Verify2FaCode;
+using Sociam.Application.Features.Auth.Commands.VerifyDevice;
 using Sociam.Application.Features.Auth.Commands.VerifyMfa;
 using Sociam.Application.Features.Auth.Commands.VerifyMfaLogin;
 using Sociam.Application.Features.Auth.Queries.GetAccessToken;
@@ -178,7 +180,7 @@ public sealed class AuthService(
 
     private async Task<string?> GetUserTimeZoneAsync()
     {
-        var userIpAddress = contextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        var userIpAddress = GetCurrentIp();
         if (string.IsNullOrEmpty(userIpAddress))
             return null;
 
@@ -670,7 +672,8 @@ public sealed class AuthService(
     public async Task<Result<SignInResponseDto>> LoginAsync(LoginUserCommand command)
 
     {
-        var loggedInUser = await userManager.FindByEmailAsync(command.Email);
+        var loggedInUser = await userManager.Users.Include(u => u.TrustedDevices)
+            .FirstOrDefaultAsync(u => u.Email == command.Email);
 
         if (loggedInUser is null)
             return Result<SignInResponseDto>.Failure(HttpStatusCode.NotFound, DomainErrors.Users.UnkownUser);
@@ -711,9 +714,75 @@ public sealed class AuthService(
             return Result<SignInResponseDto>.Failure(
                 HttpStatusCode.Unauthorized, DomainErrors.Users.InvalidCredientials);
 
+        // check is the user device is trusted by sending it a code to its email 
+        // and validate this codes and expiry and check is the user is has trusted device or not
+
+        var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
+        var currentIpAddress = GetCurrentIp();
+        string? currentUserLocation = await GetUserLocationAsync(currentIpAddress);
+        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
+
+        if (trustedDevice == null ||
+            loggedInUser.LastKnownIp != currentIpAddress ||
+            loggedInUser.LastKnownLocation != currentUserLocation)
+        {
+            // Generate the verification code and send it to his mail
+
+            var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
+            loggedInUser.DeviceVerificationCode = verificationCode;
+            loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
+
+            await userManager.UpdateAsync(loggedInUser);
+
+            await mailService.SendEmailAsync(new EmailMessage
+            {
+                Subject = "New Device Verification",
+                To = loggedInUser.Email!,
+                Message = $"A new login attempt was detected from {currentUserLocation}. Your verification " +
+                $"code is: {verificationCode}"
+            });
+
+            return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
+        }
+
         var response = await CreateLoginResponseAsync(userManager, loggedInUser);
         return Result<SignInResponseDto>.Success(response);
 
+    }
+
+    private async Task<string?> GetUserLocationAsync(string currentIpAddress)
+    {
+        var userIPInfo = await ipInfoApi.GetIpInfoAsync(currentIpAddress, _ipInfo.Token);
+        if (userIPInfo is null)
+            return null;
+
+        var locationBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(userIPInfo.City))
+            locationBuilder.Append(userIPInfo.City);
+
+        if (!string.IsNullOrEmpty(userIPInfo.Region))
+        {
+            if (locationBuilder.Length > 0)
+                locationBuilder.Append(", ");
+            locationBuilder.Append(userIPInfo.Region);
+        }
+
+        if (!string.IsNullOrEmpty(userIPInfo.Country))
+        {
+            if (locationBuilder.Length > 0)
+                locationBuilder.Append(", ");
+            locationBuilder.Append(userIPInfo.Country);
+        }
+
+        return locationBuilder.Length > 0 ? locationBuilder.ToString() : null;
+    }
+
+    private static string GenerateDeviceId(HttpContext httpContext)
+    {
+        var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+        var computedHash = SHA256.HashData(Encoding.UTF8.GetBytes(userAgent));
+        return Convert.ToBase64String(computedHash);
     }
 
     private async Task<SignInResponseDto> CreateLoginResponseAsync(
@@ -908,4 +977,74 @@ public sealed class AuthService(
         var decodedAccessToken = Encoding.UTF8.GetString(Convert.FromBase64String(accessToken));
         return Task.FromResult(Result<string>.Success(decodedAccessToken));
     }
+
+    public async Task<Result<SignInResponseDto>> VerifyDeviceAsync(VerifyDeviceCommand request)
+    {
+        var validator = new VerifyDeviceCommandValidator();
+        await validator.ValidateAndThrowAsync(request);
+
+        var user = await userManager.Users.Include(u => u.TrustedDevices)
+            .FirstOrDefaultAsync(user => user.Email == request.Email);
+
+        if (user is null ||
+            user.DeviceVerificationCode != request.VerificationCode ||
+            user.DeviceVerificationExpiry < DateTimeOffset.UtcNow)
+            return Result<SignInResponseDto>.Failure(HttpStatusCode.Unauthorized);
+
+        user.DeviceVerificationCode = null;
+        user.DeviceVerificationExpiry = null;
+
+        var deviceDetector = GetUserDeviceInfo(contextAccessor.HttpContext!.Request);
+
+        var ip = GetCurrentIp();
+
+        var osInfo = deviceDetector.GetOs();
+        var browserInfo = deviceDetector.GetBrowserClient();
+
+        foreach (var device in user.TrustedDevices)
+            device.IsActive = false;
+
+        var trustedDevice = new TrustedDevice
+        {
+            Id = Guid.NewGuid(),
+            DeviceId = GenerateDeviceId(contextAccessor.HttpContext!),
+            ExpiryDate = DateTimeOffset.UtcNow.AddMonths(Convert.ToInt32(configuration["ExpiryDateInMonthes"])),
+            LastLogin = DateTimeOffset.UtcNow,
+            IsActive = true,
+            IpAddress = ip,
+            UserId = user.Id,
+            Location = await GetUserLocationAsync(ip) ?? "",
+            DeviceName = deviceDetector.GetDeviceName(),
+            Brand = deviceDetector.GetBrandName(),
+            Model = deviceDetector.GetModel(),
+            OsName = osInfo.Match.Name,
+            OsPlatform = osInfo.Match.Platform,
+            OsVersion = osInfo.Match.Version,
+            BrowserName = browserInfo.Match.Name,
+            BrowserVersion = browserInfo.Match.Version
+        };
+
+        user.TrustedDevices.Add(trustedDevice);
+
+        user.LastKnownIp = ip;
+        user.LastKnownLocation = await GetUserLocationAsync(ip);
+
+        await userManager.UpdateAsync(user);
+
+        var loginResponse = await CreateLoginResponseAsync(userManager, user);
+
+        return Result<SignInResponseDto>.Success(loginResponse);
+    }
+
+    private static DeviceDetector GetUserDeviceInfo(HttpRequest request)
+    {
+        var userAgent = request.Headers.UserAgent;
+        var headers = request.Headers.ToDictionary(a => a.Key, a => a.Value.ToArray().FirstOrDefault());
+        var clientHints = ClientHints.Factory(headers);
+        var detector = new DeviceDetector(userAgent, clientHints);
+        detector.Parse();
+        return detector;
+    }
+
+    private string GetCurrentIp() => contextAccessor.HttpContext!.Connection.RemoteIpAddress!.ToString();
 }
