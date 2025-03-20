@@ -756,8 +756,26 @@ public sealed class AuthService(
         if (userIPInfo is null)
             return null;
 
-        var currentUserLocation = string.Concat(userIPInfo.City, " ", userIPInfo?.Country);
-        return currentUserLocation;
+        var locationBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(userIPInfo.City))
+            locationBuilder.Append(userIPInfo.City);
+
+        if (!string.IsNullOrEmpty(userIPInfo.Region))
+        {
+            if (locationBuilder.Length > 0)
+                locationBuilder.Append(", ");
+            locationBuilder.Append(userIPInfo.Region);
+        }
+
+        if (!string.IsNullOrEmpty(userIPInfo.Country))
+        {
+            if (locationBuilder.Length > 0)
+                locationBuilder.Append(", ");
+            locationBuilder.Append(userIPInfo.Country);
+        }
+
+        return locationBuilder.Length > 0 ? locationBuilder.ToString() : null;
     }
 
     private static string GenerateDeviceId(HttpContext httpContext)
