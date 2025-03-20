@@ -753,7 +753,10 @@ public sealed class AuthService(
     private async Task<string?> GetUserLocationAsync(string currentIpAddress)
     {
         var userIPInfo = await ipInfoApi.GetIpInfoAsync(currentIpAddress, _ipInfo.Token);
-        var currentUserLocation = userIPInfo?.Loc;
+        if (userIPInfo is null)
+            return null;
+
+        var currentUserLocation = string.Concat(userIPInfo.City, " ", userIPInfo?.Country);
         return currentUserLocation;
     }
 
