@@ -34,4 +34,5 @@ public sealed class ApplicationUser : IdentityUser
     public ICollection<JoinGroupRequest> JoinGroupRequests { get; set; } = [];
     public ICollection<Group> GroupsCreated { get; set; } = [];
     public ICollection<TrustedDevice> TrustedDevices { get; set; } = [];
+    public ICollection<Post> Posts { get; set; } = [];
 }

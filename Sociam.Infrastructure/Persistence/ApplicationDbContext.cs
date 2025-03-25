@@ -23,6 +23,10 @@ public sealed class ApplicationDbContext(
     public DbSet<MessageReply> MessageReplies { get; set; }
     public DbSet<JoinGroupRequest> JoinGroupRequests { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Post> Posts { get; set; }
+    public DbSet<PostComment> PostComments { get; set; }
+    public DbSet<PostReaction> PostReactions { get; set; }
+    public DbSet<PostTag> PostTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
