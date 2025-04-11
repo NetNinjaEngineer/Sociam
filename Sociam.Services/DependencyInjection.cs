@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,6 @@ using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Infrastructure.Persistence;
 using Sociam.Services.Services;
-using System.Text;
 
 namespace Sociam.Services;
 
@@ -120,6 +120,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
 
         services.AddScoped<IUserService, UserService>();
+
+        services.AddScoped<IPostsService, PostsService>();
 
         services.Configure<CloudinarySettings>(configuration.GetSection(nameof(CloudinarySettings)));
 

@@ -1,4 +1,5 @@
-﻿using CloudinaryDotNet;
+﻿using System.Net;
+using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +8,6 @@ using Sociam.Application.Bases;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
-using System.Net;
 
 namespace Sociam.Services.Services;
 
@@ -191,7 +191,8 @@ public sealed class FileService : IFileService
         {
             PublicId = uploadResult.PublicId,
             Url = uploadResult.SecureUrl.ToString(),
-            AssetId = uploadResult.AssetId
+            AssetId = uploadResult.AssetId,
+            Type = fileType
         });
     }
 

@@ -263,7 +263,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Conversation", b =>
@@ -284,7 +284,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Conversations");
+                    b.ToTable("Conversations", (string)null);
 
                     b.HasDiscriminator<string>("ConversationType").HasValue("Conversation");
 
@@ -927,7 +927,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LiveStreams");
+                    b.ToTable("LiveStreams", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.Message", b =>
@@ -970,7 +970,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.MessageMention", b =>
@@ -1335,7 +1335,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StoryId");
 
-                    b.ToTable("StoryComment");
+                    b.ToTable("StoryComment", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.StoryReaction", b =>
@@ -1363,7 +1363,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StoryId");
 
-                    b.ToTable("StoryReaction");
+                    b.ToTable("StoryReaction", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.StoryView", b =>
@@ -1417,7 +1417,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FollowerUserId");
 
-                    b.ToTable("UserFollowers");
+                    b.ToTable("UserFollowers", (string)null);
                 });
 
             modelBuilder.Entity("Sociam.Domain.Entities.GroupConversation", b =>
@@ -1707,7 +1707,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("RefreshToken", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
@@ -1895,7 +1895,7 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("PostId");
 
-                            b1.ToTable("Posts");
+                            b1.ToTable("Posts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("PostId");

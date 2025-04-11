@@ -49,4 +49,15 @@ public static class UserManagerExtensions
 
         return userProfile;
     }
+
+    public static async Task<IEnumerable<ApplicationUser>> GetTaggedUsersAsync(
+        this UserManager<ApplicationUser> userManager,
+        List<string> taggedUserIds)
+    {
+        var taggedUsers = await userManager.Users
+          .AsNoTracking()
+          .Where(user => taggedUserIds.Contains(user.Id))
+          .ToListAsync();
+        return taggedUsers;
+    }
 }
