@@ -19,4 +19,5 @@ public sealed class Post : BaseEntity
     public ICollection<PostTag> Tags { get; set; } = [];
     public ICollection<PostReaction> Reactions { get; set; } = [];
     public ICollection<PostComment> Comments { get; set; } = [];
+    public ICollection<PostMedia> Media { get; set; } = [];
 }

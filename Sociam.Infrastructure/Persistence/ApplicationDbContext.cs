@@ -27,6 +27,7 @@ public sealed class ApplicationDbContext(
     public DbSet<PostComment> PostComments { get; set; }
     public DbSet<PostReaction> PostReactions { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
+    public DbSet<PostMedia> PostMedia { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
