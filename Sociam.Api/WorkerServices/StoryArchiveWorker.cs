@@ -21,10 +21,8 @@ public sealed class StoryArchiveWorker(
                 // Get the user's time zone
                 var timeZone = TimeZoneInfo.FindSystemTimeZoneById(currentUser.TimeZoneId);
 
-                // Calculate the current time in UTC
                 var currentTimeUtc = DateTimeOffset.UtcNow;
 
-                // Calculate the UTC offset for the user's time zone
                 var utcOffset = timeZone.GetUtcOffset(currentTimeUtc.DateTime);
 
                 var expiredStories = await databaseContext.Stories
