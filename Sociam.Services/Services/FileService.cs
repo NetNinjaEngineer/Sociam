@@ -210,7 +210,8 @@ public sealed class FileService : IFileService
     public async Task<Result<object>> GetResourceAsync(string assetId)
     {
         var result = await _cloudinary.GetResourceByAssetIdAsync(assetId);
-        return result.Error != null ? Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
+        return result.Error != null ?
+            Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
     }
 
     public async Task<Result<bool>> DeleteCloudinaryResourceAsync(string publicId, FileType fileType)

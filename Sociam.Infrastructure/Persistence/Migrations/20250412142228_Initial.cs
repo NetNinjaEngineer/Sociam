@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Sociam.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -298,6 +298,41 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Posts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Text = table.Column<string>(type: "text", nullable: true),
+                    CreatedById = table.Column<string>(type: "text", nullable: false),
+                    SharesCount = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Privacy = table.Column<string>(type: "text", nullable: false),
+                    OriginalPostId = table.Column<Guid>(type: "uuid", nullable: true),
+                    City = table.Column<string>(type: "text", nullable: true),
+                    Country = table.Column<string>(type: "text", nullable: true),
+                    Latitude = table.Column<string>(type: "text", nullable: true),
+                    Longitude = table.Column<string>(type: "text", nullable: true),
+                    Feeling = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Posts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Posts_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Posts_Posts_OriginalPostId",
+                        column: x => x.OriginalPostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshToken",
                 columns: table => new
                 {
@@ -500,6 +535,115 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                         principalTable: "Groups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostComments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedById = table.Column<string>(type: "text", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentCommentId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostComments_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostComments_PostComments_ParentCommentId",
+                        column: x => x.ParentCommentId,
+                        principalTable: "PostComments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostComments_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostMedia",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Url = table.Column<string>(type: "text", nullable: false),
+                    MediaType = table.Column<string>(type: "text", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AssetId = table.Column<string>(type: "text", nullable: false),
+                    PublicId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostMedia", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostMedia_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostReactions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReactedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    ReactedById = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostReactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostReactions_AspNetUsers_ReactedById",
+                        column: x => x.ReactedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostReactions_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostTags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaggedUserId = table.Column<string>(type: "text", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostTags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostTags_AspNetUsers_TaggedUserId",
+                        column: x => x.TaggedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostTags_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -740,18 +884,17 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Bio", "Code", "CodeExpiration", "ConcurrencyStamp", "CoverPhotoUrl", "CreatedAt", "DateOfBirth", "DeviceVerificationCode", "DeviceVerificationExpiry", "Email", "EmailConfirmed", "FirstName", "Gender", "LastKnownIp", "LastKnownLocation", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePictureUrl", "SecurityStamp", "TimeZoneId", "TwoFactorEnabled", "UpdatedAt", "UserName" },
                 values: new object[,]
                 {
-                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "fd88ff74-8046-4f01-901e-de2d80ad8a34", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 31, 213, DateTimeKind.Unspecified).AddTicks(2484), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), null, null, "chrisa@example.com", true, "Chris", "Male", null, null, "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAEIcd+089w/fuGeAWY9fqa7lzeGPD8+v+ZhCwt0dB8NgxJv5Zqez9PHC9BId476U7QQ==", null, false, null, "19a519c4-2bd0-4160-b931-188e3e3e133a", "Egypt Standard Time", false, null, "ChrisA@707" },
-                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "fbcbe875-f5c1-4f5f-80c2-1e9cf81ea8e8", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 595, DateTimeKind.Unspecified).AddTicks(6832), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), null, null, "bobbrown@example.com", true, "Bob", "Male", null, null, "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAENfl8YQykN+830va5iu4JVGAwwCkrciAPpddDLbvUV8pWhJViharzwsqurdcNtn1ag==", null, false, null, "e4890b09-fa47-48c6-9223-c7df005940be", "Egypt Standard Time", false, null, "BobBrown@101" },
-                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "6ab9b96b-432a-4d0f-b847-f3dc527cda74", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 31, 106, DateTimeKind.Unspecified).AddTicks(7138), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), null, null, "laurat@example.com", true, "Laura", "Female", null, null, "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEHfFDNn4EhYD72mcsaEhxn1E2nEK0o5IehBC4w1R8uXw8v/1VHMRSwRXWchLWPm0HQ==", null, false, null, "c697edf7-82e7-4842-8ac3-937c97f62e10", "Egypt Standard Time", false, null, "LauraT@606" },
-                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "dfff31da-97a9-498c-b30c-5584c3663bb4", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 986, DateTimeKind.Unspecified).AddTicks(1710), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), null, null, "davidm@example.com", true, "David", "Male", null, null, "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAECX1fgv7CA0dhFqSBM1sbPPWLYucajbbNdtuKaT5eL+BkTcojPCugdbAvVHc6sDKMQ==", null, false, null, "87cf4f3c-8698-4a08-9659-90669b29a961", "Egypt Standard Time", false, null, "DavidM@505" },
-                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "f2e3186c-2817-483a-8174-d5cf85da126b", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 260, DateTimeKind.Unspecified).AddTicks(1713), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), null, null, "johndoe@example.com", true, "John", "Male", null, null, "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEK7cvJccbSqnU0X60dm4VCm+IpdlpHDKrgLm7Zw5yRNPKpiFBB8WeXcnrEmikvkJKQ==", null, false, null, "bbd70624-ecff-4cf7-b764-6bf20ccb71c7", "Egypt Standard Time", false, null, "JohnDoe@123" },
-                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "b11206aa-a5aa-477f-a90d-be6ed402a1bb", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 794, DateTimeKind.Unspecified).AddTicks(5769), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), null, null, "michaelw@example.com", true, "Michael", "Male", null, null, "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEKJEVvM0YxuLQn8nR4/2/jUSpRzHvDZ2PUh+KQhFT66K8N4z/0m+dvHWM5bj4ih/fg==", null, false, null, "a59d81ad-689b-46cd-b140-7a133d8b1007", "Egypt Standard Time", false, null, "MichaelW@303" },
-                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "78e35e66-20c8-4842-baa1-3473285d86b4", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 697, DateTimeKind.Unspecified).AddTicks(1223), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), null, null, "emilyd@example.com", true, "Emily", "Female", null, null, "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEDTSGnpN+ooB3MICjm4FcbkLHZ7iioFdrOXlaD6/kkG1E6Jn3+IkLXvDn3WR0nmo+Q==", null, false, null, "986d8022-3d14-479a-bfa4-2e75dcb54359", "Egypt Standard Time", false, null, "EmilyD@202" },
-                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "d8fc0a6d-cbcc-4f5c-b92c-2700078baa6d", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 9, DateTimeKind.Unspecified).AddTicks(1126), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), null, null, "me5260287@gmail.com", true, "Mohamed", "Male", null, null, "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEKffantNQn85DD/c2zS3VENdY+OWCU8MP4flvaZvowhCPcmLX8gwHHxYWC1jdadRrg==", null, false, null, "c6504981-4dee-4c81-9239-9d58fdae278c", "Egypt Standard Time", false, null, "Moehab@2002" },
-                    { "83DFC31A-11E5-4AD3-955D-10766FCAA955", 0, "Software Developer and Tech Enthusiast.", null, null, "50ba2acc-6337-4ca4-ab3a-353bba67d34e", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 131, DateTimeKind.Unspecified).AddTicks(1907), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 12, 10), null, null, "melhelaly43@gmail.com", true, "Mohamed", "Male", null, null, "Ehab", false, null, "MELHELALY43@GMAIL.COM", "MEMO@2002", "AQAAAAIAAYagAAAAEPr4TUK5opIJ5+8Hn+hiYn6k/DJjalSbCDQwCOf/FQKxicuzZblcsOFO9zqcwffM+g==", null, false, null, "63e3cceb-5c24-4921-98d5-5a47a2cbf5cd", "Egypt Standard Time", false, null, "memo@2002" },
-                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "0580e93f-9a73-4108-beaf-058c043a6a6e", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 386, DateTimeKind.Unspecified).AddTicks(3600), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), null, null, "janesmith@example.com", true, "Jane", "Female", null, null, "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAEIjaUp0KA+4t7WaW/jSUSsWapwNhzesy0/2BYwTtC4s2at5VRTMTV1X2+p90JfreEA==", null, false, null, "a327ceb4-a715-4f4d-9414-1e071d185850", "Egypt Standard Time", false, null, "JaneSmith@456" },
-                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "c57ec4d3-8f1c-4ead-8e9d-8b5c9c0201fc", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 889, DateTimeKind.Unspecified).AddTicks(9156), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), null, null, "sarahm@example.com", true, "Sarah", "Female", null, null, "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEOw1Nhvn2daXYKWWqBdpLyQlSVIsQFXEatEgGXNA5VXqIm09Se5km4thOLWKnP6NAg==", null, false, null, "74742616-2325-457d-a9f6-87372ff3ec03", "Egypt Standard Time", false, null, "SarahM@404" },
-                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "f7d170d6-f485-4f3c-b66e-3ce77424a06e", null, new DateTimeOffset(new DateTime(2025, 3, 20, 13, 49, 30, 491, DateTimeKind.Unspecified).AddTicks(6848), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), null, null, "alicej@example.com", true, "Alice", "Female", null, null, "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAEDG7XUjd8czTYgYG44rfIlSc0NZE9d+BwrD50B+kTQ3HFDxjQ1j0V76n+xfLqPoLfg==", null, false, null, "35c2e683-d4b5-4a65-af83-a53ee733638a", "Egypt Standard Time", false, null, "AliceJ@789" }
+                    { "049759F5-3AD8-46BF-89EE-AC51F3BEED88", 0, "Gamer and tech enthusiast.", null, null, "bb0c2155-77a4-46f8-a871-77c62fa2fe7d", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 588, DateTimeKind.Unspecified).AddTicks(1818), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 2, 14), null, null, "chrisa@example.com", true, "Chris", "Male", null, null, "Anderson", false, null, "CHRISA@EXAMPLE.COM", "CHRISA@707", "AQAAAAIAAYagAAAAECvapufBVWr5wMTu50vEUmAGtGpOQ8ZplEoTSQ1sqKk3Gl7ywz2hHL/xJvLayy000g==", null, false, null, "6e7f6f12-9ad1-4eed-99e7-4802225ed8d6", "Egypt Standard Time", false, null, "ChrisA@707" },
+                    { "0821819C-64AE-4C73-96F2-4E607AA59D7E", 0, "Tech entrepreneur and mentor.", null, null, "f1ed880f-a045-4aa6-9585-635922ffa3ee", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 26, 993, DateTimeKind.Unspecified).AddTicks(6410), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1980, 12, 5), null, null, "bobbrown@example.com", true, "Bob", "Male", null, null, "Brown", false, null, "BOBBROWN@EXAMPLE.COM", "BOBBROWN@101", "AQAAAAIAAYagAAAAEOgOiuAHjh6zlRPm49R7+ujNpZze5oHu7mFRhep77bCP4kLaut8z7tda9aoyIL0VmA==", null, false, null, "7b9618fd-d9b8-48bb-9493-90cee8a0a4e9", "Egypt Standard Time", false, null, "BobBrown@101" },
+                    { "0A9232F3-BC6D-4610-AAFF-F1032831E847", 0, "Nature lover and environmentalist.", null, null, "66d34474-8114-46e3-8d40-dcabe20b048d", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 494, DateTimeKind.Unspecified).AddTicks(5920), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 6, 20), null, null, "laurat@example.com", true, "Laura", "Female", null, null, "Taylor", false, null, "LAURAT@EXAMPLE.COM", "LAURAT@606", "AQAAAAIAAYagAAAAEDamtvM5QxSmgAcaQu8QqyBJzJxqHKQPuO48JoHI3Ah21ixdw63ga9p13LWYXcKQBg==", null, false, null, "6b709c19-e4e6-42fd-9e40-ba52dc6bd4ba", "Egypt Standard Time", false, null, "LauraT@606" },
+                    { "3944C201-0184-4F97-83A6-B6E4852C961F", 0, "History buff and teacher.", null, null, "7bea35a9-f736-468e-8e87-1439d382ce6f", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 397, DateTimeKind.Unspecified).AddTicks(5186), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1975, 11, 12), null, null, "davidm@example.com", true, "David", "Male", null, null, "Moore", false, null, "DAVIDM@EXAMPLE.COM", "DAVIDM@505", "AQAAAAIAAYagAAAAEOAxnSiaERpnBw+rpW5FhmHYxw8EzGiClBa64KNAkLPfLcjzwDWgCi8J61OROaFhDw==", null, false, null, "f345c5b5-b2a9-404e-ae91-1ba586f661dd", "Egypt Standard Time", false, null, "DavidM@505" },
+                    { "3EB45CDA-F2EE-43E7-B9F1-D52562E05929", 0, "Loves hiking and photography.", null, null, "61458176-ef73-425a-80ab-3960a5dedbbd", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 26, 682, DateTimeKind.Unspecified).AddTicks(4632), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1990, 5, 15), null, null, "johndoe@example.com", true, "John", "Male", null, null, "Doe", false, null, "JOHNDOE@EXAMPLE.COM", "JOHNDOE@123", "AQAAAAIAAYagAAAAEPHZa40YACm8IlU/HRXIjQ8V4FP8b/IadrvZwdLySqHBK0uzqXBoyDcYH408cSSnCg==", null, false, null, "0e6f6132-36d9-4978-b4dd-6b5bea1415a0", "Egypt Standard Time", false, null, "JohnDoe@123" },
+                    { "5326BB55-A26F-47FE-ABC4-9DF44F7B0333", 0, "Musician and songwriter.", null, null, "18d60dc1-016e-43d8-b013-22dfc7ab28be", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 183, DateTimeKind.Unspecified).AddTicks(9677), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1988, 9, 25), null, null, "michaelw@example.com", true, "Michael", "Male", null, null, "Wilson", false, null, "MICHAELW@EXAMPLE.COM", "MICHAELW@303", "AQAAAAIAAYagAAAAEMfxFNXMep9iS+qDieLFNwz1MfYiR+BTtnA75Jd9wuYcWoh0g745I+bZ/TxDkIxjRw==", null, false, null, "ab744a9c-d84e-482f-8fdd-7ca4a35ca135", "Egypt Standard Time", false, null, "MichaelW@303" },
+                    { "5B91855C-2D98-4E2B-B919-CDE322C9002D", 0, "Fitness trainer and health coach.", null, null, "3af7a2f7-bd54-4a9e-a8d2-412992437e99", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 88, DateTimeKind.Unspecified).AddTicks(9626), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1992, 7, 18), null, null, "emilyd@example.com", true, "Emily", "Female", null, null, "Davis", false, null, "EMILYD@EXAMPLE.COM", "EMILYD@202", "AQAAAAIAAYagAAAAEOTHW1aO2E1m3HrzDzKowpi45zoqJ/fglnh6NRWE+bAky0ZoyV/ERegeLQhCjUudMw==", null, false, null, "3488685c-e428-4c94-9349-9fa518c5667b", "Egypt Standard Time", false, null, "EmilyD@202" },
+                    { "702C7401-F83C-4684-9421-9AA74FC40050", 0, "Software Developer and Tech Enthusiast.", null, null, "4d1ccd74-7bf4-4846-8840-04169606c6e2", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 26, 585, DateTimeKind.Unspecified).AddTicks(4513), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(2002, 1, 1), null, null, "me5260287@gmail.com", true, "Mohamed", "Male", null, null, "Ehab", false, null, "ME5260287@GMAIL.COM", "MOEHAB@2002", "AQAAAAIAAYagAAAAEK4B0qevNsD+FkCXgaRRMT9wjbfV0SgKPVszzaJ/itYcMnuVq5J+IPK6AEaSo2UiDg==", null, false, null, "f66b6793-9254-40f5-bf07-63e04a52e91b", "Egypt Standard Time", false, null, "Moehab@2002" },
+                    { "9818FAE0-A167-4808-A30D-BC7418A53CB0", 0, "Passionate about art and design.", null, null, "97a14568-9870-4975-8e0d-a3e969b122c7", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 26, 779, DateTimeKind.Unspecified).AddTicks(5730), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1985, 8, 22), null, null, "janesmith@example.com", true, "Jane", "Female", null, null, "Smith", false, null, "JANESMITH@EXAMPLE.COM", "JANESMITH@456", "AQAAAAIAAYagAAAAEI1+PDDIHELnUbDwb+4RtWxLlffWSWpo3yfTR2THI9hdwH5uhI06CKK5oDtay2sAYA==", null, false, null, "2316d40d-7cd7-4469-9426-ddf54162c741", "Egypt Standard Time", false, null, "JaneSmith@456" },
+                    { "B3945AB7-1F46-4829-9DEA-6860E283582F", 0, "Book lover and aspiring writer.", null, null, "c89d99e1-eb50-42eb-8c55-e9060dc2a75b", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 27, 280, DateTimeKind.Unspecified).AddTicks(73), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1998, 4, 30), null, null, "sarahm@example.com", true, "Sarah", "Female", null, null, "Miller", false, null, "SARAHM@EXAMPLE.COM", "SARAHM@404", "AQAAAAIAAYagAAAAEGZSLPufXgVo4Zqaqbc08izTA5KmmNMzXBDock9CCY+LXd51gmZqbYXdNqhIMTP4SA==", null, false, null, "611ce2b0-9995-4168-aa8f-0add27eb1893", "Egypt Standard Time", false, null, "SarahM@404" },
+                    { "FE2FB445-6562-49DD-B0A3-77E0A3A1C376", 0, "Travel enthusiast and foodie.", null, null, "f9b9ff9b-590f-405a-a723-5afc166c74ca", null, new DateTimeOffset(new DateTime(2025, 4, 12, 16, 22, 26, 896, DateTimeKind.Unspecified).AddTicks(5926), new TimeSpan(0, 2, 0, 0, 0)), new DateOnly(1995, 3, 10), null, null, "alicej@example.com", true, "Alice", "Female", null, null, "Johnson", false, null, "ALICEJ@EXAMPLE.COM", "ALICEJ@789", "AQAAAAIAAYagAAAAENP6gG7cZ15OMfHdKGtKBtV2Cnh+qFzjS5Kl1Lo4lZ1uyUEuv3OewYHVBFJt5ahGuw==", null, false, null, "4bdafa81-c60d-4fcc-86a7-92b62fa5be81", "Egypt Standard Time", false, null, "AliceJ@789" }
                 });
 
             migrationBuilder.InsertData(
@@ -767,8 +910,6 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                     { "BE3B9D48-68F5-42E3-9371-E7964F96A25D", "5B91855C-2D98-4E2B-B919-CDE322C9002D" },
                     { "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F", "702C7401-F83C-4684-9421-9AA74FC40050" },
                     { "BE3B9D48-68F5-42E3-9371-E7964F96A25D", "702C7401-F83C-4684-9421-9AA74FC40050" },
-                    { "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F", "83DFC31A-11E5-4AD3-955D-10766FCAA955" },
-                    { "BE3B9D48-68F5-42E3-9371-E7964F96A25D", "83DFC31A-11E5-4AD3-955D-10766FCAA955" },
                     { "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F", "9818FAE0-A167-4808-A30D-BC7418A53CB0" },
                     { "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F", "B3945AB7-1F46-4829-9DEA-6860E283582F" },
                     { "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F", "FE2FB445-6562-49DD-B0A3-77E0A3A1C376" }
@@ -963,6 +1104,56 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 column: "StoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PostComments_CreatedById",
+                table: "PostComments",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostComments_ParentCommentId",
+                table: "PostComments",
+                column: "ParentCommentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostComments_PostId",
+                table: "PostComments",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostMedia_PostId",
+                table: "PostMedia",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostReactions_PostId",
+                table: "PostReactions",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostReactions_ReactedById",
+                table: "PostReactions",
+                column: "ReactedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Posts_CreatedById",
+                table: "Posts",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Posts_OriginalPostId",
+                table: "Posts",
+                column: "OriginalPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostTags_PostId",
+                table: "PostTags",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostTags_TaggedUserId",
+                table: "PostTags",
+                column: "TaggedUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Stories_UserId",
                 table: "Stories",
                 column: "UserId");
@@ -1060,6 +1251,18 @@ namespace Sociam.Infrastructure.Persistence.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "PostComments");
+
+            migrationBuilder.DropTable(
+                name: "PostMedia");
+
+            migrationBuilder.DropTable(
+                name: "PostReactions");
+
+            migrationBuilder.DropTable(
+                name: "PostTags");
+
+            migrationBuilder.DropTable(
                 name: "RefreshToken");
 
             migrationBuilder.DropTable(
@@ -1082,6 +1285,9 @@ namespace Sociam.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Messages");
+
+            migrationBuilder.DropTable(
+                name: "Posts");
 
             migrationBuilder.DropTable(
                 name: "Stories");

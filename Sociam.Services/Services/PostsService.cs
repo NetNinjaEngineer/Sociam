@@ -18,6 +18,7 @@ using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Specifications;
 
 namespace Sociam.Services.Services
 {
@@ -161,7 +162,8 @@ namespace Sociam.Services.Services
             var validator = new EditPostCommandValidator();
             await validator.ValidateAndThrowAsync(command, CancellationToken.None);
 
-            var existedPost = await unitOfWork.Repository<Post>()!.GetByIdAsync(command.PostId);
+            var existedPost = await unitOfWork.Repository<Post>()!.GetBySpecificationAsync(
+                new GetPostWithMediaSpecification(command.PostId));
 
             if (existedPost == null)
                 return Result<Unit>.Failure(HttpStatusCode.NotFound);
