@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,9 @@ namespace Sociam.Services.Services
     {
         public async Task<Result<Guid>> CreatePostAsync(CreatePostCommand command)
         {
+            var validator = new CreatePostCommandValidator();
+            await validator.ValidateAndThrowAsync(command, CancellationToken.None);
+
             var mappedPost = new Post
             {
                 Id = Guid.NewGuid(),
@@ -154,6 +158,9 @@ namespace Sociam.Services.Services
 
         public async Task<Result<Unit>> EditPostAsync(EditPostCommand command)
         {
+            var validator = new EditPostCommandValidator();
+            await validator.ValidateAndThrowAsync(command, CancellationToken.None);
+
             var existedPost = await unitOfWork.Repository<Post>()!.GetByIdAsync(command.PostId);
 
             if (existedPost == null)
