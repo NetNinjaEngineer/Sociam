@@ -1,10 +1,10 @@
-﻿using FluentValidation;
+﻿using System.Reflection;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sociam.Application.Authorization.Handlers;
 using Sociam.Application.Helpers;
-using System.Reflection;
 
 namespace Sociam.Application;
 
@@ -33,6 +33,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthorizationHandler, GroupOperationAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, StoryOperationAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, PostOperationsAuthorizationHandler>();
 
         return services;
     }

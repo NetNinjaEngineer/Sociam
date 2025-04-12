@@ -6,5 +6,7 @@ public enum FileType
     Video,
     Audio,
     Document,
-    Text
+    Text,
+    Link,
+    Pdf
 }

@@ -1,8 +1,8 @@
-﻿using MediatR;
+﻿using System.Net;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Attributes;
 using Sociam.Application.Bases;
-using System.Net;
 
 namespace Sociam.Api.Base;
 [ApiKey]
@@ -27,7 +27,7 @@ public class ApiBaseController(IMediator mediator) : ControllerBase
             HttpStatusCode.NoContent => new NoContentResult(),
             HttpStatusCode.Created => new ObjectResult(result),
             HttpStatusCode.UnprocessableEntity => new UnprocessableEntityObjectResult(result),
-            HttpStatusCode.Forbidden => new ForbidResult(),
+            HttpStatusCode.Forbidden => new ObjectResult(result) { StatusCode = StatusCodes.Status403Forbidden },
             _ => throw new InvalidOperationException()
         };
 }

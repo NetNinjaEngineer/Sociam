@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Sociam.Application.Bases;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
@@ -6,7 +7,6 @@ using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Interfaces;
 using Sociam.Domain.Specifications;
-using System.Net;
 
 namespace Sociam.Services.Services;
 public sealed class FollowingService(

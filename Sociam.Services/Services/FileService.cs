@@ -1,4 +1,5 @@
-﻿using CloudinaryDotNet;
+﻿using System.Net;
+using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +8,6 @@ using Sociam.Application.Bases;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
-using System.Net;
 
 namespace Sociam.Services.Services;
 
@@ -191,7 +191,8 @@ public sealed class FileService : IFileService
         {
             PublicId = uploadResult.PublicId,
             Url = uploadResult.SecureUrl.ToString(),
-            AssetId = uploadResult.AssetId
+            AssetId = uploadResult.AssetId,
+            Type = fileType
         });
     }
 
@@ -209,7 +210,22 @@ public sealed class FileService : IFileService
     public async Task<Result<object>> GetResourceAsync(string assetId)
     {
         var result = await _cloudinary.GetResourceByAssetIdAsync(assetId);
-        return result.Error != null ? Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
+        return result.Error != null ?
+            Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
+    }
+
+    public async Task<Result<bool>> DeleteCloudinaryResourceAsync(string publicId, FileType fileType)
+    {
+        var deleteParams = fileType switch
+        {
+            FileType.Image => new DeletionParams(publicId) { ResourceType = ResourceType.Image },
+            FileType.Video => new DeletionParams(publicId) { ResourceType = ResourceType.Video },
+            _ => new DeletionParams(publicId) { ResourceType = ResourceType.Raw }
+        };
+
+        var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
+        return deleteResult.StatusCode == HttpStatusCode.OK ?
+            Result<bool>.Success(true) : Result<bool>.Failure(HttpStatusCode.BadRequest, deleteResult.Error.Message);
     }
 
     private static FileType GetFileType(string fileExtension)

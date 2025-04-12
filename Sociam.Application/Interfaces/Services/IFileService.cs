@@ -11,4 +11,5 @@ public interface IFileService
     Task<Result<CloudinaryUploadResult>> CloudinaryUploadSingleFileAsync(IFormFile file);
     Task<Result<List<CloudinaryUploadResult>>> CloudinaryUploadMultipleFilesAsync(IFormFileCollection files);
     Task<Result<object>> GetResourceAsync(string assetId);
+    Task<Result<bool>> DeleteCloudinaryResourceAsync(string publicId, FileType fileType);
 }

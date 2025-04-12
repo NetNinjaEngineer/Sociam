@@ -6,7 +6,7 @@ namespace Sociam.Domain.Entities;
 public sealed class PostComment : BaseEntity
 {
     public string Comment { get; set; } = null!;
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public string CreatedById { get; set; } = null!;
     public ApplicationUser CreatedBy { get; set; } = null!;
