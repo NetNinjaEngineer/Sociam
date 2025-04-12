@@ -7,5 +7,6 @@ public enum PostMediaType
     Audio = 3,
     Document = 4,
     Link = 5,
-    Location = 6
+    Pdf,
+    Text
 }

@@ -9,4 +9,6 @@ public sealed class PostMedia : BaseEntity
     public PostMediaType MediaType { get; set; }
     public Guid PostId { get; set; }
     public Post Post { get; set; } = null!;
+    public string AssetId { get; set; } = null!;
+    public string PublicId { get; set; } = null!;
 }

@@ -213,6 +213,20 @@ public sealed class FileService : IFileService
         return result.Error != null ? Result<object>.Failure(HttpStatusCode.NotFound) : Result<object>.Success(result);
     }
 
+    public async Task<Result<bool>> DeleteCloudinaryResourceAsync(string publicId, FileType fileType)
+    {
+        var deleteParams = fileType switch
+        {
+            FileType.Image => new DeletionParams(publicId) { ResourceType = ResourceType.Image },
+            FileType.Video => new DeletionParams(publicId) { ResourceType = ResourceType.Video },
+            _ => new DeletionParams(publicId) { ResourceType = ResourceType.Raw }
+        };
+
+        var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
+        return deleteResult.StatusCode == HttpStatusCode.OK ?
+            Result<bool>.Success(true) : Result<bool>.Failure(HttpStatusCode.BadRequest, deleteResult.Error.Message);
+    }
+
     private static FileType GetFileType(string fileExtension)
     {
         return FileFormats.AllowedImageFormats.Contains(fileExtension) ? FileType.Image

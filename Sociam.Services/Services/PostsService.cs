@@ -12,6 +12,7 @@ using Sociam.Application.Features.Posts.Commands.EditPost;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
+using Sociam.Application.Interfaces.Services.Models;
 using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
@@ -83,6 +84,8 @@ namespace Sociam.Services.Services
                         PostId = mappedPost.Id,
                         Url = mediaUploadResult.Url,
                         MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
+                        AssetId = mediaUploadResult.AssetId,
+                        PublicId = mediaUploadResult.PublicId
                     };
                     mappedPost.Media.Add(postMedia);
                 }
@@ -171,7 +174,96 @@ namespace Sociam.Services.Services
                 return Result<Unit>.Failure(HttpStatusCode.Forbidden, DomainErrors.Posts.Forbiden);
             }
 
+            // Check if the post is a shared/reposted post
+            if (existedPost.OriginalPostId != null && command.Media != null && command.Media.Any())
+                return Result<Unit>.Failure(HttpStatusCode.Forbidden, "Media cannot be added to shared posts.");
+
+
+            if (!string.IsNullOrEmpty(command.Content))
+                existedPost.Text = command.Content;
+
+            if (command.PostLocation != null)
+                existedPost.Location = new PostLocation
+                {
+                    City = command.PostLocation.City,
+                    Country = command.PostLocation.Country,
+                    Latitude = command.PostLocation.Latitude,
+                    Longitude = command.PostLocation.Longitude
+                };
+
+            existedPost.Privacy = command.PostPrivacy;
+            existedPost.Feeling = command.PostFeeling;
+            existedPost.UpdatedAt = DateTimeOffset.UtcNow;
+
+            // Update media if its not a shared post
+            if (command.Media != null && command.Media.Any())
+            {
+                var errors = new List<string>();
+
+                foreach (var mediaFile in existedPost.Media)
+                {
+                    var mediaFileType = GetMediaFileType(mediaFile.MediaType);
+                    var deletionResult = await fileService.DeleteCloudinaryResourceAsync(mediaFile.PublicId, mediaFileType);
+                    if (deletionResult.IsFailure)
+                    {
+                        // Log the error
+                        logger.LogError("Error deleting resource with PublicId {PublicId}: {Error}", mediaFile.PublicId, deletionResult.Message);
+                        errors.Add($"Failed to delete resource with PublicId {mediaFile.PublicId}: {deletionResult.Message}");
+                    }
+                }
+
+                if (errors.Count != 0)
+                {
+                    var errorSummary = string.Join("; ", errors);
+                    logger.LogError("Some errors occurred while deleting media resources: {ErrorSummary}", errorSummary);
+                }
+
+                existedPost.Media.Clear();
+
+                var cloudinaryUploadResult = await fileService.CloudinaryUploadMultipleFilesAsync(command.Media);
+                if (cloudinaryUploadResult.IsFailure)
+                    return Result<Unit>.Failure(HttpStatusCode.BadRequest, "Failed to upload media files, try later !!!", cloudinaryUploadResult.Errors);
+
+                foreach (var mediaUploadResult in cloudinaryUploadResult.Value)
+                {
+                    var postMedia = new PostMedia
+                    {
+                        Id = Guid.NewGuid(),
+                        PostId = existedPost.Id,
+                        Url = mediaUploadResult.Url,
+                        MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
+                        AssetId = mediaUploadResult.AssetId,
+                        PublicId = mediaUploadResult.PublicId
+                    };
+
+                    existedPost.Media.Add(postMedia);
+                }
+            }
+
+
+            unitOfWork.Repository<Post>()?.Update(existedPost);
+
+            await unitOfWork.SaveChangesAsync();
+
             return Result<Unit>.Success(HttpStatusCode.NoContent);
+        }
+
+        private static FileType GetMediaFileType(PostMediaType mediaType)
+        {
+            if (mediaType == PostMediaType.Audio)
+                return FileType.Audio;
+            else if (mediaType == PostMediaType.Video)
+                return FileType.Video;
+            else if (mediaType == PostMediaType.Image)
+                return FileType.Image;
+            else if (mediaType == PostMediaType.Link)
+                return FileType.Link;
+            else if (mediaType == PostMediaType.Document)
+                return FileType.Document;
+            else if (mediaType == PostMediaType.Text)
+                return FileType.Text;
+            else
+                return FileType.Pdf;
         }
     }
 }
