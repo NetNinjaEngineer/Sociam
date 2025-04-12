@@ -19,6 +19,15 @@ public class Result<TSuccess>
         StatusCode = HttpStatusCode.OK;
     }
 
+    private Result(HttpStatusCode statusCode, string? message = null)
+    {
+        Value = default!;
+        IsSuccess = true;
+        StatusCode = statusCode;
+        Message = string.IsNullOrEmpty(message) ? string.Empty : message;
+    }
+
+
     private Result(HttpStatusCode statusCode, string? failureMessage = null, List<string>? errors = null)
     {
         Value = default!;
@@ -28,7 +37,12 @@ public class Result<TSuccess>
         StatusCode = statusCode;
     }
 
-    public static Result<TSuccess> Success(TSuccess value, string? successMessage = null) => new(value, successMessage);
+    public static Result<TSuccess> Success(TSuccess value, string? successMessage = null)
+        => new(value, successMessage);
+
+    public static Result<TSuccess> Success(HttpStatusCode statusCode, string? successMessage = null)
+        => new(statusCode, successMessage);
+
     public static Result<TSuccess> Failure(HttpStatusCode statusCode, string error) => new(statusCode, error);
     public static Result<TSuccess> Failure(HttpStatusCode statusCode, string? message = null,
         List<string>? errs = null) => new(statusCode, message, errs);

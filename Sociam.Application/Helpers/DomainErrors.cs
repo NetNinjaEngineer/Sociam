@@ -4,6 +4,11 @@ public static class DomainErrors
     public const string FileUploadFailed = "Unable to upload the media.";
     public const string FailedToDeleteMedia = "Failed to delete the media, try again later !!!";
 
+    public static class Posts
+    {
+        public const string Forbiden = "You are not authorized to perform this action.";
+    }
+
     public static class Replies
     {
         public const string ReplyNotFound = "Reply '{0}' not found.";

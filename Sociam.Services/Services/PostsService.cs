@@ -1,9 +1,15 @@
 ﻿using System.Net;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Sociam.Application.Authorization.Helpers;
 using Sociam.Application.Bases;
 using Sociam.Application.Extensions;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
+using Sociam.Application.Features.Posts.Commands.EditPost;
+using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Domain.Entities;
@@ -18,7 +24,9 @@ namespace Sociam.Services.Services
         IUnitOfWork unitOfWork,
         UserManager<ApplicationUser> userManager,
         IHubContext<PostsHub> hubContext,
-        IFileService fileService) : IPostsService
+        IFileService fileService,
+        IAuthorizationService authorizationService,
+        ILogger<PostsService> logger) : IPostsService
     {
         public async Task<Result<Guid>> CreatePostAsync(CreatePostCommand command)
         {
@@ -139,6 +147,31 @@ namespace Sociam.Services.Services
 
 
             return Result<Guid>.Success(mappedPost.Id, "Post created successfully");
+        }
+
+        public async Task<Result<Unit>> EditPostAsync(EditPostCommand command)
+        {
+            var existedPost = await unitOfWork.Repository<Post>()!.GetByIdAsync(command.PostId);
+
+            if (existedPost == null)
+                return Result<Unit>.Failure(HttpStatusCode.NotFound);
+
+            var authorizationResult = await authorizationService.AuthorizeAsync(
+                user: currentUser.GetUser()!,
+                resource: existedPost,
+                policyName: PostPolicies.EditPost);
+
+            if (!authorizationResult.Succeeded)
+            {
+                logger.LogWarning("Authorization failed for user {UserId} on post {PostId}. Reasons: {Reasons}",
+                   currentUser.Id,
+                   command.PostId,
+                   string.Join(", ", authorizationResult.Failure?.FailureReasons.Select(r => r.Message) ?? ["Unknown reason"]));
+
+                return Result<Unit>.Failure(HttpStatusCode.Forbidden, DomainErrors.Posts.Forbiden);
+            }
+
+            return Result<Unit>.Success(HttpStatusCode.NoContent);
         }
     }
 }

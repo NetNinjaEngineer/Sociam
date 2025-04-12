@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,6 @@ using Sociam.Application.Authorization.Helpers;
 using Sociam.Infrastructure;
 using Sociam.Persistence;
 using Sociam.Services;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +100,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddGroupPolicies();
     options.AddStoryPolicies();
+    options.AddPostPolicies();
 });
 
 builder.Services.AddSwaggerDocumentation();

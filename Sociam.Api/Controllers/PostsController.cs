@@ -5,6 +5,7 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
+using Sociam.Application.Features.Posts.Commands.EditPost;
 
 namespace Sociam.Api.Controllers
 {
@@ -18,5 +19,12 @@ namespace Sociam.Api.Controllers
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePostAsync([FromForm] CreatePostCommand command)
              => CustomResult(await Mediator.Send(command));
+
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> EditPostAsync([FromForm] EditPostCommand command)
+            => CustomResult(await Mediator.Send(command));
     }
 }
