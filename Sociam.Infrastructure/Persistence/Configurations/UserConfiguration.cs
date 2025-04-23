@@ -80,23 +80,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<ApplicationUs
                 CreatedAt = DateTimeOffset.Now,
                 TimeZoneId = "Egypt Standard Time"
             },
-            //new ApplicationUser()
-            //{
-            //    Id = "83DFC31A-11E5-4AD3-955D-10766FCAA955",
-            //    FirstName = "Mohamed",
-            //    LastName = "Ehab",
-            //    UserName = "memo@2002",
-            //    Email = "melhelaly43@gmail.com",
-            //    EmailConfirmed = true,
-            //    NormalizedEmail = "melhelaly43@gmail.com".ToUpper(),
-            //    NormalizedUserName = "memo@2002".ToUpper(),
-            //    PasswordHash = passwordHasher.HashPassword(null!, "P@ssw1234"),
-            //    DateOfBirth = new DateOnly(2002, 12, 10),
-            //    Gender = Gender.Male,
-            //    Bio = "Software Developer and Tech Enthusiast.",
-            //    CreatedAt = DateTimeOffset.Now,
-            //    TimeZoneId = "Egypt Standard Time"
-            //},
             new ApplicationUser()
             {
                 Id = "3EB45CDA-F2EE-43E7-B9F1-D52562E05929",

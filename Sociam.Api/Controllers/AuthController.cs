@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Text;
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sociam.Api.Base;
@@ -25,7 +26,6 @@ using Sociam.Application.Features.Auth.Commands.VerifyDevice;
 using Sociam.Application.Features.Auth.Commands.VerifyMfa;
 using Sociam.Application.Features.Auth.Commands.VerifyMfaLogin;
 using Sociam.Application.Features.Auth.Queries.GetAccessToken;
-using System.Text;
 
 namespace Sociam.Api.Controllers;
 [ApiVersion(1.0)]
@@ -84,8 +84,8 @@ public class AuthController(IMediator mediator) : ApiBaseController(mediator)
     public async Task<ActionResult<Result<SignInResponseDto>>> RefreshTokenAsync()
     {
         var refreshToken = Encoding.UTF8.GetString(Convert.FromBase64String(Request.Cookies["refresh_token"]!));
-        var authResponseResult = await Mediator.Send(new RefreshTokenCommand { Token = refreshToken! });
-        if (authResponseResult.Value?.IsAuthenticated == true)
+        var authResponseResult = await Mediator.Send(new RefreshTokenCommand { Token = refreshToken });
+        if (authResponseResult.Value.IsAuthenticated)
             SetRefreshTokenInCookie(
                 Convert.ToBase64String(Encoding.UTF8.GetBytes(authResponseResult.Value.RefreshToken!)),
                 authResponseResult.Value.RefreshTokenExpiration);

@@ -11,8 +11,6 @@ public sealed class UserProfile : Profile
     {
         CreateMap<ApplicationUser, UserProfileDto>()
             .ForMember(dest => dest.JoinedAt, options => options.MapFrom(src => src.CreatedAt));
-
         CreateMap<UpdateUserProfileCommand, ApplicationUser>();
-
     }
 }

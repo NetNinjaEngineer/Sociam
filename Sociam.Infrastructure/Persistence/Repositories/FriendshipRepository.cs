@@ -80,15 +80,6 @@ public sealed class FriendshipRepository(
 
     public async Task<List<ApplicationUser>> GetFriendsOfUserAsync(string userId)
     {
-        var users = await context.Friendships
-            .AsNoTracking()
-            .Include(x => x.Requester)
-            .Include(x => x.Receiver)
-            .Where(x => (x.RequesterId == userId || x.ReceiverId == userId) &&
-                        x.FriendshipStatus == FriendshipStatus.Accepted)
-            .Select(x => x.RequesterId == userId ? x.Receiver : x.Requester)
-            .ToListAsync();
-
         var friendships = await context.Friendships
             .AsNoTracking()
             .Include(friendship => friendship.Requester)

@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using AutoMapper;
 using DeviceDetectorNET;
 using FluentValidation;
 using Google.Apis.Auth;
@@ -40,10 +44,6 @@ using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Infrastructure.Persistence;
 using Sociam.Persistence.Clients;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 
 namespace Sociam.Services.Services;
 
@@ -670,7 +670,6 @@ public sealed class AuthService(
 
 
     public async Task<Result<SignInResponseDto>> LoginAsync(LoginUserCommand command)
-
     {
         var loggedInUser = await userManager.Users.Include(u => u.TrustedDevices)
             .FirstOrDefaultAsync(u => u.Email == command.Email);
@@ -717,35 +716,35 @@ public sealed class AuthService(
         // check is the user device is trusted by sending it a code to its email 
         // and validate this codes and expiry and check is the user is has trusted device or not
 
-        var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
-        var currentIpAddress = GetCurrentIp();
-        string? currentUserLocation = await GetUserLocationAsync(currentIpAddress);
-        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
+        //var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
+        //var currentIpAddress = GetCurrentIp();
+        //var currentUserLocation = await GetUserLocationAsync(currentIpAddress);
+        //var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
 
-        if (trustedDevice == null ||
-            loggedInUser.LastKnownIp != currentIpAddress ||
-            loggedInUser.LastKnownLocation != currentUserLocation)
-        {
-            // Generate the verification code and send it to his mail
+        //if (trustedDevice == null ||
+        //    loggedInUser.LastKnownIp != currentIpAddress ||
+        //    loggedInUser.LastKnownLocation != currentUserLocation)
+        //{
+        //    // Generate the verification code and send it to his mail
 
-            var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
-            loggedInUser.DeviceVerificationCode = verificationCode;
-            loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
-            loggedInUser.LastKnownIp = currentIpAddress;
-            loggedInUser.LastKnownLocation = currentUserLocation;
+        //    var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
+        //    loggedInUser.DeviceVerificationCode = verificationCode;
+        //    loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
+        //    loggedInUser.LastKnownIp = currentIpAddress;
+        //    loggedInUser.LastKnownLocation = currentUserLocation;
 
-            await userManager.UpdateAsync(loggedInUser);
+        //    await userManager.UpdateAsync(loggedInUser);
 
-            await mailService.SendEmailAsync(new EmailMessage
-            {
-                Subject = "New Device Verification",
-                To = loggedInUser.Email!,
-                Message = $"A new login attempt was detected from {currentUserLocation}. Your verification " +
-                $"code is: {verificationCode}"
-            });
+        //    await mailService.SendEmailAsync(new EmailMessage
+        //    {
+        //        Subject = "New Device Verification",
+        //        To = loggedInUser.Email!,
+        //        Message = $"A new login attempt was detected from {currentUserLocation}. Your verification " +
+        //        $"code is: {verificationCode}"
+        //    });
 
-            return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
-        }
+        //    return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
+        //}
 
         var response = await CreateLoginResponseAsync(userManager, loggedInUser);
         return Result<SignInResponseDto>.Success(response);
@@ -754,28 +753,28 @@ public sealed class AuthService(
 
     private async Task<string?> GetUserLocationAsync(string currentIpAddress)
     {
-        var userIPInfo = await ipInfoApi.GetIpInfoAsync(currentIpAddress, _ipInfo.Token);
-        if (userIPInfo is null)
+        var userIpInfo = await ipInfoApi.GetIpInfoAsync(currentIpAddress, _ipInfo.Token);
+        if (userIpInfo is null)
             return null;
 
         var locationBuilder = new StringBuilder();
 
-        if (!string.IsNullOrEmpty(userIPInfo.City))
-            locationBuilder.Append(userIPInfo.City);
+        if (!string.IsNullOrEmpty(userIpInfo.City))
+            locationBuilder.Append(userIpInfo.City);
 
-        if (!string.IsNullOrEmpty(userIPInfo.Region))
+        if (!string.IsNullOrEmpty(userIpInfo.Region))
         {
             if (locationBuilder.Length > 0)
                 locationBuilder.Append(", ");
-            locationBuilder.Append(userIPInfo.Region);
+            locationBuilder.Append(userIpInfo.Region);
         }
 
-        if (!string.IsNullOrEmpty(userIPInfo.Country))
-        {
-            if (locationBuilder.Length > 0)
-                locationBuilder.Append(", ");
-            locationBuilder.Append(userIPInfo.Country);
-        }
+        if (string.IsNullOrEmpty(userIpInfo.Country))
+            return locationBuilder.Length > 0 ? locationBuilder.ToString() : null;
+
+        if (locationBuilder.Length > 0)
+            locationBuilder.Append(", ");
+        locationBuilder.Append(userIpInfo.Country);
 
         return locationBuilder.Length > 0 ? locationBuilder.ToString() : null;
     }

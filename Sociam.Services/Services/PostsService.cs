@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -7,9 +8,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Sociam.Application.Authorization.Helpers;
 using Sociam.Application.Bases;
+using Sociam.Application.DTOs.Post;
 using Sociam.Application.Extensions;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
+using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
+using Sociam.Application.Features.Posts.Queries.GetPosts;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
 using Sociam.Application.Interfaces.Services;
@@ -18,11 +22,13 @@ using Sociam.Domain.Entities;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Domain.Interfaces;
+using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Specifications;
 
 namespace Sociam.Services.Services
 {
     public sealed class PostsService(
+        IMapper mapper,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         UserManager<ApplicationUser> userManager,
@@ -52,11 +58,11 @@ namespace Sociam.Services.Services
                 Feeling = command.Feeling
             };
 
-            IEnumerable<ApplicationUser> taggedUsers = [];
+            List<string> friends = [];
 
             if (command.TaggedUserIds != null && command.TaggedUserIds.Count > 0)
             {
-                taggedUsers = await userManager.GetTaggedUsersAsync(command.TaggedUserIds);
+                var taggedUsers = await userManager.GetTaggedUsersAsync(command.TaggedUserIds);
                 foreach (var user in taggedUsers)
                 {
                     // check if the tagged user is friend to the current post creator
@@ -72,28 +78,25 @@ namespace Sociam.Services.Services
                         TaggedUserId = user.Id,
                     };
                     mappedPost.Tags.Add(postTag);
+                    friends.Add(user.Id);
                 }
             }
 
-            if (command.Media != null && command.Media.Count > 0)
+            if (command.Media is { Count: > 0 })
             {
                 var cloudinaryUploadResult = await fileService.CloudinaryUploadMultipleFilesAsync(command.Media);
                 if (cloudinaryUploadResult.IsFailure)
                     return Result<Guid>.Failure(HttpStatusCode.BadRequest, "Failed to upload media files", cloudinaryUploadResult.Errors);
 
-                foreach (var mediaUploadResult in cloudinaryUploadResult.Value)
+                foreach (var postMedia in cloudinaryUploadResult.Value.Select(mediaUploadResult => new PostMedia
                 {
-                    var postMedia = new PostMedia
-                    {
-                        Id = Guid.NewGuid(),
-                        PostId = mappedPost.Id,
-                        Url = mediaUploadResult.Url,
-                        MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
-                        AssetId = mediaUploadResult.AssetId,
-                        PublicId = mediaUploadResult.PublicId
-                    };
-                    mappedPost.Media.Add(postMedia);
-                }
+                    Id = Guid.NewGuid(),
+                    PostId = mappedPost.Id,
+                    Url = mediaUploadResult.Url,
+                    MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
+                    AssetId = mediaUploadResult.AssetId,
+                    PublicId = mediaUploadResult.PublicId
+                })) { mappedPost.Media.Add(postMedia); }
 
             }
 
@@ -101,18 +104,15 @@ namespace Sociam.Services.Services
 
             // Now that post is created, send notifications based on privacy settings
             // send notifications to tagged users if the post privacy is public or friends
-            if (
-                taggedUsers.Any() &&
-                mappedPost.Privacy == PostPrivacy.Public &&
-                mappedPost.Privacy == PostPrivacy.Friends)
+            if (friends.Count != 0 && mappedPost.Privacy == PostPrivacy.Public && mappedPost.Privacy == PostPrivacy.Friends)
             {
-                foreach (var user in taggedUsers)
+                foreach (var userId in friends)
                 {
                     var postNotification = new PostNotification
                     {
                         Id = Guid.NewGuid(),
                         CreatedAt = DateTime.UtcNow,
-                        RecipientId = user.Id,
+                        RecipientId = userId,
                         ActorId = currentUser.Id,
                         PostContent = mappedPost.Text,
                         Message = $"{currentUser.FullName} tagged you in a post",
@@ -124,7 +124,7 @@ namespace Sociam.Services.Services
 
                     unitOfWork.NotificationRepository.Create(postNotification);
 
-                    await hubContext.Clients.User(user.Id).SendAsync("ReceiveTaggingNotification", postNotification);
+                    await hubContext.Clients.User(userId).SendAsync("ReceiveTaggingNotification", postNotification);
 
                 }
             }
@@ -148,7 +148,6 @@ namespace Sociam.Services.Services
 
                 unitOfWork.NotificationRepository.Create(createdPostNotification);
                 await hubContext.Clients.User(friend).SendAsync("ReceiveNewPostNotification", createdPostNotification);
-
             }
 
             await unitOfWork.SaveChangesAsync();
@@ -202,7 +201,6 @@ namespace Sociam.Services.Services
 
             existedPost.Privacy = command.PostPrivacy;
             existedPost.Feeling = command.PostFeeling;
-            existedPost.UpdatedAt = DateTimeOffset.UtcNow;
 
             // Update media if its not a shared post
             if (command.Media != null && command.Media.Any())
@@ -213,12 +211,10 @@ namespace Sociam.Services.Services
                 {
                     var mediaFileType = GetMediaFileType(mediaFile.MediaType);
                     var deletionResult = await fileService.DeleteCloudinaryResourceAsync(mediaFile.PublicId, mediaFileType);
-                    if (deletionResult.IsFailure)
-                    {
-                        // Log the error
-                        logger.LogError("Error deleting resource with PublicId {PublicId}: {Error}", mediaFile.PublicId, deletionResult.Message);
-                        errors.Add($"Failed to delete resource with PublicId {mediaFile.PublicId}: {deletionResult.Message}");
-                    }
+                    if (!deletionResult.IsFailure) continue;
+                    // Log the error
+                    logger.LogError("Error deleting resource with PublicId {PublicId}: {Error}", mediaFile.PublicId, deletionResult.Message);
+                    errors.Add($"Failed to delete resource with PublicId {mediaFile.PublicId}: {deletionResult.Message}");
                 }
 
                 if (errors.Count != 0)
@@ -233,46 +229,147 @@ namespace Sociam.Services.Services
                 if (cloudinaryUploadResult.IsFailure)
                     return Result<Unit>.Failure(HttpStatusCode.BadRequest, "Failed to upload media files, try later !!!", cloudinaryUploadResult.Errors);
 
-                foreach (var mediaUploadResult in cloudinaryUploadResult.Value)
+                foreach (var postMedia in cloudinaryUploadResult.Value.Select(mediaUploadResult => new PostMedia
                 {
-                    var postMedia = new PostMedia
-                    {
-                        Id = Guid.NewGuid(),
-                        PostId = existedPost.Id,
-                        Url = mediaUploadResult.Url,
-                        MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
-                        AssetId = mediaUploadResult.AssetId,
-                        PublicId = mediaUploadResult.PublicId
-                    };
-
+                    Id = Guid.NewGuid(),
+                    PostId = existedPost.Id,
+                    Url = mediaUploadResult.Url,
+                    MediaType = Enum.Parse<PostMediaType>(mediaUploadResult.Type.ToString()),
+                    AssetId = mediaUploadResult.AssetId,
+                    PublicId = mediaUploadResult.PublicId
+                }))
+                {
                     existedPost.Media.Add(postMedia);
                 }
             }
 
+            // Update the post tags
+            List<string> taggedUserIds = [];
+            if (command.TaggedUserIds != null && command.TaggedUserIds.Count != 0)
+            {
+                var taggedUsersInPost = existedPost.Tags.Select(tag => tag.TaggedUserId).ToList();
+                var distinctUserIds = taggedUsersInPost.Except(command.TaggedUserIds).ToList();
+                var taggedUsers = await userManager.GetTaggedUsersAsync(distinctUserIds);
+                foreach (var user in taggedUsers)
+                {
+                    var isUserFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(currentUser.Id, user.Id);
+                    if (!isUserFriend)
+                        return Result<Unit>.Failure(HttpStatusCode.BadRequest, "Can not tag anyone that not a friend with you!!!!");
+                    var postTag = new PostTag
+                    {
+                        Id = Guid.NewGuid(),
+                        PostId = existedPost.Id,
+                        TaggedUserId = user.Id,
+                    };
+                    existedPost.Tags.Add(postTag);
+                    taggedUserIds.Add(user.Id);
+                }
+            }
+
+            existedPost.UpdatedAt = DateTimeOffset.UtcNow;
 
             unitOfWork.Repository<Post>()?.Update(existedPost);
+
+            if (taggedUserIds.Count > 0)
+            {
+                foreach (var userId in taggedUserIds)
+                {
+                    var createdPostNotification = new PostNotification
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedAt = DateTime.UtcNow,
+                        RecipientId = userId,
+                        ActorId = currentUser.Id,
+                        PostContent = existedPost.Text,
+                        Message = $"{currentUser.FullName} created a new post",
+                        ActionUrl = $"/posts/{existedPost.Id}",
+                        PostId = existedPost.Id,
+                        Status = NotificationStatus.UnRead,
+                        Type = NotificationType.NewPostCreated
+                    };
+
+                    unitOfWork.NotificationRepository.Create(createdPostNotification);
+                    await hubContext.Clients.User(userId).SendAsync("ReceiveNewPostNotification", createdPostNotification);
+
+                }
+            }
+
 
             await unitOfWork.SaveChangesAsync();
 
             return Result<Unit>.Success(HttpStatusCode.NoContent);
         }
 
+        public async Task<Result<Unit>> DeletePostAsync(DeletePostCommand command)
+        {
+            var existedPost = await unitOfWork.Repository<Post>()?
+                .GetBySpecificationAsync(new GetPostForSpecificUserSpecification(command.PostId, currentUser.Id))!;
+
+            if (existedPost == null)
+                return Result<Unit>.Failure(HttpStatusCode.NotFound);
+
+            if (existedPost.Media.Count > 0)
+            {
+                var errors = new List<string>();
+
+                foreach (var mediaFile in existedPost.Media)
+                {
+                    var mediaFileType = GetMediaFileType(mediaFile.MediaType);
+                    var deletionResult = await fileService.DeleteCloudinaryResourceAsync(mediaFile.PublicId, mediaFileType);
+                    if (!deletionResult.IsFailure) continue;
+                    // Log the error
+                    logger.LogError("Error deleting resource with PublicId {PublicId}: {Error}", mediaFile.PublicId, deletionResult.Message);
+                    errors.Add($"Failed to delete resource with PublicId {mediaFile.PublicId}: {deletionResult.Message}");
+                }
+
+                if (errors.Count != 0)
+                {
+                    var errorSummary = string.Join("; ", errors);
+                    logger.LogError("Some errors occurred while deleting media resources: {ErrorSummary}", errorSummary);
+                    return Result<Unit>.Failure(HttpStatusCode.BadRequest, "Try again later!");
+                }
+            }
+
+            unitOfWork.Repository<Post>()?.Delete(existedPost);
+
+            await unitOfWork.SaveChangesAsync();
+
+            return Result<Unit>.Success(HttpStatusCode.NoContent);
+        }
+
+        public async Task<Result<PagedResult<PostDto>>> GetPostsAsync(GetPostsQuery query)
+        {
+            var specification = new GetPostsForSpecificUserSpecification(currentUser.Id, query.PostsParams);
+
+            var userPosts = await unitOfWork.Repository<Post>()?.GetAllWithSpecificationAsync(specification)!;
+
+            var mappedPosts = mapper.Map<IEnumerable<PostDto>>(userPosts);
+
+            var totalPostCount = await unitOfWork.Repository<Post>()?.GetCountWithSpecificationAsync(
+                new GetPostsForUserWithFilterationCountSpecification(currentUser.Id, query.PostsParams))!;
+
+            return Result<PagedResult<PostDto>>.Success(
+                new PagedResult<PostDto>
+                {
+                    Items = mappedPosts.ToList(),
+                    Page = query.PostsParams.Page,
+                    PageSize = query.PostsParams.PageSize,
+                    TotalCount = totalPostCount
+                });
+        }
+
         private static FileType GetMediaFileType(PostMediaType mediaType)
         {
-            if (mediaType == PostMediaType.Audio)
-                return FileType.Audio;
-            else if (mediaType == PostMediaType.Video)
-                return FileType.Video;
-            else if (mediaType == PostMediaType.Image)
-                return FileType.Image;
-            else if (mediaType == PostMediaType.Link)
-                return FileType.Link;
-            else if (mediaType == PostMediaType.Document)
-                return FileType.Document;
-            else if (mediaType == PostMediaType.Text)
-                return FileType.Text;
-            else
-                return FileType.Pdf;
+            return mediaType switch
+            {
+                PostMediaType.Audio => FileType.Audio,
+                PostMediaType.Video => FileType.Video,
+                PostMediaType.Image => FileType.Image,
+                PostMediaType.Link => FileType.Link,
+                PostMediaType.Document => FileType.Document,
+                PostMediaType.Text => FileType.Text,
+                _ => FileType.Pdf
+            };
         }
     }
 }

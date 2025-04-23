@@ -25,16 +25,6 @@ public sealed class UserRoleConfiguration : IEntityTypeConfiguration<IdentityUse
                 UserId = "702C7401-F83C-4684-9421-9AA74FC40050",
                 RoleId = "BE3B9D48-68F5-42E3-9371-E7964F96A25D"
             },
-            //new IdentityUserRole<string>
-            //{
-            //    UserId = "83DFC31A-11E5-4AD3-955D-10766FCAA955",
-            //    RoleId = "25801C14-CBA0-4E74-8F6A-9AA57BA5A57F"
-            //},
-            //new IdentityUserRole<string>
-            //{
-            //    UserId = "83DFC31A-11E5-4AD3-955D-10766FCAA955",
-            //    RoleId = "BE3B9D48-68F5-42E3-9371-E7964F96A25D"
-            //},
             new IdentityUserRole<string>
             {
                 UserId = "3EB45CDA-F2EE-43E7-B9F1-D52562E05929",

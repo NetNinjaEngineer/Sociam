@@ -10,8 +10,10 @@ namespace Sociam.Application.Mapping
         public PostProfile()
         {
             CreateMap<CreatePostCommand, Post>();
-
-            CreateMap<PostLocationDto, PostLocation>();
+            CreateMap<PostLocationDto, PostLocation>().ReverseMap();
+            CreateMap<Post, PostDto>()
+                .ForMember(dest => dest.CreatedBy, 
+                    options => options.MapFrom(src => string.Concat(src.CreatedBy.FirstName, " ",  src.CreatedBy.LastName)));
         }
     }
 }
