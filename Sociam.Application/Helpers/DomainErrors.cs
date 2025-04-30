@@ -44,6 +44,8 @@ public static class DomainErrors
         public const string UserUnauthorized = "You are not authenticated";
         public const string WrongPassword = "Wrong Password !!!";
 
+        public const string UsernameAlreadyExists = "Username already exists.";
+
         public const string UnableToCreateAccount =
             "Some errors happened when creating your account, please try again !!";
 

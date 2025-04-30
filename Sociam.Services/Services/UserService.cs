@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using System.Text;
+using AutoMapper;
 using FluentValidation;
 using Humanizer;
 using Microsoft.AspNetCore.Identity;
@@ -13,12 +15,12 @@ using Sociam.Application.Features.Users.Commands.UpdateAvatar;
 using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
+using Sociam.Application.Features.Users.Queries.GetUsernameSuggestions;
+using Sociam.Application.Features.Users.Queries.IsUsernameAvailable;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
 using Sociam.Application.Interfaces.Services.Models;
 using Sociam.Domain.Entities.Identity;
-using System.Net;
-using System.Text;
 
 namespace Sociam.Services.Services;
 
@@ -30,6 +32,8 @@ public sealed class UserService(
     IConfiguration configuration,
     IMailService mailService) : IUserService
 {
+    private readonly Random _random = new();
+
     public async Task<Result<ProfileDto?>> GetUserProfileAsync()
     {
         var profile = await userManager.GetUserProfileAsync(currentUser.Id, configuration);
@@ -228,5 +232,131 @@ public sealed class UserService(
                 d.ExpiryDate.ConvertToUserLocalTimeZone(authenticatedUser.TimeZoneId))).ToList();
 
         return Result<IReadOnlyList<TrustedDeviceDto>>.Success(trustedDevices);
+    }
+
+    public async Task<Result<bool>> IsUsernameAvailableAsync(IsUsernameAvailableQuery query)
+    {
+        var exists = await IsUsernameExists(query.Username);
+
+        return !exists ? Result<bool>.Success(true) : Result<bool>.Failure(HttpStatusCode.Conflict);
+    }
+
+    private async Task<bool> IsUsernameExists(string username)
+    {
+        var exists = await userManager.Users.AnyAsync(
+            u => u.UserName != null && u.UserName.ToLower() == username.ToLower());
+        return exists;
+    }
+
+    public async Task<Result<List<string>>> GetUsernameSuggestionsAsync(GetUsernameSuggestionsQuery query)
+    {
+        var username = query.Username;
+
+        if (string.IsNullOrEmpty(username))
+            return Result<List<string>>.Failure(HttpStatusCode.BadRequest);
+
+        var suggestions = new List<string>();
+
+        suggestions.AddRange([
+                $"{username}{_random.Next(1, 1000)}",
+                $"{username}{DateTime.UtcNow.Year}",
+                $"{username}_{GetRandomLetters(2)}",
+
+                $"the_{username}",
+                $"real_{username}",
+                $"{username}_official",
+                $"official_{username}",
+                $"{username}_verified",
+                $"{username}.official",
+
+                $"@{username}",
+                $"{username}_{_random.Next(1, 100)}",
+                $"{GetRandomLetters(1)}{username}",
+                $"{username}.{GetRandomLetters(2)}",
+                $"x{username}",
+
+                $"{username}_social",
+                $"{username}.io",
+                $"{username}_app",
+                $"{username}_original",
+                $"its_{username}",
+                $"just_{username}",
+
+                $"i_am_{username}",
+                $"{username}_world",
+                $"{username}_here",
+                $"{username}_now",
+                $"try_{username}",
+
+                $"{username}_global",
+                $"{username}_{GetRandomCountryCode()}",
+
+                $"{username}{DateTime.UtcNow.Month}{DateTime.UtcNow.Day}",
+
+                $"{username}{GetEmoji()}",
+                $"{GetEmoji()}{username}",
+                $"{username}_{_random.Next(1, 10)}_{_random.Next(1, 10)}",
+                $"{GetShortUuid()}_{username}"
+        ]);
+
+        var availableSuggestions = new List<string>();
+
+        foreach (var suggestion in suggestions)
+        {
+            if (await IsUsernameExists(suggestion)) continue;
+
+            availableSuggestions.Add(suggestion);
+
+            if (availableSuggestions.Count >= suggestions.Count)
+            {
+                break;
+            }
+        }
+
+        var randomSuggestions = availableSuggestions.OrderBy(_ => _random.Next()).Take(10).ToList();
+        if (availableSuggestions.Count >= suggestions.Count)
+            return Result<List<string>>.Success(randomSuggestions);
+
+        var attemptsLeft = suggestions.Count;
+
+        while (availableSuggestions.Count < suggestions.Count && attemptsLeft > 0)
+        {
+            var newSuggestion = $"{username}{_random.Next(1000, 10000)}";
+
+            if (!availableSuggestions.Contains(newSuggestion) && !await IsUsernameExists(newSuggestion))
+            {
+                availableSuggestions.Add(newSuggestion);
+            }
+
+            attemptsLeft--;
+        }
+
+        return Result<List<string>>.Success(randomSuggestions);
+    }
+
+    private string GetRandomLetters(int length)
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyz";
+        return new string(Enumerable.Repeat(chars, length)
+            .Select(s => s[_random.Next(s.Length)]).ToArray());
+    }
+
+    private string GetRandomCountryCode()
+    {
+        string[] countryCodes = ["us", "uk", "ca", "au", "de", "fr", "jp", "br", "in", "es", "it", "nl", "se", "sg", "eg"];
+        return countryCodes[_random.Next(countryCodes.Length)];
+    }
+
+    private string GetEmoji()
+    {
+        string[] emojiOptions = ["⭐", "🔥", "💯", "✨", "📱", "💫", "🌟", "🚀", "💪", "👑"];
+        return emojiOptions[_random.Next(emojiOptions.Length)];
+    }
+
+    private string GetShortUuid()
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        return new string(Enumerable.Repeat(chars, 6)
+            .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
 }
