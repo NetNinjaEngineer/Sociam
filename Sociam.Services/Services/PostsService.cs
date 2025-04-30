@@ -60,12 +60,11 @@ namespace Sociam.Services.Services
 
             List<string> friends = [];
 
-            if (command.TaggedUserIds != null && command.TaggedUserIds.Count > 0)
+            if (command.TaggedUserIds is { Count: > 0 })
             {
                 var taggedUsers = await userManager.GetTaggedUsersAsync(command.TaggedUserIds);
                 foreach (var user in taggedUsers)
                 {
-                    // check if the tagged user is friend to the current post creator
                     var isTaggedUserFriend = await unitOfWork.FriendshipRepository.AreFriendsAsync(
                         currentUser.Id, user.Id);
                     if (!isTaggedUserFriend)
@@ -351,7 +350,7 @@ namespace Sociam.Services.Services
             return Result<PagedResult<PostDto>>.Success(
                 new PagedResult<PostDto>
                 {
-                    Items = mappedPosts.ToList(),
+                    Items = [.. mappedPosts],
                     Page = query.PostsParams.Page,
                     PageSize = query.PostsParams.PageSize,
                     TotalCount = totalPostCount
