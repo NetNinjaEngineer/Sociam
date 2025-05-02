@@ -13,8 +13,6 @@ namespace Sociam.Services.Services;
 public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IMailService
 {
     private readonly SmtpSettings _smtpSettings = smtpSettingsOptions.Value;
-    private string name = "";
-
     public async Task<Result<bool>> SendEmailAsync(EmailMessage emailMessage)
     {
         var messageResult = CreateMimeMessage(emailMessage.To, emailMessage.Subject, emailMessage.Message);
