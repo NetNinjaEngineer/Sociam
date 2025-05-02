@@ -7,6 +7,7 @@ using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
 using Sociam.Application.Features.Users.Queries.GetUsernameSuggestions;
+using Sociam.Application.Features.Users.Queries.IsEmailTaken;
 using Sociam.Application.Features.Users.Queries.IsUsernameAvailable;
 
 namespace Sociam.Application.Interfaces.Services;
@@ -23,4 +24,5 @@ public interface IUserService
     Task<Result<IReadOnlyList<TrustedDeviceDto>>> GetUserTrustedDevicesAsync();
     Task<Result<bool>> IsUsernameAvailableAsync(IsUsernameAvailableQuery query);
     Task<Result<List<string>>> GetUsernameSuggestionsAsync(GetUsernameSuggestionsQuery query);
+    Task<Result<bool>> IsEmailTakenAsync(IsEmailTakenQuery query);
 }

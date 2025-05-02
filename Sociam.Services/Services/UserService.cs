@@ -16,6 +16,7 @@ using Sociam.Application.Features.Users.Commands.UpdateCover;
 using Sociam.Application.Features.Users.Commands.UpdateUserProfile;
 using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
 using Sociam.Application.Features.Users.Queries.GetUsernameSuggestions;
+using Sociam.Application.Features.Users.Queries.IsEmailTaken;
 using Sociam.Application.Features.Users.Queries.IsUsernameAvailable;
 using Sociam.Application.Helpers;
 using Sociam.Application.Interfaces.Services;
@@ -359,4 +360,13 @@ public sealed class UserService(
         return new string(Enumerable.Repeat(chars, 6)
             .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
+
+    public async Task<Result<bool>> IsEmailTakenAsync(IsEmailTakenQuery query)
+    {
+        var exists = await userManager.Users.AnyAsync(
+            u => u.Email != null && u.Email.ToLower() == query.Email.ToLower());
+
+        return !exists ? Result<bool>.Success(false) : Result<bool>.Failure(HttpStatusCode.Conflict, true);
+    }
+
 }

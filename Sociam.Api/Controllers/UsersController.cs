@@ -14,6 +14,7 @@ using Sociam.Application.Features.Users.Commands.VerifyChangeEmail;
 using Sociam.Application.Features.Users.Queries.GetTrustedDevices;
 using Sociam.Application.Features.Users.Queries.GetUsernameSuggestions;
 using Sociam.Application.Features.Users.Queries.GetUserProfile;
+using Sociam.Application.Features.Users.Queries.IsEmailTaken;
 using Sociam.Application.Features.Users.Queries.IsUsernameAvailable;
 using Sociam.Application.Helpers;
 
@@ -98,4 +99,11 @@ public class UsersController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetUsernameSuggestionsAsync([FromRoute] string username)
         => CustomResult(await Mediator.Send(new GetUsernameSuggestionsQuery() { Username = username }));
+
+    // api/v1/users/email-taken?email=me5260287@gmail.com
+    [HttpGet("email-taken")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> IsEmailTakenAsync([FromQuery] string email)
+       => CustomResult(await Mediator.Send(new IsEmailTakenQuery(email)));
 }

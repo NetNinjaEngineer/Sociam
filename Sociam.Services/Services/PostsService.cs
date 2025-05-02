@@ -35,7 +35,8 @@ namespace Sociam.Services.Services
         IHubContext<PostsHub> hubContext,
         IFileService fileService,
         IAuthorizationService authorizationService,
-        ILogger<PostsService> logger) : IPostsService
+        ILogger<PostsService> logger,
+        IValidator<EditPostCommand> editPostValidator) : IPostsService
     {
         public async Task<Result<Guid>> CreatePostAsync(CreatePostCommand command)
         {
@@ -157,8 +158,7 @@ namespace Sociam.Services.Services
 
         public async Task<Result<Unit>> EditPostAsync(EditPostCommand command)
         {
-            var validator = new EditPostCommandValidator();
-            await validator.ValidateAndThrowAsync(command, CancellationToken.None);
+            await editPostValidator.ValidateAndThrowAsync(command, CancellationToken.None);
 
             var existedPost = await unitOfWork.Repository<Post>()!.GetBySpecificationAsync(
                 new GetPostWithMediaSpecification(command.PostId));
