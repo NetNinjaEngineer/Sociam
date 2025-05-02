@@ -343,20 +343,20 @@ public sealed class AuthService(
             To = command.Email,
             Subject = "Sociam - Reset Password Code",
             Message = $@"
-                    Password Reset Code
+                    <h1>Password Reset Code</h1>
+                   <p>Hi there,</p>
+                    <p>We received a request to reset your password for your Sociam account. To proceed, please use the following code: </p>
+                    <div class=""code-container"">
+	                    <div class=""code"">{decoded}</div>
+	                    <span class=""timer"">This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
+                    </div>
 
-                    Hello,
+                    <p>If you did not request a password reset, please ignore this email. </p>
+                    <div class=""divider""></div>
 
-                    To reset your Sociam account password, please use the following code:
-
-                    {decoded}
-
-                    This code will expire in {configuration[AppConstants.AuthCodeExpireKey]} minutes.
-
-                    If you did not request a password reset, please ignore this email.
-
-                    Best regards,
-                    The Sociam Team"
+                    <p>Best regards,<br>
+	                    <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
+                    </p>"
         };
 
 
@@ -406,33 +406,39 @@ public sealed class AuthService(
 
         await signInManager.TwoFactorSignInAsync(code, command.TokenProvider.ToString(), false, true);
 
-        if (command.TokenProvider == TokenProvider.Email)
-            // send code via user email
-            await mailService.SendEmailAsync(
-                new EmailMessage()
-                {
-                    To = command.Email,
-                    Subject = "Enable Sociam 2FA",
-                    Message = $@"
-                    Enable 2-Factor Authentication
-
-                    To enhance the security of your Sociam account, we recommend enabling 2-factor authentication (2FA).
-
-                    Use this code to enable 2FA on your account: {code}
-
-                    This code will expire in 5 minutes.
-
-                    If you did not request this 2FA activation, please ignore this email.
-
-                    Best regards,
-                    The Sociam Team"
-                });
-
-
-
-        else if (command.TokenProvider == TokenProvider.Phone)
+        switch (command.TokenProvider)
         {
-            // handle send via phone
+            case TokenProvider.Email:
+                await mailService.SendEmailAsync(
+                    new EmailMessage()
+                    {
+                        To = command.Email,
+                        Subject = "Enable Sociam 2FA",
+                        Message = $@"
+                <h1>Enable 2-Factor Authentication</h1>
+
+                <p>Hi there,</p>
+
+                <p>Your security is important to us. To enhance the protection of your Sociam account, we recommend
+	                enabling 2-factor authentication</p>
+
+                <div class=""code-container"">
+	                <div class=""code"">{code}</div>
+	                <span class=""timer"">This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
+                </div>
+
+                <p>If you didn't request this 2FA activation, please ignore this email or contact our support team
+	                immediately.</p>
+
+                <div class=""divider""></div>
+
+                <p>Best regards,<br>
+	                <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
+                </p>"
+                    });
+                break;
+            case TokenProvider.Phone:
+                break;
         }
 
         return Result<string>.Success(AppConstants.TwoFactorCodeSent);
@@ -450,40 +456,36 @@ public sealed class AuthService(
         // verify 2fa code
         var providers = await userManager.GetValidTwoFactorProvidersAsync(user);
 
-        if (providers.Contains(TokenProvider.Email.ToString()))
-        {
-            var verified =
-                await userManager.VerifyTwoFactorTokenAsync(user, TokenProvider.Email.ToString(), command.Code);
+        if (!providers.Contains(nameof(TokenProvider.Email)))
+            return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.InvalidTokenProvider);
 
-            if (!verified)
-                return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.Invalid2FaCode);
+        var verified =
+            await userManager.VerifyTwoFactorTokenAsync(user, nameof(TokenProvider.Email), command.Code);
 
-            // code is verified update status of 2FA
+        if (!verified)
+            return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.Invalid2FaCode);
 
-            await userManager.SetTwoFactorEnabledAsync(user, true);
-
-            await mailService.SendEmailAsync(
-                new EmailMessage()
-                {
-                    Subject = "Sociam 2FA Setup Complete",
-                    To = user.Email!,
-                    Message = $@"
-                        2-Factor Authentication Enabled
-
-                        Congratulations! Your 2-factor authentication (2FA) has been successfully enabled for your Sociam account.
-
-                        Your account is now more secure, and you'll be required to enter a one-time code when logging in.
-
-                        Best regards,
-                        The Sociam Team"
-                });
+        await userManager.SetTwoFactorEnabledAsync(user, true);
 
 
 
-            return Result<string>.Success(AppConstants.TwoFactorEnabled);
-        }
+        await mailService.SendEmailAsync(
+            new EmailMessage()
+            {
+                Subject = "Sociam 2FA Setup Complete",
+                To = user.Email!,
+                Message = $@"
+                        <h1>2-factor authentication enabled</h1>
+                        <p>Hi there,</p>
+                        <p>Congratulations! Your 2-factor authentication (2FA) has been successfully enabled for your Sociam account.</p>
+                        <div class=""divider""></div>
+                        <p>Best regards,<br><span class=""signature"">The <span class=""team"">Sociam</span> Team</span></p>"
+            });
 
-        return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.InvalidTokenProvider);
+
+
+        return Result<string>.Success(AppConstants.TwoFactorEnabled);
+
     }
 
     public async Task<Result<SignInResponseDto>> Verify2FaCodeAsync(Verify2FaCodeCommand command)
@@ -716,35 +718,48 @@ public sealed class AuthService(
         // check is the user device is trusted by sending it a code to its email 
         // and validate this codes and expiry and check is the user is has trusted device or not
 
-        //var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
-        //var currentIpAddress = GetCurrentIp();
-        //var currentUserLocation = await GetUserLocationAsync(currentIpAddress);
-        //var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
+        var deviceId = GenerateDeviceId(contextAccessor.HttpContext!);
+        var currentIpAddress = GetCurrentIp();
+        var currentUserLocation = await GetUserLocationAsync(currentIpAddress);
+        var trustedDevice = loggedInUser.TrustedDevices.FirstOrDefault(x => x.DeviceId == deviceId && x.ExpiryDate > DateTimeOffset.UtcNow);
 
-        //if (trustedDevice == null ||
-        //    loggedInUser.LastKnownIp != currentIpAddress ||
-        //    loggedInUser.LastKnownLocation != currentUserLocation)
-        //{
-        //    // Generate the verification code and send it to his mail
+        if (trustedDevice == null ||
+            loggedInUser.LastKnownIp != currentIpAddress ||
+            loggedInUser.LastKnownLocation != currentUserLocation)
+        {
+            // Generate the verification code and send it to his mail
 
-        //    var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
-        //    loggedInUser.DeviceVerificationCode = verificationCode;
-        //    loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
-        //    loggedInUser.LastKnownIp = currentIpAddress;
-        //    loggedInUser.LastKnownLocation = currentUserLocation;
+            var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
+            loggedInUser.DeviceVerificationCode = verificationCode;
+            loggedInUser.DeviceVerificationExpiry = DateTimeOffset.UtcNow.AddMinutes(Convert.ToInt32(configuration["DeviceVerificationExpiry"]));
+            loggedInUser.LastKnownIp = currentIpAddress;
+            loggedInUser.LastKnownLocation = currentUserLocation;
 
-        //    await userManager.UpdateAsync(loggedInUser);
+            await userManager.UpdateAsync(loggedInUser);
 
-        //    await mailService.SendEmailAsync(new EmailMessage
-        //    {
-        //        Subject = "New Device Verification",
-        //        To = loggedInUser.Email!,
-        //        Message = $"A new login attempt was detected from {currentUserLocation}. Your verification " +
-        //        $"code is: {verificationCode}"
-        //    });
+            await mailService.SendEmailAsync(new EmailMessage
+            {
+                Subject = "New Device Verification",
+                To = loggedInUser.Email!,
+                Message = $@"
+               <h1>New Device Verification</h1>
+                <p>Hi there,</p>
+                <p>A new login attempt was detected from {currentUserLocation}. To verify this device, please use the following code: </p>
+                <div class='code-container'>
+                  <div class='code'>{verificationCode}</div>
+                  <span class='timer'>This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
+                </div>
+                <p>If you didn't attempt to log in from this device, please ignore this email or contact our support team immediately.</p>
+                <div class=""divider""></div>
 
-        //    return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
-        //}
+                <p>Best regards,<br>
+                    <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
+                </p>
+                "
+            });
+
+            return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
+        }
 
         var response = await CreateLoginResponseAsync(userManager, loggedInUser);
         return Result<SignInResponseDto>.Success(response);
