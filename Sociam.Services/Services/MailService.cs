@@ -14,6 +14,8 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
 {
     private readonly SmtpSettings _smtpSettings = smtpSettingsOptions.Value;
 
+
+
     public async Task<Result<bool>> SendEmailAsync(EmailMessage emailMessage)
     {
         var messageResult = CreateMimeMessage(emailMessage.To, emailMessage.Subject, emailMessage.Message);
@@ -264,8 +266,7 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
 </body>
 </html>";
 
-
-        if (attachments?.Count > 0)
+        if (attachments.Count > 0)
         {
             foreach (var file in attachments)
             {
@@ -287,6 +288,7 @@ public sealed class MailService(IOptions<SmtpSettings> smtpSettingsOptions) : IM
 
         mimeMessage.To.Add(new MailboxAddress(toEmail, toEmail));
         mimeMessage.Subject = subject;
+
         bodyBuilder.HtmlBody = $@"<!DOCTYPE html>
 <html lang=""en"">
 <head>
