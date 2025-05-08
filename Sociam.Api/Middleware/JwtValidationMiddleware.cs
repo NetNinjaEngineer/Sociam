@@ -13,7 +13,7 @@ public sealed class JwtValidationMiddleware(RequestDelegate next)
         try
         {
             var authorizationHeader = context.Request.Headers.Authorization.ToString();
-            var jwtToken = authorizationHeader?.Replace("Bearer ", string.Empty);
+            var jwtToken = authorizationHeader.Replace("Bearer ", string.Empty);
 
             if (!string.IsNullOrEmpty(jwtToken))
             {
@@ -56,8 +56,6 @@ public sealed class JwtValidationMiddleware(RequestDelegate next)
                     Status = StatusCodes.Status401Unauthorized,
                     Message = "Unexpected behavior.",
                 });
-
-            return;
         }
     }
 }

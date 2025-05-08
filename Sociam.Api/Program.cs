@@ -55,8 +55,8 @@ builder.Services.AddSignalR(options => options.EnableDetailedErrors = true);
 builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.Limits.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
 
-builder.Services.Configure<IISServerOptions>(options =>
-    options.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
+// builder.Services.Configure<IISServerOptions>(options =>
+//     options.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
 
 builder.Services.Configure<FormOptions>(options =>
 {

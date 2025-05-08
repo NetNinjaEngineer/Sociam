@@ -4,7 +4,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>f2db8894-f724-4b9c-b959-994caad5c135</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +28,16 @@
     <Folder Include="wwwroot\Uploads\Groups\" />
     <Folder Include="wwwroot\Uploads\Stories\Images\" />
     <Folder Include="wwwroot\Uploads\Stories\Videos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+    <EmbeddedResource Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <Content Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
   </ItemGroup>
 
 </Project>
