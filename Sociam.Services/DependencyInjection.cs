@@ -34,6 +34,8 @@ public static class DependencyInjection
             options.User.RequireUniqueEmail = true;
 
             options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+            options.User.AllowedUserNameCharacters =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-💫💯🔥⭐🚀🌟._@+👑💪";
         })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();

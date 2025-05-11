@@ -350,7 +350,7 @@ public sealed class UserService(
 
     private string GetEmoji()
     {
-        string[] emojiOptions = ["⭐", "🔥", "💯", "✨", "📱", "💫", "🌟", "🚀", "💪", "👑"];
+        string[] emojiOptions = ["⭐", "🔥", "💯", "💫", "🌟", "🚀", "💪", "👑"];
         return emojiOptions[_random.Next(emojiOptions.Length)];
     }
 
