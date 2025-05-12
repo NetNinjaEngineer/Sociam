@@ -55,8 +55,8 @@ builder.Services.AddSignalR(options => options.EnableDetailedErrors = true);
 builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.Limits.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
 
-// builder.Services.Configure<IISServerOptions>(options =>
-//     options.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
+builder.Services.Configure<IISServerOptions>(options =>
+    options.MaxRequestBodySize = Convert.ToInt64(builder.Configuration["FormOptionsSize"]));
 
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -110,12 +110,6 @@ var app = builder.Build();
 app.UseApiMiddlewares();
 
 app.UseSwaggerDocumentation();
-
-app.MapScalarApiReference(options =>
-{
-    options.WithOpenApiRoutePattern("/swagger/v1/swagger.json");
-    options.WithApiKeyAuthentication(c => c.Token = builder.Configuration.GetValue<string>("ApiKey"));
-});
 
 app.UseHttpsRedirection();
 

@@ -14,7 +14,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Scalar.AspNetCore" Version="2.2.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
   </ItemGroup>
 
@@ -22,16 +21,6 @@
     <ProjectReference Include="..\Sociam.Infrastructure\Sociam.Infrastructure.csproj" />
     <ProjectReference Include="..\Sociam.Persistence\Sociam.Persistence.csproj" />
     <ProjectReference Include="..\Sociam.Services\Sociam.Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="appsettings.json" />
-    <EmbeddedResource Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <Content Update="appsettings.Development.json">
-      <DependentUpon>appsettings.json</DependentUpon>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
