@@ -44,6 +44,7 @@ using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Enums;
 using Sociam.Infrastructure.Persistence;
 using Sociam.Persistence.Clients;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Sociam.Services.Services;
 
@@ -212,7 +213,6 @@ public sealed class AuthService(
         }
     }
 
-
     public async Task<Result<SendCodeConfirmEmailResponseDto>> SendConfirmEmailCodeAsync(
         SendConfirmEmailCodeCommand command)
     {
@@ -291,7 +291,6 @@ public sealed class AuthService(
         }
     }
 
-
     private static RefreshToken GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
@@ -305,8 +304,7 @@ public sealed class AuthService(
         };
     }
 
-    private async Task<Result<ApplicationUser>> CheckIfUserHasAssignedToRefreshToken(
-        string refreshToken)
+    private async Task<Result<ApplicationUser>> CheckIfUserHasAssignedToRefreshToken(string refreshToken)
     {
         var user = await userManager.Users.SingleOrDefaultAsync(x =>
             x.RefreshTokens != null && x.RefreshTokens.Any(token => token.Token == refreshToken));
@@ -314,7 +312,6 @@ public sealed class AuthService(
             ? Result<ApplicationUser>.Failure(HttpStatusCode.NotFound, "Invalid Token")
             : Result<ApplicationUser>.Success(user);
     }
-
 
     public async Task<Result<string>> ForgotPasswordAsync(ForgetPasswordCommand command)
     {
@@ -326,14 +323,12 @@ public sealed class AuthService(
             return Result<string>.Failure(
                 HttpStatusCode.NotFound, "User not found");
 
-        //code and Expiration 
         var decoded = await userManager.GenerateUserTokenAsync(user, "Email", "Generate Code");
         var authCode = Convert.ToBase64String(Encoding.UTF8.GetBytes(decoded));
         user.Code = authCode;
         user.CodeExpiration =
             DateTimeOffset.UtcNow.AddMinutes(Convert.ToDouble(configuration[AppConstants.AuthCodeExpireKey]));
 
-        //Update user
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
             return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.UnableToUpdateUser);
@@ -343,21 +338,20 @@ public sealed class AuthService(
             To = command.Email,
             Subject = "Sociam - Reset Password Code",
             Message = $@"
-                    <h1>Password Reset Code</h1>
-                   <p>Hi there,</p>
-                    <p>We received a request to reset your password for your Sociam account. To proceed, please use the following code: </p>
-                    <div class=""code-container"">
-	                    <div class=""code"">{decoded}</div>
-	                    <span class=""timer"">This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
-                    </div>
+                We received a request to reset your password for your Sociam account.
 
-                    <p>If you did not request a password reset, please ignore this email. </p>
-                    <div class=""divider""></div>
+                To proceed, please use the following code:
 
-                    <p>Best regards,<br>
-	                    <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
-                    </p>"
+                {decoded}
+
+                This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes.
+
+                If you did not request a password reset, please ignore this email or contact our support team.
+
+                Best regards,  
+                The Sociam Team"
         };
+
 
 
         await mailService.SendEmailAsync(emailMessage);
@@ -410,32 +404,27 @@ public sealed class AuthService(
         {
             case TokenProvider.Email:
                 await mailService.SendEmailAsync(
-                    new EmailMessage()
-                    {
-                        To = command.Email,
-                        Subject = "Enable Sociam 2FA",
-                        Message = $@"
-                <h1>Enable 2-Factor Authentication</h1>
+                new EmailMessage()
+                {
+                    To = command.Email,
+                    Subject = "Enable Sociam 2FA",
+                    Message = $@"
+                        Enable 2-Factor Authentication
 
-                <p>Hi there,</p>
+                        Hi there,
 
-                <p>Your security is important to us. To enhance the protection of your Sociam account, we recommend
-	                enabling 2-factor authentication</p>
+                        Your security is important to us. To enhance the protection of your Sociam account, we recommend enabling 2-factor authentication.
 
-                <div class=""code-container"">
-	                <div class=""code"">{code}</div>
-	                <span class=""timer"">This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
-                </div>
+                        Your verification code: {code}
 
-                <p>If you didn't request this 2FA activation, please ignore this email or contact our support team
-	                immediately.</p>
+                        This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes.
 
-                <div class=""divider""></div>
+                        If you didn't request this 2FA activation, please ignore this email or contact our support team immediately.
 
-                <p>Best regards,<br>
-	                <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
-                </p>"
-                    });
+                        Best regards,  
+                        The Sociam Team"
+                });
+
                 break;
             case TokenProvider.Phone:
                 break;
@@ -467,22 +456,21 @@ public sealed class AuthService(
 
         await userManager.SetTwoFactorEnabledAsync(user, true);
 
-
-
         await mailService.SendEmailAsync(
             new EmailMessage()
             {
                 Subject = "Sociam 2FA Setup Complete",
                 To = user.Email!,
                 Message = $@"
-                        <h1>2-factor authentication enabled</h1>
-                        <p>Hi there,</p>
-                        <p>Congratulations! Your 2-factor authentication (2FA) has been successfully enabled for your Sociam account.</p>
-                        <div class=""divider""></div>
-                        <p>Best regards,<br><span class=""signature"">The <span class=""team"">Sociam</span> Team</span></p>"
+                    2-Factor Authentication Enabled
+
+                    Hi there,
+
+                    Congratulations! Your 2-factor authentication (2FA) has been successfully enabled for your Sociam account.
+
+                    Best regards,  
+                    The Sociam Team"
             });
-
-
 
         return Result<string>.Success(AppConstants.TwoFactorEnabled);
 
@@ -568,11 +556,9 @@ public sealed class AuthService(
 
             if (decodedAuthenticationCode == command.Token)
             {
-                // check if the token is expired
                 if (DateTimeOffset.UtcNow > user.CodeExpiration)
                     return Result<string>.Failure(HttpStatusCode.BadRequest, DomainErrors.Users.AuthCodeExpired);
 
-                // confirm the email for the user
                 user.EmailConfirmed = true;
                 var identityResult = await userManager.UpdateAsync(user);
 
@@ -655,11 +641,9 @@ public sealed class AuthService(
         await userManager.ResetAuthenticatorKeyAsync(user);
         var authenticatorKey = await userManager.GetAuthenticatorKeyAsync(user);
 
-        // QR code uri
         var emailEncoded = Uri.EscapeDataString(command.Email);
         var keyUri = $"otpauth://totp/syncify:{emailEncoded}?secret={authenticatorKey}&issuer=syncify&digits=6";
 
-        // QR code
         using var qrGenerator = new QRCodeGenerator();
         using var qrCodeData = qrGenerator.CreateQrCode(keyUri, QRCodeGenerator.ECCLevel.Q);
         using var qrCode = new PngByteQRCode(qrCodeData);
@@ -727,7 +711,6 @@ public sealed class AuthService(
             loggedInUser.LastKnownIp != currentIpAddress ||
             loggedInUser.LastKnownLocation != currentUserLocation)
         {
-            // Generate the verification code and send it to his mail
 
             var verificationCode = await userManager.GenerateUserTokenAsync(loggedInUser, "Email", "Device Verification");
             loggedInUser.DeviceVerificationCode = verificationCode;
@@ -742,21 +725,22 @@ public sealed class AuthService(
                 Subject = "New Device Verification",
                 To = loggedInUser.Email!,
                 Message = $@"
-               <h1>New Device Verification</h1>
-                <p>Hi there,</p>
-                <p>A new login attempt was detected from {currentUserLocation}. To verify this device, please use the following code: </p>
-                <div class='code-container'>
-                  <div class='code'>{verificationCode}</div>
-                  <span class='timer'>This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes</span>
-                </div>
-                <p>If you didn't attempt to log in from this device, please ignore this email or contact our support team immediately.</p>
-                <div class=""divider""></div>
+                    New Device Verification
 
-                <p>Best regards,<br>
-                    <span class=""signature"">The <span class=""team"">Sociam</span> Team</span>
-                </p>
-                "
+                    Hi there,
+
+                    A new login attempt was detected from {currentUserLocation}. To verify this device, please use the following code:
+
+                    {verificationCode}
+
+                    This code will expire in {configuration["AuthCodeExpirationInMinutes"]} minutes.
+
+                    If you didn't attempt to log in from this device, please ignore this email or contact our support team immediately.
+
+                    Best regards,  
+                    The Sociam Team"
             });
+
 
             return Result<SignInResponseDto>.Success(null!, "Verification required due to new device or location changed.");
         }
@@ -882,8 +866,7 @@ public sealed class AuthService(
     }
 
 
-    private async Task<Result<SignInResponseDto>> CreateSignInResponse(
-        (ApplicationUser appUser, string jwtToken) appUserWithJwt)
+    private async Task<Result<SignInResponseDto>> CreateSignInResponse((ApplicationUser appUser, string jwtToken) appUserWithJwt)
     {
         var userRoles = await userManager.GetRolesAsync(appUserWithJwt.appUser);
         var newRefreshToken = appUserWithJwt.appUser.RefreshTokens?.FirstOrDefault(x => x.IsActive);
@@ -902,8 +885,7 @@ public sealed class AuthService(
         return Result<SignInResponseDto>.Success(response);
     }
 
-    private async Task<Result<(ApplicationUser appUser, string jwtToken)>>
-        GenerateNewJwtToken(ApplicationUser appUser)
+    private async Task<Result<(ApplicationUser appUser, string jwtToken)>>GenerateNewJwtToken(ApplicationUser appUser)
     {
         var jwtToken = await tokenService.GenerateJwtTokenAsync(appUser);
         return Result<(ApplicationUser appUser, string jwtToken)>.Success((appUser, jwtToken));

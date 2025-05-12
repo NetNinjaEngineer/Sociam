@@ -25,13 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Uploads\Images\" />
-    <Folder Include="wwwroot\Uploads\Groups\" />
-    <Folder Include="wwwroot\Uploads\Stories\Images\" />
-    <Folder Include="wwwroot\Uploads\Stories\Videos\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="appsettings.json" />
     <EmbeddedResource Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -39,6 +32,13 @@
     <Content Update="appsettings.Development.json">
       <DependentUpon>appsettings.json</DependentUpon>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\Uploads\Images\" />
+    <Folder Include="wwwroot\Uploads\Groups\" />
+    <Folder Include="wwwroot\Uploads\Stories\Images\" />
+    <Folder Include="wwwroot\Uploads\Stories\Videos\" />
   </ItemGroup>
 
 </Project>
