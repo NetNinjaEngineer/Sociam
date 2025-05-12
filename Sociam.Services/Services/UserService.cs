@@ -290,12 +290,9 @@ public sealed class UserService(
                 $"try_{username}",
 
                 $"{username}_global",
-                $"{username}_{GetRandomCountryCode()}",
 
                 $"{username}{DateTime.UtcNow.Month}{DateTime.UtcNow.Day}",
 
-                $"{username}{GetEmoji()}",
-                $"{GetEmoji()}{username}",
                 $"{username}_{_random.Next(1, 10)}_{_random.Next(1, 10)}",
                 $"{GetShortUuid()}_{username}"
         ]);
@@ -340,18 +337,6 @@ public sealed class UserService(
         const string chars = "abcdefghijklmnopqrstuvwxyz";
         return new string(Enumerable.Repeat(chars, length)
             .Select(s => s[_random.Next(s.Length)]).ToArray());
-    }
-
-    private string GetRandomCountryCode()
-    {
-        string[] countryCodes = ["us", "uk", "ca", "au", "de", "fr", "jp", "br", "in", "es", "it", "nl", "se", "sg", "eg"];
-        return countryCodes[_random.Next(countryCodes.Length)];
-    }
-
-    private string GetEmoji()
-    {
-        string[] emojiOptions = ["⭐", "🔥", "💯", "💫", "🌟", "🚀", "💪", "👑"];
-        return emojiOptions[_random.Next(emojiOptions.Length)];
     }
 
     private string GetShortUuid()
