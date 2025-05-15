@@ -14,6 +14,7 @@ using Sociam.Application.Features.Posts.Commands.AddReaction;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
+using Sociam.Application.Features.Posts.Commands.RemoveReaction;
 using Sociam.Application.Features.Posts.Queries.GetPosts;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -374,9 +375,7 @@ public sealed class PostsService(
 
     public async Task<Result<bool>> AddReactionAsync(AddReactionCommand command)
     {
-        var postWithReactionsSpec = new GetPostWithReactionsSpecification(command.PostId);
-
-        var post = await unitOfWork.Repository<Post>()?.GetBySpecificationAsync(postWithReactionsSpec)!;
+        var post = await unitOfWork.Repository<Post>()?.GetByIdAsync(command.PostId)!;
 
         if (post == null)
             return Result<bool>.Failure(HttpStatusCode.NotFound, "Post not found");
@@ -415,5 +414,40 @@ public sealed class PostsService(
         await unitOfWork.SaveChangesAsync();
 
         return Result<bool>.Success(true, "Reaction added successfully");
+    }
+
+    public async Task<Result<bool>> RemoveReactionAsync(RemoveReactionCommand command)
+    {
+        var post = await unitOfWork.Repository<Post>()?.GetByIdAsync(command.PostId)!;
+
+        if (post == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, "Post not found");
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: post,
+            policyName: PostPolicies.ReactToPost);
+
+        if (!authorizationResult.Succeeded)
+        {
+            logger.LogWarning("Authorization failed for user {UserId} on post {PostId}. Reasons: {Reasons}",
+               currentUser.Id,
+               command.PostId,
+               string.Join(", ", authorizationResult.Failure?.FailureReasons.Select(r => r.Message) ?? ["Unknown reason"]));
+            return Result<bool>.Failure(HttpStatusCode.Forbidden, DomainErrors.Posts.Forbiden);
+        }
+
+        var existedReactionSpec = new GetPostReactionSpecification(command.PostId, currentUser.Id, command.ReactionId);
+
+        var reaction = await unitOfWork.Repository<PostReaction>()?.GetBySpecificationAsync(existedReactionSpec)!;
+
+        if (reaction == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, "Reaction not found");
+
+        unitOfWork.Repository<PostReaction>()?.Delete(reaction);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return Result<bool>.Success(true, "Reaction removed successfully");
     }
 }
