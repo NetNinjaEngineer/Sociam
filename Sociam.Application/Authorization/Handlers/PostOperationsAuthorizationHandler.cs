@@ -28,18 +28,35 @@ public sealed class PostOperationsAuthorizationHandler(
 
         switch (requirement.PostOperations)
         {
-            case PostOperations.EDIT:
+            case PostOperations.Edit:
                 await HandleEditOperationAsync(context, requirement, post);
                 break;
 
-            case PostOperations.REACT:
+            case PostOperations.React:
                 await HandleReactOperationAsync(context, requirement, post);
+                break;
+
+            case PostOperations.ChangePrivacy:
+                await HandleChangePrivacyOperationAsync(context, requirement, post);
                 break;
 
             default:
                 context.Fail(new AuthorizationFailureReason(this, "Unsupported post operation."));
                 break;
         }
+    }
+
+    private Task HandleChangePrivacyOperationAsync(
+        AuthorizationHandlerContext context,
+        PostOperationsRequirement requirement,
+        Post post)
+    {
+        if (post.CreatedById == currentUser.Id)
+            context.Succeed(requirement);
+        else
+            context.Fail(new AuthorizationFailureReason(this, "You are not authorized to change the privacy of this post."));
+
+        return Task.CompletedTask;
     }
 
     private async Task HandleEditOperationAsync(

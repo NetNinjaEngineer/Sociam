@@ -11,6 +11,7 @@ using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Post;
 using Sociam.Application.Extensions;
 using Sociam.Application.Features.Posts.Commands.AddReaction;
+using Sociam.Application.Features.Posts.Commands.ChangePostPrivacy;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
@@ -449,5 +450,28 @@ public sealed class PostsService(
         await unitOfWork.SaveChangesAsync();
 
         return Result<bool>.Success(true, "Reaction removed successfully");
+    }
+
+    public async Task<Result<bool>> ChangePostPrivacyAsync(ChangePostPrivacyCommand command)
+    {
+        var post = await unitOfWork.Repository<Post>()?.GetByIdAsync(command.PostId)!;
+        if (post == null)
+            return Result<bool>.Failure(HttpStatusCode.NotFound, "Post not found");
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: post,
+            policyName: PostPolicies.ChangePostPrivacy);
+        if (!authorizationResult.Succeeded)
+        {
+            logger.LogWarning("Authorization failed for user {UserId} on post {PostId}. Reasons: {Reasons}",
+               currentUser.Id,
+               command.PostId,
+               string.Join(", ", authorizationResult.Failure?.FailureReasons.Select(r => r.Message) ?? ["Unknown reason"]));
+            return Result<bool>.Failure(HttpStatusCode.Forbidden, DomainErrors.Posts.Forbiden);
+        }
+        post.Privacy = command.Privacy;
+        unitOfWork.Repository<Post>()?.Update(post);
+        await unitOfWork.SaveChangesAsync();
+        return Result<bool>.Success(true, "Post privacy changed successfully");
     }
 }

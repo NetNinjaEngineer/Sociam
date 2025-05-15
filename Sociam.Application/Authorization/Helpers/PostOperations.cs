@@ -2,6 +2,7 @@
 
 public enum PostOperations
 {
-    EDIT = 1,
-    REACT = 2,
+    Edit = 1,
+    React = 2,
+    ChangePrivacy = 3,
 }

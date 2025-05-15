@@ -6,6 +6,7 @@ using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Post;
 using Sociam.Application.Features.Posts.Commands.AddReaction;
+using Sociam.Application.Features.Posts.Commands.ChangePostPrivacy;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
@@ -58,5 +59,12 @@ public class PostsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveReactionAsync([FromRoute] Guid postId, [FromRoute] Guid reactionId)
         => CustomResult(await Mediator.Send(new RemoveReactionCommand() { PostId = postId, ReactionId = reactionId }));
+
+    [HttpPut("{postId:guid}/change-privacy")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ChangePostPrivacyAsync([FromRoute] Guid postId, [FromForm] ChangePostPrivacyDto request)
+        => CustomResult(await Mediator.Send(new ChangePostPrivacyCommand(postId, request.PostPrivacy)));
 
 }

@@ -2,6 +2,7 @@
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Post;
 using Sociam.Application.Features.Posts.Commands.AddReaction;
+using Sociam.Application.Features.Posts.Commands.ChangePostPrivacy;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
@@ -19,4 +20,5 @@ public interface IPostsService
     Task<Result<PagedResult<PostDto>>> GetPostsAsync(GetPostsQuery query);
     Task<Result<bool>> AddReactionAsync(AddReactionCommand command);
     Task<Result<bool>> RemoveReactionAsync(RemoveReactionCommand command);
+    Task<Result<bool>> ChangePostPrivacyAsync(ChangePostPrivacyCommand command);
 }

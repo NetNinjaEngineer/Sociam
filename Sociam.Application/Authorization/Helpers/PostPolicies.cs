@@ -5,14 +5,20 @@ namespace Sociam.Application.Authorization.Helpers;
 
 public static class PostPolicies
 {
-    public const string EditPost = "PostPolicy_EditPost";
-    public const string ReactToPost = "PostPolicy_ReactToPost";
+    private const string PolicyPrefix = "PostPolicy_";
+
+    public const string EditPost = $"{PolicyPrefix}EditPost";
+
+    public const string ReactToPost = $"{PolicyPrefix}_ReactToPost";
+
+    public const string ChangePostPrivacy = $"{PolicyPrefix}ChangePostPrivacy";
+
     public static void AddPostPolicies(this AuthorizationOptions options)
     {
-        options.AddPolicy(EditPost, policy =>
-            policy.Requirements.Add(new PostOperationsRequirement(PostOperations.EDIT)));
+        options.AddPolicy(EditPost, policy => policy.Requirements.Add(new PostOperationsRequirement(PostOperations.Edit)));
 
-        options.AddPolicy(ReactToPost, policy =>
-            policy.Requirements.Add(new PostOperationsRequirement(PostOperations.REACT)));
+        options.AddPolicy(ReactToPost, policy => policy.Requirements.Add(new PostOperationsRequirement(PostOperations.React)));
+
+        options.AddPolicy(ChangePostPrivacy, policy => policy.Requirements.Add(new PostOperationsRequirement(PostOperations.ChangePrivacy)));
     }
 }
