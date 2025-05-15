@@ -4,6 +4,7 @@ namespace Sociam.Application.DTOs.Post;
 
 public sealed class PostDto
 {
+    public Guid Id { get; set; }
     public string? Text { get; set; }
     public string CreatedById { get; set; } = null!;
     public long SharesCount { get; set; }

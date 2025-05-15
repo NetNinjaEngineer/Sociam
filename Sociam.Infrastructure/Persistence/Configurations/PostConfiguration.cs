@@ -46,11 +46,13 @@ public sealed class PostConfiguration : IEntityTypeConfiguration<Post>
                 .IsRequired(false);
 
             options.Property(location => location.Latitude)
+                .HasColumnType("double precision")
                 .HasColumnName("Latitude")
                 .IsRequired(false);
 
 
             options.Property(location => location.Longitude)
+                .HasColumnType("double precision")
                 .HasColumnName("Longitude")
                 .IsRequired(false);
 

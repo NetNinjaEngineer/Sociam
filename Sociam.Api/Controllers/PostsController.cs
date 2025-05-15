@@ -5,6 +5,7 @@ using Sociam.Api.Attributes;
 using Sociam.Api.Base;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Post;
+using Sociam.Application.Features.Posts.Commands.AddReaction;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
@@ -37,10 +38,15 @@ public class PostsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeletePostAsync([FromRoute] Guid postId)
         => CustomResult(await Mediator.Send(new DeletePostCommand(postId)));
-        
+
     [HttpGet]
     [ProducesResponseType(typeof(Result<PagedResult<PostDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserPostsAsync([FromQuery] PostsParams postsParams)
-        => CustomResult(await Mediator.Send(new GetPostsQuery{ PostsParams = postsParams}));
-        
+        => CustomResult(await Mediator.Send(new GetPostsQuery { PostsParams = postsParams }));
+
+    [HttpPost("{postId:guid}/reactions")]
+    [ProducesResponseType(typeof(Result<PagedResult<PostDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AddReactionAsync([FromRoute] Guid postId, [FromForm] AddPostReactionDto request)
+        => CustomResult(await Mediator.Send(new AddReactionCommand { PostId = postId, Reaction = request.ReactionType }));
+
 }

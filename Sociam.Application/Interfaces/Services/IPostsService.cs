@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Sociam.Application.Bases;
 using Sociam.Application.DTOs.Post;
+using Sociam.Application.Features.Posts.Commands.AddReaction;
 using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
@@ -15,4 +16,5 @@ public interface IPostsService
     Task<Result<Unit>> EditPostAsync(EditPostCommand command);
     Task<Result<Unit>> DeletePostAsync(DeletePostCommand command);
     Task<Result<PagedResult<PostDto>>> GetPostsAsync(GetPostsQuery query);
+    Task<Result<bool>> AddReactionAsync(AddReactionCommand command);
 }

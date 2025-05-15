@@ -7,7 +7,6 @@ public sealed class Post : BaseEntity
 {
     public string? Text { get; set; }
     public string CreatedById { get; set; } = null!;
-    
     public long SharesCount { get; set; }
     public ApplicationUser CreatedBy { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

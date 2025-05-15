@@ -1,7 +1,7 @@
-﻿namespace Sociam.Application.Authorization.Helpers
+﻿namespace Sociam.Application.Authorization.Helpers;
+
+public enum PostOperations
 {
-    public enum PostOperations
-    {
-        EDIT = 1
-    }
+    EDIT = 1,
+    REACT = 2,
 }

@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Collections;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Sociam.Domain.Entities.common;
 using Sociam.Domain.Entities.Identity;
 using Sociam.Domain.Interfaces;
 using Sociam.Infrastructure.Persistence.Repositories;
-using System.Collections;
 
 namespace Sociam.Infrastructure.Persistence;
 public sealed class UnitOfWork(
@@ -14,16 +14,13 @@ public sealed class UnitOfWork(
 {
     private readonly Hashtable _repositories = [];
     public IFriendshipRepository FriendshipRepository => new FriendshipRepository(context);
-
     public IMessageRepository MessageRepository => new MessageRepository(context);
-
     public IPrivateConversationRepository ConversationRepository => new PrivateConversationRepository(context);
     public IStoryViewRepository StoryViewRepository => new StoryViewRepository(context, userManager);
     public IStoryRepository StoryRepository => new StoryRepository(context, configuration);
     public INotificationRepository NotificationRepository => new NotificationRepository(context);
-
     public IGroupMemberRepository GroupMemberRepository => new GroupMemberRepository(context);
-
+    public IPostRepository PostRepository => new PostRepository(context);
     public async Task<int> SaveChangesAsync() => await context.SaveChangesAsync();
 
     public IGenericRepository<TEntity>? Repository<TEntity>() where TEntity : BaseEntity

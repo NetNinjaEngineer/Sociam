@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using Scalar.AspNetCore;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
 using Sociam.Api.WorkerServices;
