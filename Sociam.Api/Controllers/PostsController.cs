@@ -11,6 +11,8 @@ using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
 using Sociam.Application.Features.Posts.Commands.RemoveReaction;
+using Sociam.Application.Features.Posts.Queries.GetPost;
+using Sociam.Application.Features.Posts.Queries.GetPostReactions;
 using Sociam.Application.Features.Posts.Queries.GetPosts;
 using Sociam.Domain.Interfaces.DataTransferObjects;
 using Sociam.Domain.Utils;
@@ -66,5 +68,18 @@ public class PostsController(IMediator mediator) : ApiBaseController(mediator)
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ChangePostPrivacyAsync([FromRoute] Guid postId, [FromForm] ChangePostPrivacyDto request)
         => CustomResult(await Mediator.Send(new ChangePostPrivacyCommand(postId, request.PostPrivacy)));
+
+    [HttpGet("me/{postId:guid}")]
+    [ProducesResponseType(typeof(Result<PostDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<PostDto>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserPostAsync([FromRoute] Guid postId)
+        => CustomResult(await Mediator.Send(new GetPostQuery(postId)));
+
+    [HttpGet("me/{postId:guid}/reactions")]
+    [ProducesResponseType(typeof(Result<PagedResult<PostReactionDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<PagedResult<PostReactionDto>>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPostReactionsAsync([FromRoute] Guid postId,
+        [FromQuery] PostReactionsParams postReactionsParams)
+        => CustomResult(await Mediator.Send(new GetPostReactionsQuery(postId, postReactionsParams)));
 
 }

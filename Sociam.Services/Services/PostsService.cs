@@ -16,6 +16,8 @@ using Sociam.Application.Features.Posts.Commands.CreatePost;
 using Sociam.Application.Features.Posts.Commands.DeletePost;
 using Sociam.Application.Features.Posts.Commands.EditPost;
 using Sociam.Application.Features.Posts.Commands.RemoveReaction;
+using Sociam.Application.Features.Posts.Queries.GetPost;
+using Sociam.Application.Features.Posts.Queries.GetPostReactions;
 using Sociam.Application.Features.Posts.Queries.GetPosts;
 using Sociam.Application.Helpers;
 using Sociam.Application.Hubs;
@@ -473,5 +475,50 @@ public sealed class PostsService(
         unitOfWork.Repository<Post>()?.Update(post);
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true, "Post privacy changed successfully");
+    }
+
+    public async Task<Result<PostDto>> GetMyPostAsync(GetPostQuery query)
+    {
+        var post = await unitOfWork.Repository<Post>()?.GetBySpecificationAsync(
+            new GetPostForSpecificUserSpecification(query.PostId, currentUser.Id))!;
+
+        return post == null ?
+            Result<PostDto>.Failure(HttpStatusCode.NotFound, "Post not found") :
+            Result<PostDto>.Success(mapper.Map<PostDto>(post));
+    }
+
+    public async Task<Result<PagedResult<PostReactionDto>>> GetPostReactionsAsync(GetPostReactionsQuery query)
+    {
+        var post = await unitOfWork.Repository<Post>()?.GetBySpecificationAsync(
+            new GetPostForSpecificUserSpecification(query.PostId, currentUser.Id))!;
+        if (post == null)
+            return Result<PagedResult<PostReactionDto>>.Failure(HttpStatusCode.NotFound, "Post not found");
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            user: currentUser.GetUser()!,
+            resource: post,
+            policyName: PostPolicies.ReactToPost);
+        if (!authorizationResult.Succeeded)
+        {
+            logger.LogWarning("Authorization failed for user {UserId} on post {PostId}. Reasons: {Reasons}",
+               currentUser.Id,
+               query.PostId,
+               string.Join(", ", authorizationResult.Failure?.FailureReasons.Select(r => r.Message) ?? ["Unknown reason"]));
+            return Result<PagedResult<PostReactionDto>>.Failure(HttpStatusCode.Forbidden, DomainErrors.Posts.Forbiden);
+        }
+        var reactions = await unitOfWork.Repository<PostReaction>()?.GetAllWithSpecificationAsync(
+            new GetPostReactionsSpecification(query.PostId, query.PostReactionsParams))!;
+
+        var totalCount = await unitOfWork.Repository<PostReaction>()?.GetCountWithSpecificationAsync(
+            new GetPostReactionsCountSpecification(query.PostId))!;
+
+        return Result<PagedResult<PostReactionDto>>.Success(
+            new PagedResult<PostReactionDto>
+            {
+                Items = [.. mapper.Map<IEnumerable<PostReactionDto>>(reactions,
+                    options=> options.Items["TimeZoneId"] = currentUser.TimeZoneId)],
+                Page = query.PostReactionsParams.Page,
+                PageSize = query.PostReactionsParams.PageSize,
+                TotalCount = totalCount
+            });
     }
 }

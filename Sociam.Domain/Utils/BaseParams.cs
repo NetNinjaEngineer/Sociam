@@ -1,18 +1,7 @@
 ﻿namespace Sociam.Domain.Utils;
 
-public abstract class BaseParams
+public abstract class PagedParams
 {
-    private string? _searchTerm;
-
     public int Page { get; set; } = 1;
-
     public int PageSize { get; set; } = 10;
-
-    public string? SearchTerm
-    {
-        get => _searchTerm;
-        set => _searchTerm = value?.Trim().ToLower();
-    }
-
-    public string? Sort { get; set; }
 }
