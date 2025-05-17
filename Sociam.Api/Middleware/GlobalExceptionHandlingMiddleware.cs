@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Text.Json;
+using FluentValidation;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Sociam.Api.Utils;
@@ -26,6 +27,8 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
         var errorResponse = new GlobalErrorResponse();
 
         var env = httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<GlobalExceptionHandlingMiddleware>>();
+
 
         switch (error)
         {
@@ -78,6 +81,8 @@ internal sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
                 break;
         }
         httpContext.Response.ContentType = "application/json";
+
+        logger.LogError(JsonSerializer.Serialize(errorResponse));
 
         await httpContext.Response.WriteAsJsonAsync(errorResponse, CancellationToken.None);
     }

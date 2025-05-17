@@ -2,6 +2,8 @@ using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
+using Serilog.Events;
 using Sociam.Api.Extensions;
 using Sociam.Api.Filters;
 using Sociam.Api.WorkerServices;
@@ -11,7 +13,19 @@ using Sociam.Infrastructure;
 using Sociam.Persistence;
 using Sociam.Services;
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSerilog((services, lc) => lc
+    .ReadFrom.Configuration(builder.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 builder.Services
     .AddInfrastructureDependencies(builder.Configuration)
@@ -113,6 +127,8 @@ app.UseSwaggerDocumentation();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+app.UseSerilogRequestLogging();
 
 app.UseCors("AllowAll");
 
